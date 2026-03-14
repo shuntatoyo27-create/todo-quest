@@ -1,0 +1,22 @@
+{
+  "name": "To Do Quest",
+  "short_name": "ToDoQuest",
+  "description": "RPG風タスク管理アプリ",
+  "start_url": "/todo-quest/",
+  "display": "standalone",
+  "background_color": "#0f0e17",
+  "theme_color": "#0f0e17",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
