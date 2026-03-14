@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- saved from url=(0043)file:///C:/Users/punah/Downloads/index.html -->
-<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>To Do Quest</title>
-  <link rel="manifest" href="file:///C:/Users/punah/Downloads/manifest.json">
-  <link href="./To Do Quest_files/css2" rel="stylesheet">
+  <link rel="manifest" href="manifest.json" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0f0e17;
@@ -405,6 +405,18 @@
       color: var(--secondary);
       flex-shrink: 0;
     }
+    .task-delete {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .task-delete:hover { color: var(--primary); background: rgba(255,107,107,0.1); }
 
     /* Empty state */
     .empty-state {
@@ -584,7 +596,7 @@
 <body>
 
 <!-- Stars -->
-<div class="stars" id="stars"><div class="star" style="width: 1.55454px; height: 1.55454px; left: 99.664%; top: 79.7343%; --dur: 2.535706317910676s; --op: 0.3638169436670174; animation-delay: 2.23895s;"></div><div class="star" style="width: 2.92193px; height: 2.92193px; left: 53.0621%; top: 56.959%; --dur: 4.685486379740772s; --op: 0.35501894875416506; animation-delay: 2.89491s;"></div><div class="star" style="width: 2.68287px; height: 2.68287px; left: 2.97698%; top: 93.189%; --dur: 3.791427295037306s; --op: 0.5159499568012704; animation-delay: 1.55224s;"></div><div class="star" style="width: 1.82041px; height: 1.82041px; left: 85.4281%; top: 38.5093%; --dur: 4.9121531591916s; --op: 0.5429149385849119; animation-delay: 3.53697s;"></div><div class="star" style="width: 1.70761px; height: 1.70761px; left: 23.9346%; top: 38.5433%; --dur: 2.394943691085366s; --op: 0.9807394343757136; animation-delay: 1.16788s;"></div><div class="star" style="width: 3.18531px; height: 3.18531px; left: 57.1121%; top: 76.7693%; --dur: 2.5926790156241615s; --op: 0.5357974500502374; animation-delay: 2.93055s;"></div><div class="star" style="width: 3.4831px; height: 3.4831px; left: 39.2593%; top: 54.2841%; --dur: 4.593875166883205s; --op: 0.5530057276306934; animation-delay: 1.66589s;"></div><div class="star" style="width: 2.31158px; height: 2.31158px; left: 54.1412%; top: 66.2868%; --dur: 2.25314655693924s; --op: 0.9154259177486403; animation-delay: 1.23151s;"></div><div class="star" style="width: 1.41075px; height: 1.41075px; left: 4.99162%; top: 66.4746%; --dur: 2.3653419204933503s; --op: 0.7900467876165667; animation-delay: 0.506455s;"></div><div class="star" style="width: 3.28083px; height: 3.28083px; left: 79.0067%; top: 50.868%; --dur: 2.687888883167063s; --op: 0.6518971409434939; animation-delay: 3.20033s;"></div><div class="star" style="width: 3.10608px; height: 3.10608px; left: 32.5928%; top: 83.979%; --dur: 4.251431963033697s; --op: 0.3909846084930047; animation-delay: 3.85958s;"></div><div class="star" style="width: 2.69808px; height: 2.69808px; left: 85.8301%; top: 24.4267%; --dur: 2.6324480723918757s; --op: 0.34009200666454875; animation-delay: 0.0269431s;"></div><div class="star" style="width: 1.0088px; height: 1.0088px; left: 39.8645%; top: 70.116%; --dur: 2.2921150880395147s; --op: 0.8484030486781251; animation-delay: 0.49362s;"></div><div class="star" style="width: 2.23787px; height: 2.23787px; left: 41.5967%; top: 25.5604%; --dur: 3.700212206443351s; --op: 0.40191879742741055; animation-delay: 1.41367s;"></div><div class="star" style="width: 1.70182px; height: 1.70182px; left: 10.0154%; top: 50.3471%; --dur: 5.152153310458772s; --op: 0.9011263913036631; animation-delay: 3.283s;"></div><div class="star" style="width: 1.82707px; height: 1.82707px; left: 36.1411%; top: 6.50849%; --dur: 2.2719044173502674s; --op: 0.4478707745321152; animation-delay: 0.0245198s;"></div><div class="star" style="width: 2.88308px; height: 2.88308px; left: 92.8382%; top: 35.6617%; --dur: 3.637219423376232s; --op: 0.7252733812942102; animation-delay: 0.486119s;"></div><div class="star" style="width: 1.91815px; height: 1.91815px; left: 86.0847%; top: 71.6109%; --dur: 3.6744401699856883s; --op: 0.6186678608625994; animation-delay: 1.86263s;"></div><div class="star" style="width: 1.21338px; height: 1.21338px; left: 6.39235%; top: 99.7141%; --dur: 5.1469889422937145s; --op: 0.7478609718335157; animation-delay: 0.696284s;"></div><div class="star" style="width: 3.31479px; height: 3.31479px; left: 63.3611%; top: 51.7058%; --dur: 3.670401318476268s; --op: 0.508380073780712; animation-delay: 3.26036s;"></div><div class="star" style="width: 1.52783px; height: 1.52783px; left: 34.0804%; top: 74.1456%; --dur: 3.2224288446944858s; --op: 0.6634450814974644; animation-delay: 2.30345s;"></div><div class="star" style="width: 3.78807px; height: 3.78807px; left: 42.996%; top: 68.5308%; --dur: 2.124883216572833s; --op: 0.4939740610980364; animation-delay: 1.89464s;"></div><div class="star" style="width: 1.17559px; height: 1.17559px; left: 27.7896%; top: 12.3224%; --dur: 2.123927383689823s; --op: 0.6435869989606753; animation-delay: 1.07031s;"></div><div class="star" style="width: 1.37757px; height: 1.37757px; left: 1.18656%; top: 77.4306%; --dur: 4.249661354864308s; --op: 0.7166310993720746; animation-delay: 3.38962s;"></div><div class="star" style="width: 2.00769px; height: 2.00769px; left: 93.6354%; top: 99.377%; --dur: 4.227019071776616s; --op: 0.7018008360471699; animation-delay: 1.67722s;"></div><div class="star" style="width: 2.46493px; height: 2.46493px; left: 36.2454%; top: 67.1287%; --dur: 3.385641602003978s; --op: 0.8755890168428613; animation-delay: 1.06721s;"></div><div class="star" style="width: 1.12988px; height: 1.12988px; left: 19.3734%; top: 37.393%; --dur: 5.611093295744239s; --op: 0.41497907010462515; animation-delay: 3.38031s;"></div><div class="star" style="width: 3.80662px; height: 3.80662px; left: 57.6524%; top: 73.3085%; --dur: 5.041308813877447s; --op: 0.6204070010988967; animation-delay: 2.35565s;"></div><div class="star" style="width: 2.98828px; height: 2.98828px; left: 75.2708%; top: 47.3472%; --dur: 4.392152367776788s; --op: 0.45035971673953884; animation-delay: 2.64907s;"></div><div class="star" style="width: 3.30705px; height: 3.30705px; left: 75.6592%; top: 29.2056%; --dur: 2.201645619848747s; --op: 0.622890511691655; animation-delay: 0.225303s;"></div><div class="star" style="width: 2.02486px; height: 2.02486px; left: 63.5383%; top: 57.9971%; --dur: 5.303455291986909s; --op: 0.44095699416109574; animation-delay: 2.40984s;"></div><div class="star" style="width: 3.25826px; height: 3.25826px; left: 20.3776%; top: 3.34334%; --dur: 5.115869399059829s; --op: 0.4789171862557972; animation-delay: 3.42081s;"></div><div class="star" style="width: 2.01257px; height: 2.01257px; left: 91.2865%; top: 69.9691%; --dur: 5.301446896309023s; --op: 0.4774883853814791; animation-delay: 0.0315167s;"></div><div class="star" style="width: 3.58636px; height: 3.58636px; left: 33.5665%; top: 18.005%; --dur: 5.591448214956431s; --op: 0.46860637289479934; animation-delay: 3.12811s;"></div><div class="star" style="width: 2.98674px; height: 2.98674px; left: 42.2116%; top: 56.1258%; --dur: 4.753690937312388s; --op: 0.34304912803726195; animation-delay: 2.84397s;"></div><div class="star" style="width: 2.99715px; height: 2.99715px; left: 4.02488%; top: 54.0607%; --dur: 3.9152984497852557s; --op: 0.6562239780418352; animation-delay: 0.317846s;"></div><div class="star" style="width: 2.15401px; height: 2.15401px; left: 26.2573%; top: 90.698%; --dur: 4.18628783788515s; --op: 0.3570874785067899; animation-delay: 3.67147s;"></div><div class="star" style="width: 1.16352px; height: 1.16352px; left: 7.65969%; top: 13.9553%; --dur: 5.274140964365041s; --op: 0.4235030396554472; animation-delay: 1.47469s;"></div><div class="star" style="width: 1.37488px; height: 1.37488px; left: 2.91343%; top: 77.686%; --dur: 2.9997851819470887s; --op: 0.76043433794124; animation-delay: 2.83421s;"></div><div class="star" style="width: 1.6329px; height: 1.6329px; left: 98.9673%; top: 82.3354%; --dur: 3.2585647159742614s; --op: 0.3522463600884247; animation-delay: 0.0170122s;"></div><div class="star" style="width: 2.22477px; height: 2.22477px; left: 73.1478%; top: 69.4498%; --dur: 2.7213217161939904s; --op: 0.9303019272528799; animation-delay: 1.21868s;"></div><div class="star" style="width: 2.52912px; height: 2.52912px; left: 46.3908%; top: 79.2395%; --dur: 4.217103627118878s; --op: 0.9683820113738255; animation-delay: 1.72789s;"></div><div class="star" style="width: 3.17321px; height: 3.17321px; left: 4.45635%; top: 47.3141%; --dur: 4.613487233788994s; --op: 0.7375148998066466; animation-delay: 2.70009s;"></div><div class="star" style="width: 2.98326px; height: 2.98326px; left: 60.4012%; top: 63.0732%; --dur: 3.7721793865505453s; --op: 0.4554932669127861; animation-delay: 0.70708s;"></div><div class="star" style="width: 2.05298px; height: 2.05298px; left: 42.071%; top: 58.7959%; --dur: 3.8148904940041284s; --op: 0.8066894213893718; animation-delay: 2.54862s;"></div><div class="star" style="width: 2.75104px; height: 2.75104px; left: 97.023%; top: 10.5658%; --dur: 5.810975169411387s; --op: 0.7263410554143532; animation-delay: 0.175467s;"></div><div class="star" style="width: 2.11351px; height: 2.11351px; left: 63.0807%; top: 68.1098%; --dur: 3.1510388465121397s; --op: 0.8467359219349355; animation-delay: 1.99288s;"></div><div class="star" style="width: 1.64635px; height: 1.64635px; left: 59.99%; top: 46.6003%; --dur: 3.0326568710261133s; --op: 0.7867021939124845; animation-delay: 1.49666s;"></div><div class="star" style="width: 1.31291px; height: 1.31291px; left: 78.5927%; top: 74.3732%; --dur: 5.665575044942024s; --op: 0.5806224716744746; animation-delay: 2.60048s;"></div><div class="star" style="width: 2.15492px; height: 2.15492px; left: 10.3104%; top: 8.37455%; --dur: 3.702486191250988s; --op: 0.9910870982223996; animation-delay: 2.30208s;"></div><div class="star" style="width: 1.15465px; height: 1.15465px; left: 19.4875%; top: 50.156%; --dur: 3.7164339413509913s; --op: 0.5730637996419912; animation-delay: 3.21602s;"></div><div class="star" style="width: 1.58844px; height: 1.58844px; left: 87.1501%; top: 99.564%; --dur: 3.0914611035429136s; --op: 0.8274889151631766; animation-delay: 3.18183s;"></div><div class="star" style="width: 2.90054px; height: 2.90054px; left: 98.222%; top: 64.7965%; --dur: 4.047775222231789s; --op: 0.5070951004491782; animation-delay: 3.58866s;"></div><div class="star" style="width: 1.85663px; height: 1.85663px; left: 40.4371%; top: 14.0592%; --dur: 2.949640511168048s; --op: 0.8442902267386552; animation-delay: 3.81051s;"></div><div class="star" style="width: 2.4285px; height: 2.4285px; left: 98.733%; top: 49.6182%; --dur: 2.143999321217935s; --op: 0.32440605847637566; animation-delay: 3.02382s;"></div><div class="star" style="width: 1.44405px; height: 1.44405px; left: 28.8662%; top: 52.0888%; --dur: 2.6020165257147596s; --op: 0.4421251717207756; animation-delay: 1.31092s;"></div><div class="star" style="width: 3.48444px; height: 3.48444px; left: 76.5042%; top: 99.3035%; --dur: 2.9677834295311882s; --op: 0.8172239120498703; animation-delay: 3.83538s;"></div><div class="star" style="width: 3.69082px; height: 3.69082px; left: 20.4463%; top: 86.3476%; --dur: 2.152394229228792s; --op: 0.468041797321831; animation-delay: 0.0652693s;"></div><div class="star" style="width: 3.81973px; height: 3.81973px; left: 99.1428%; top: 28.1989%; --dur: 5.316281510078122s; --op: 0.8398674255544196; animation-delay: 3.22184s;"></div><div class="star" style="width: 1.81586px; height: 1.81586px; left: 43.1122%; top: 97.2092%; --dur: 2.2716443107555757s; --op: 0.45266859960329126; animation-delay: 0.546874s;"></div><div class="star" style="width: 2.80356px; height: 2.80356px; left: 71.2385%; top: 40.592%; --dur: 4.143093571289923s; --op: 0.4145277344021484; animation-delay: 2.17146s;"></div><div class="star" style="width: 2.95616px; height: 2.95616px; left: 74.6613%; top: 45.9973%; --dur: 3.750909973988846s; --op: 0.886551883560726; animation-delay: 0.309151s;"></div><div class="star" style="width: 2.39292px; height: 2.39292px; left: 9.68856%; top: 77.3492%; --dur: 3.0576488775742012s; --op: 0.7053765146935924; animation-delay: 2.19552s;"></div><div class="star" style="width: 2.6829px; height: 2.6829px; left: 96.8215%; top: 93.2725%; --dur: 3.2019117816220386s; --op: 0.3084727267002692; animation-delay: 3.3709s;"></div><div class="star" style="width: 3.96634px; height: 3.96634px; left: 9.26218%; top: 1.33567%; --dur: 3.9106127870879637s; --op: 0.7376957520825; animation-delay: 1.94237s;"></div><div class="star" style="width: 2.64548px; height: 2.64548px; left: 97.137%; top: 88.22%; --dur: 2.6631118035563413s; --op: 0.8008917566267626; animation-delay: 2.78678s;"></div><div class="star" style="width: 3.67327px; height: 3.67327px; left: 56.4551%; top: 80.4193%; --dur: 2.405964201534357s; --op: 0.9833324000512622; animation-delay: 1.21307s;"></div><div class="star" style="width: 2.62404px; height: 2.62404px; left: 13.6149%; top: 28.6614%; --dur: 3.76078097164052s; --op: 0.9878994162104868; animation-delay: 1.14087s;"></div><div class="star" style="width: 1.34456px; height: 1.34456px; left: 10.7189%; top: 78.8528%; --dur: 2.245287123089519s; --op: 0.45602267372627026; animation-delay: 0.790236s;"></div><div class="star" style="width: 1.92173px; height: 1.92173px; left: 88.2513%; top: 4.56157%; --dur: 2.800811302844307s; --op: 0.9091901177074826; animation-delay: 3.00588s;"></div><div class="star" style="width: 1.3265px; height: 1.3265px; left: 71.5847%; top: 59.5807%; --dur: 4.216240623021632s; --op: 0.3538672959859201; animation-delay: 0.0314481s;"></div><div class="star" style="width: 3.17315px; height: 3.17315px; left: 88.0935%; top: 17.8031%; --dur: 5.7849111076470106s; --op: 0.4827292761293482; animation-delay: 0.410038s;"></div><div class="star" style="width: 1.66366px; height: 1.66366px; left: 39.7461%; top: 94.303%; --dur: 5.218046075505957s; --op: 0.5129586910580219; animation-delay: 0.0501326s;"></div><div class="star" style="width: 3.55082px; height: 3.55082px; left: 69.1897%; top: 13.375%; --dur: 5.382346050081963s; --op: 0.4816627376564932; animation-delay: 1.94973s;"></div><div class="star" style="width: 3.97929px; height: 3.97929px; left: 1.71357%; top: 97.2338%; --dur: 2.891678194143473s; --op: 0.7221690084658037; animation-delay: 0.780956s;"></div><div class="star" style="width: 2.12007px; height: 2.12007px; left: 24.3102%; top: 47.0909%; --dur: 2.4485326379317223s; --op: 0.41613262379335814; animation-delay: 2.64006s;"></div><div class="star" style="width: 2.72209px; height: 2.72209px; left: 16.0358%; top: 11.8245%; --dur: 5.856680456404762s; --op: 0.640365714016444; animation-delay: 3.02877s;"></div><div class="star" style="width: 3.86983px; height: 3.86983px; left: 9.30876%; top: 19.2244%; --dur: 3.4077879222380187s; --op: 0.5936008627701927; animation-delay: 3.21554s;"></div><div class="star" style="width: 3.80487px; height: 3.80487px; left: 5.1334%; top: 36.387%; --dur: 3.9412656048746575s; --op: 0.38862210485394; animation-delay: 1.63366s;"></div><div class="star" style="width: 3.87819px; height: 3.87819px; left: 39.0607%; top: 1.22545%; --dur: 2.282152453519807s; --op: 0.7824353045950123; animation-delay: 0.341818s;"></div></div>
+<div class="stars" id="stars"></div>
 
 <!-- ===== AUTH SCREEN ===== -->
 <div class="screen active" id="auth-screen">
@@ -595,32 +607,32 @@
       <p>冒険が、あなたを強くする</p>
     </div>
     <div class="tab-switcher">
-      <button class="tab-btn active" onclick="switchTab(&#39;login&#39;)">ログイン</button>
-      <button class="tab-btn" onclick="switchTab(&#39;register&#39;)">新規登録</button>
+      <button class="tab-btn active" onclick="switchTab('login')">ログイン</button>
+      <button class="tab-btn" onclick="switchTab('register')">新規登録</button>
     </div>
-    <div id="login-form" style="display: block;">
+    <div id="login-form">
       <div class="form-group">
         <label>メールアドレス</label>
-        <input type="email" id="login-email" placeholder="quest@example.com">
+        <input type="email" id="login-email" placeholder="quest@example.com" />
       </div>
       <div class="form-group">
         <label>パスワード</label>
-        <input type="password" id="login-pass" placeholder="••••••••">
+        <input type="password" id="login-pass" placeholder="••••••••" />
       </div>
       <button class="btn-primary" onclick="doLogin()" id="login-btn">冒険を始める ⚔️</button>
     </div>
-    <div id="register-form" style="display: none;">
+    <div id="register-form" style="display:none">
       <div class="form-group">
         <label>ニックネーム</label>
-        <input type="text" id="reg-name" placeholder="勇者の名前">
+        <input type="text" id="reg-name" placeholder="勇者の名前" />
       </div>
       <div class="form-group">
         <label>メールアドレス</label>
-        <input type="email" id="reg-email" placeholder="quest@example.com">
+        <input type="email" id="reg-email" placeholder="quest@example.com" />
       </div>
       <div class="form-group">
         <label>パスワード（6文字以上）</label>
-        <input type="password" id="reg-pass" placeholder="••••••••">
+        <input type="password" id="reg-pass" placeholder="••••••••" />
       </div>
       <button class="btn-primary" onclick="doRegister()" id="reg-btn">勇者を作成する 🌟</button>
     </div>
@@ -690,16 +702,16 @@
 
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="navTo(&#39;home&#39;)">
+    <button class="nav-item active" onclick="navTo('home')">
       <span class="nav-icon">🏠</span>ホーム
     </button>
-    <button class="nav-item" onclick="navTo(&#39;quests&#39;)">
+    <button class="nav-item" onclick="navTo('quests')">
       <span class="nav-icon">⚔️</span>クエスト
     </button>
-    <button class="nav-item" onclick="navTo(&#39;group&#39;)">
+    <button class="nav-item" onclick="navTo('group')">
       <span class="nav-icon">👥</span>グループ
     </button>
-    <button class="nav-item" onclick="navTo(&#39;profile&#39;)">
+    <button class="nav-item" onclick="navTo('profile')">
       <span class="nav-icon">👤</span>プロフィール
     </button>
   </nav>
@@ -711,11 +723,11 @@
     <h3>📜 クエスト追加</h3>
     <div class="form-group">
       <label>クエスト名</label>
-      <input type="text" id="task-title-input" placeholder="例：参考書を1章読む">
+      <input type="text" id="task-title-input" placeholder="例：参考書を1章読む" />
     </div>
     <div class="form-group">
       <label>期限（任意）</label>
-      <input type="date" id="task-deadline-input">
+      <input type="date" id="task-deadline-input" />
     </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeAddTask()">キャンセル</button>
@@ -754,7 +766,7 @@
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
     getFirestore, doc, setDoc, getDoc, updateDoc, collection,
-    addDoc, onSnapshot, query, where, orderBy, serverTimestamp, getDocs
+    addDoc, onSnapshot, query, where, orderBy, serverTimestamp, getDocs, deleteDoc
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -983,9 +995,15 @@
           </div>
         </div>
         <span class="task-exp">+${EXP_PER_TASK}EXP</span>
+        <button class="task-delete" onclick="deleteTask('${t.id}')">🗑️</button>
       </div>
     `).join('');
   }
+
+  window.deleteTask = async (taskId) => {
+    if (!confirm('このクエストを削除しますか？')) return;
+    await deleteDoc(doc(db, 'tasks', taskId));
+  };
 
   window.toggleTask = async (taskId, isDone) => {
     if (isDone) return;
@@ -1083,6 +1101,5 @@
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 </script>
-
-
-</body></html>
+</body>
+</html>
