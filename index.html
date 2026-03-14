@@ -2,9 +2,14 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>To Do Quest</title>
   <link rel="manifest" href="manifest.json" />
+  <!-- iOS PWA対応 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ToDoQuest" />
+  <meta name="theme-color" content="#0f0e17" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -1256,6 +1261,9 @@
     await updateDoc(doc(db, 'users', currentUser.uid), { totalCompleted: (userData.totalCompleted || 0) + 1 });
     userData.totalCompleted = (userData.totalCompleted || 0) + 1;
     renderHero();
+    // タスク名を取得して達成メッセージ表示
+    const taskSnap = await getDoc(doc(db, 'tasks', taskId));
+    if (taskSnap.exists()) showAchievement('task', taskSnap.data().title);
   };
 
   async function gainExp(amount, sourceEl) {
@@ -1537,19 +1545,30 @@
   // ===== ACHIEVEMENT EFFECTS =====
   function showAchievement(type, questName = '') {
     const isMain = type === 'mainquest';
+    const isTask = type === 'task';
     const overlay = document.getElementById('achievement-overlay');
     const emoji = document.getElementById('achievement-emoji');
     const title = document.getElementById('achievement-title');
     const sub = document.getElementById('achievement-sub');
     const msg = document.getElementById('achievement-msg');
-    emoji.textContent = isMain ? '🏆' : '⚔️';
-    title.textContent = isMain ? 'メインクエスト達成！！' : 'サブクエスト達成！';
-    sub.textContent = isMain ? '素晴らしい！大きな目標をクリアした！' : 'この調子でメインクエストも目指せ！';
+    if (isTask) {
+      emoji.textContent = '✅';
+      title.textContent = 'タスク完了！';
+      sub.textContent = '一歩一歩が勝利への道！';
+    } else if (isMain) {
+      emoji.textContent = '🏆';
+      title.textContent = 'メインクエスト達成！！';
+      sub.textContent = '素晴らしい！大きな目標をクリアした！';
+    } else {
+      emoji.textContent = '⚔️';
+      title.textContent = 'サブクエスト達成！';
+      sub.textContent = 'この調子でメインクエストも目指せ！';
+    }
     msg.textContent = questName
       ? `「${questName}」を完了しました！\n引き続き頑張りましょう💪`
       : '引き続き頑張りましょう💪';
     overlay.classList.add('open');
-    spawnParticles(isMain ? 40 : 20, isMain);
+    spawnParticles(isMain ? 40 : isTask ? 10 : 20, isMain);
   }
 
   window.closeAchievement = () => {
