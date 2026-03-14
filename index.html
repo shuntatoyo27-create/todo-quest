@@ -557,6 +557,45 @@
       100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
     }
 
+
+    /* ===== QUEST SCREEN CSS ===== */
+    .main-quest-card { background: var(--surface); border-radius: var(--radius); border: 2px solid var(--surface2); overflow: hidden; animation: fadeIn 0.3s ease; }
+    .main-quest-header { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; user-select: none; }
+    .main-quest-header:hover { background: rgba(255,255,255,0.03); }
+    .main-quest-info { flex: 1; }
+    .main-quest-title { font-family: "Fredoka One", cursive; font-size: 17px; margin-bottom: 3px; }
+    .main-quest-stats { font-size: 12px; color: var(--text-muted); }
+    .main-quest-progress { padding: 0 16px 12px; }
+    .progress-bar-wrap { background: rgba(0,0,0,0.3); border-radius: 20px; height: 6px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--blue)); border-radius: 20px; transition: width 0.5s ease; }
+    .chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
+    .chevron.open { transform: rotate(90deg); }
+    .main-quest-delete { background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+    .main-quest-delete:hover { color: var(--primary); }
+    .sub-quests-wrap { display: none; padding: 0 16px 16px; flex-direction: column; gap: 10px; }
+    .sub-quests-wrap.open { display: flex; }
+    .sub-quest-card { background: var(--surface2); border-radius: var(--radius-sm); overflow: hidden; }
+    .sub-quest-header { display: flex; align-items: center; gap: 10px; padding: 12px; cursor: pointer; }
+    .sub-quest-title { flex: 1; font-weight: 700; font-size: 14px; }
+    .sub-quest-deadline { font-size: 11px; color: var(--text-muted); }
+    .sub-quest-delete { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 2px 6px; }
+    .sub-quest-delete:hover { color: var(--primary); }
+    .quest-tasks-wrap { display: none; padding: 0 12px 12px; flex-direction: column; gap: 8px; }
+    .quest-tasks-wrap.open { display: flex; }
+    .quest-task-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: 10px; padding: 10px 12px; }
+    .quest-task-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--surface2); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .quest-task-check.checked { background: var(--accent); border-color: var(--accent); }
+    .quest-task-info { flex: 1; }
+    .quest-task-title { font-size: 13px; font-weight: 700; }
+    .quest-task-title.done { text-decoration: line-through; opacity: 0.5; }
+    .quest-task-deadline { font-size: 11px; color: var(--text-muted); }
+    .quest-task-delete { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; }
+    .quest-task-delete:hover { color: var(--primary); }
+    .add-sub-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed var(--surface2); color: var(--text-muted); border-radius: var(--radius-sm); padding: 10px 14px; font-family: "Nunito",sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
+    .add-sub-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
+    .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
+
     /* Login Bonus Modal */
     .bonus-modal {
       display: none;
@@ -715,6 +754,81 @@
       <span class="nav-icon">👤</span>プロフィール
     </button>
   </nav>
+</div>
+
+<!-- ===== QUEST SCREEN ===== -->
+<div class="screen" id="quest-screen">
+  <div class="top-bar">
+    <span class="app-title">⚔️ クエスト</span>
+    <button class="add-btn" onclick="openAddMainQuest()" style="width:auto;padding:8px 16px;border-radius:20px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:800;">+ メインクエスト</button>
+  </div>
+
+  <div id="quest-list" style="padding:0 20px 100px;display:flex;flex-direction:column;gap:16px;">
+    <div class="empty-state">
+      <span>🏰</span>
+      <p>まだメインクエストがありません<br>上のボタンで追加しよう！</p>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item active" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
+    <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
+  </nav>
+</div>
+
+<!-- Add Main Quest Modal -->
+<div class="modal-overlay" id="add-mainquest-modal">
+  <div class="modal">
+    <h3>🏰 メインクエスト追加</h3>
+    <div class="form-group">
+      <label>クエスト名</label>
+      <input type="text" id="mainquest-title-input" placeholder="例：英語をマスターする" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeAddMainQuest()">キャンセル</button>
+      <button class="btn-add" onclick="addMainQuest()">追加する ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Sub Quest Modal -->
+<div class="modal-overlay" id="add-subquest-modal">
+  <div class="modal">
+    <h3>⚔️ サブクエスト追加</h3>
+    <div class="form-group">
+      <label>サブクエスト名</label>
+      <input type="text" id="subquest-title-input" placeholder="例：TOEICで700点取る" />
+    </div>
+    <div class="form-group">
+      <label>期限（任意）</label>
+      <input type="date" id="subquest-deadline-input" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeAddSubQuest()">キャンセル</button>
+      <button class="btn-add" onclick="addSubQuest()">追加する ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Quest Task Modal -->
+<div class="modal-overlay" id="add-questtask-modal">
+  <div class="modal">
+    <h3>📜 タスク追加</h3>
+    <div class="form-group">
+      <label>タスク名</label>
+      <input type="text" id="questtask-title-input" placeholder="例：単語を10個覚える" />
+    </div>
+    <div class="form-group">
+      <label>期限（任意）</label>
+      <input type="date" id="questtask-deadline-input" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeAddQuestTask()">キャンセル</button>
+      <button class="btn-add" onclick="addQuestTask()">追加する ✨</button>
+    </div>
+  </div>
 </div>
 
 <!-- Add Task Modal -->
@@ -1078,11 +1192,214 @@
   };
 
   // ===== NAV =====
+  let questsUnsub = null;
   window.navTo = (page) => {
-    document.querySelectorAll('.nav-item').forEach((b,i) => {
-      b.classList.toggle('active', ['home','quests','group','profile'][i] === page);
+    // 全ナビボタンのactiveを更新
+    document.querySelectorAll('.nav-item').forEach(b => {
+      const label = b.textContent.trim();
+      const map = { 'ホーム': 'home', 'クエスト': 'quests', 'グループ': 'group', 'プロフィール': 'profile' };
+      b.classList.toggle('active', map[label] === page);
     });
-    // 他の画面は今後実装
+    // 画面切り替え
+    const screens = { home: 'home-screen', quests: 'quest-screen' };
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const targetId = screens[page] || 'home-screen';
+    document.getElementById(targetId).classList.add('active');
+    if (page === 'quests') subscribeToQuests();
+  };
+
+  // ===== QUEST STATE =====
+  let currentMainQuestId = null;
+  let currentSubQuestId = null;
+
+  // ===== SUBSCRIBE QUESTS =====
+  function subscribeToQuests() {
+    if (questsUnsub) questsUnsub();
+    const q = query(collection(db, 'mainQuests'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'asc'));
+    questsUnsub = onSnapshot(q, async snap => {
+      const quests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      await renderQuests(quests);
+    });
+  }
+
+  async function renderQuests(quests) {
+    const list = document.getElementById('quest-list');
+    if (quests.length === 0) {
+      list.innerHTML = `<div class="empty-state"><span>🏰</span><p>まだメインクエストがありません<br>上のボタンで追加しよう！</p></div>`;
+      return;
+    }
+    list.innerHTML = '';
+    for (const mq of quests) {
+      const subSnap = await getDocs(query(collection(db, 'subQuests'), where('mainQuestId', '==', mq.id), orderBy('createdAt', 'asc')));
+      const subQuests = subSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let totalTasks = 0, doneTasks = 0;
+      const subHtml = [];
+      for (const sq of subQuests) {
+        const taskSnap = await getDocs(query(collection(db, 'questTasks'), where('subQuestId', '==', sq.id), orderBy('createdAt', 'asc')));
+        const tasks = taskSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        totalTasks += tasks.length;
+        doneTasks += tasks.filter(t => t.isComplete).length;
+        const tasksHtml = tasks.map(t => `
+          <div class="quest-task-item">
+            <button class="quest-task-check ${t.isComplete ? 'checked' : ''}" onclick="toggleQuestTask('${t.id}', ${t.isComplete}, '${sq.id}')">
+              ${t.isComplete ? '✓' : ''}
+            </button>
+            <div class="quest-task-info">
+              <div class="quest-task-title ${t.isComplete ? 'done' : ''}">${escHtml(t.title)}</div>
+              ${t.deadline ? `<div class="quest-task-deadline">📅 ${t.deadline}</div>` : ''}
+            </div>
+            <button class="quest-task-delete" onclick="deleteQuestTask('${t.id}')">🗑️</button>
+          </div>
+        `).join('');
+        subHtml.push(`
+          <div class="sub-quest-card" id="sq-${sq.id}">
+            <div class="sub-quest-header" onclick="toggleSubQuest('${sq.id}')">
+              <span style="font-size:18px">⚔️</span>
+              <div style="flex:1">
+                <div class="sub-quest-title">${escHtml(sq.title)}</div>
+                ${sq.deadline ? `<div class="sub-quest-deadline">📅 ${sq.deadline}</div>` : ''}
+              </div>
+              <span class="chevron" id="sq-chevron-${sq.id}">›</span>
+              <button class="sub-quest-delete" onclick="event.stopPropagation();deleteSubQuest('${sq.id}')">🗑️</button>
+            </div>
+            <div class="quest-tasks-wrap" id="sq-tasks-${sq.id}">
+              ${tasksHtml}
+              <button class="add-task-btn" onclick="openAddQuestTask('${mq.id}','${sq.id}')">＋ タスクを追加</button>
+            </div>
+          </div>
+        `);
+      }
+      const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+      const card = document.createElement('div');
+      card.className = 'main-quest-card';
+      card.id = `mq-${mq.id}`;
+      card.innerHTML = `
+        <div class="main-quest-header" onclick="toggleMainQuest('${mq.id}')">
+          <span style="font-size:28px">🏰</span>
+          <div class="main-quest-info">
+            <div class="main-quest-title">${escHtml(mq.title)}</div>
+            <div class="main-quest-stats">${doneTasks}/${totalTasks} タスク完了 · ${pct}%</div>
+          </div>
+          <span class="chevron" id="mq-chevron-${mq.id}">›</span>
+          <button class="main-quest-delete" onclick="event.stopPropagation();deleteMainQuest('${mq.id}')">🗑️</button>
+        </div>
+        <div class="main-quest-progress">
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+        </div>
+        <div class="sub-quests-wrap" id="mq-subs-${mq.id}">
+          ${subHtml.join('')}
+          <button class="add-sub-btn" onclick="openAddSubQuest('${mq.id}')">＋ サブクエストを追加</button>
+        </div>
+      `;
+      list.appendChild(card);
+    }
+  }
+
+  // ===== TOGGLE =====
+  window.toggleMainQuest = (id) => {
+    const subs = document.getElementById(`mq-subs-${id}`);
+    const chevron = document.getElementById(`mq-chevron-${id}`);
+    subs.classList.toggle('open');
+    chevron.classList.toggle('open');
+  };
+  window.toggleSubQuest = (id) => {
+    const tasks = document.getElementById(`sq-tasks-${id}`);
+    const chevron = document.getElementById(`sq-chevron-${id}`);
+    tasks.classList.toggle('open');
+    chevron.classList.toggle('open');
+  };
+
+  // ===== ADD MAIN QUEST =====
+  window.openAddMainQuest = () => {
+    document.getElementById('add-mainquest-modal').classList.add('open');
+    document.getElementById('mainquest-title-input').focus();
+  };
+  window.closeAddMainQuest = () => {
+    document.getElementById('add-mainquest-modal').classList.remove('open');
+    document.getElementById('mainquest-title-input').value = '';
+  };
+  window.addMainQuest = async () => {
+    const title = document.getElementById('mainquest-title-input').value.trim();
+    if (!title) return;
+    await addDoc(collection(db, 'mainQuests'), { userId: currentUser.uid, title, createdAt: serverTimestamp() });
+    closeAddMainQuest();
+  };
+
+  // ===== ADD SUB QUEST =====
+  window.openAddSubQuest = (mainQuestId) => {
+    currentMainQuestId = mainQuestId;
+    document.getElementById('add-subquest-modal').classList.add('open');
+    document.getElementById('subquest-title-input').focus();
+  };
+  window.closeAddSubQuest = () => {
+    document.getElementById('add-subquest-modal').classList.remove('open');
+    document.getElementById('subquest-title-input').value = '';
+    document.getElementById('subquest-deadline-input').value = '';
+  };
+  window.addSubQuest = async () => {
+    const title = document.getElementById('subquest-title-input').value.trim();
+    const deadline = document.getElementById('subquest-deadline-input').value;
+    if (!title) return;
+    await addDoc(collection(db, 'subQuests'), { userId: currentUser.uid, mainQuestId: currentMainQuestId, title, deadline: deadline || null, createdAt: serverTimestamp() });
+    closeAddSubQuest();
+    subscribeToQuests();
+  };
+
+  // ===== ADD QUEST TASK =====
+  window.openAddQuestTask = (mainQuestId, subQuestId) => {
+    currentMainQuestId = mainQuestId;
+    currentSubQuestId = subQuestId;
+    document.getElementById('add-questtask-modal').classList.add('open');
+    document.getElementById('questtask-title-input').focus();
+  };
+  window.closeAddQuestTask = () => {
+    document.getElementById('add-questtask-modal').classList.remove('open');
+    document.getElementById('questtask-title-input').value = '';
+    document.getElementById('questtask-deadline-input').value = '';
+  };
+  window.addQuestTask = async () => {
+    const title = document.getElementById('questtask-title-input').value.trim();
+    const deadline = document.getElementById('questtask-deadline-input').value;
+    if (!title) return;
+    await addDoc(collection(db, 'questTasks'), { userId: currentUser.uid, mainQuestId: currentMainQuestId, subQuestId: currentSubQuestId, title, deadline: deadline || null, isComplete: false, createdAt: serverTimestamp() });
+    closeAddQuestTask();
+    subscribeToQuests();
+  };
+
+  // ===== TOGGLE QUEST TASK =====
+  window.toggleQuestTask = async (taskId, isDone, subQuestId) => {
+    if (isDone) return;
+    await updateDoc(doc(db, 'questTasks', taskId), { isComplete: true, completedAt: serverTimestamp() });
+    await gainExp(EXP_PER_TASK, document.body);
+    await updateDoc(doc(db, 'users', currentUser.uid), { totalCompleted: (userData.totalCompleted || 0) + 1 });
+    userData.totalCompleted = (userData.totalCompleted || 0) + 1;
+    renderHero();
+    subscribeToQuests();
+  };
+
+  // ===== DELETE =====
+  window.deleteMainQuest = async (id) => {
+    if (!confirm('メインクエストを削除しますか？\n（サブクエストとタスクも全て削除されます）')) return;
+    const subSnap = await getDocs(query(collection(db, 'subQuests'), where('mainQuestId', '==', id)));
+    for (const sq of subSnap.docs) {
+      const taskSnap = await getDocs(query(collection(db, 'questTasks'), where('subQuestId', '==', sq.id)));
+      for (const t of taskSnap.docs) await deleteDoc(doc(db, 'questTasks', t.id));
+      await deleteDoc(doc(db, 'subQuests', sq.id));
+    }
+    await deleteDoc(doc(db, 'mainQuests', id));
+    subscribeToQuests();
+  };
+  window.deleteSubQuest = async (id) => {
+    if (!confirm('サブクエストを削除しますか？\n（タスクも全て削除されます）')) return;
+    const taskSnap = await getDocs(query(collection(db, 'questTasks'), where('subQuestId', '==', id)));
+    for (const t of taskSnap.docs) await deleteDoc(doc(db, 'questTasks', t.id));
+    await deleteDoc(doc(db, 'subQuests', id));
+    subscribeToQuests();
+  };
+  window.deleteQuestTask = async (id) => {
+    if (!confirm('タスクを削除しますか？')) return;
+    await deleteDoc(doc(db, 'questTasks', id));
+    subscribeToQuests();
   };
 
   // ===== UTILS =====
