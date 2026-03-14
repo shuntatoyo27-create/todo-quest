@@ -1215,7 +1215,7 @@
   // ===== SUBSCRIBE QUESTS =====
   function subscribeToQuests() {
     if (questsUnsub) questsUnsub();
-    const q = query(collection(db, 'mainQuests'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'asc'));
+    const q = query(collection(db, 'mainQuests'), where('userId', '==', currentUser.uid));
     questsUnsub = onSnapshot(q, async snap => {
       const quests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       await renderQuests(quests);
@@ -1230,12 +1230,12 @@
     }
     list.innerHTML = '';
     for (const mq of quests) {
-      const subSnap = await getDocs(query(collection(db, 'subQuests'), where('mainQuestId', '==', mq.id), orderBy('createdAt', 'asc')));
+      const subSnap = await getDocs(query(collection(db, 'subQuests'), where('mainQuestId', '==', mq.id)));
       const subQuests = subSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       let totalTasks = 0, doneTasks = 0;
       const subHtml = [];
       for (const sq of subQuests) {
-        const taskSnap = await getDocs(query(collection(db, 'questTasks'), where('subQuestId', '==', sq.id), orderBy('createdAt', 'asc')));
+        const taskSnap = await getDocs(query(collection(db, 'questTasks'), where('subQuestId', '==', sq.id)));
         const tasks = taskSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         totalTasks += tasks.length;
         doneTasks += tasks.filter(t => t.isComplete).length;
