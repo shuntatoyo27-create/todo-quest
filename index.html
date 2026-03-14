@@ -964,11 +964,15 @@
 </div>
 
 <!-- Achievement Overlay -->
-<div class="achievement-overlay" id="achievement-overlay">
-  <div class="achievement-card">
+<div class="achievement-overlay" id="achievement-overlay" onclick="closeAchievement()">
+  <div class="achievement-card" onclick="event.stopPropagation()">
     <span class="achievement-emoji" id="achievement-emoji">🏆</span>
     <div class="achievement-title" id="achievement-title">クエスト達成！</div>
     <div class="achievement-sub" id="achievement-sub">素晴らしい！</div>
+    <div id="achievement-msg" style="font-family:'DotGothic16',monospace;font-size:13px;color:var(--text);margin:16px 0;line-height:1.8;background:rgba(0,0,0,0.3);border:3px solid rgba(255,255,255,0.1);border-radius:4px;padding:12px 16px;"></div>
+    <button onclick="closeAchievement()" style="background:var(--primary);border:4px solid #cc4444;color:white;font-family:'DotGothic16',monospace;font-size:14px;padding:12px 24px;border-radius:4px;cursor:pointer;box-shadow:4px 4px 0 #cc4444;margin-top:4px;">
+      閉じる ✖
+    </button>
   </div>
 </div>
 
@@ -1510,7 +1514,7 @@
       const sqDoc = await getDoc(doc(db, 'subQuests', subQuestId));
       if (sqDoc.exists() && !sqDoc.data().isComplete) {
         await updateDoc(doc(db, 'subQuests', subQuestId), { isComplete: true });
-        showAchievement('subquest');
+        showAchievement('subquest', sqDoc.data().title);
         playSoundQuestClear(false);
 
         // メインクエスト達成チェック
@@ -1521,7 +1525,7 @@
           const mqDoc = await getDoc(doc(db, 'mainQuests', mainQuestId));
           if (mqDoc.exists() && !mqDoc.data().isComplete) {
             await updateDoc(doc(db, 'mainQuests', mainQuestId), { isComplete: true });
-            setTimeout(() => showAchievement('mainquest'), 2000);
+            setTimeout(() => showAchievement('mainquest', mqDoc.data().title), 2000);
             setTimeout(() => playSoundQuestClear(true), 2000);
           }
         }
@@ -1531,20 +1535,26 @@
   };
 
   // ===== ACHIEVEMENT EFFECTS =====
-  function showAchievement(type) {
+  function showAchievement(type, questName = '') {
     const isMain = type === 'mainquest';
     const overlay = document.getElementById('achievement-overlay');
     const emoji = document.getElementById('achievement-emoji');
     const title = document.getElementById('achievement-title');
     const sub = document.getElementById('achievement-sub');
+    const msg = document.getElementById('achievement-msg');
     emoji.textContent = isMain ? '🏆' : '⚔️';
     title.textContent = isMain ? 'メインクエスト達成！！' : 'サブクエスト達成！';
     sub.textContent = isMain ? '素晴らしい！大きな目標をクリアした！' : 'この調子でメインクエストも目指せ！';
+    msg.textContent = questName
+      ? `「${questName}」を完了しました！\n引き続き頑張りましょう💪`
+      : '引き続き頑張りましょう💪';
     overlay.classList.add('open');
-    // パーティクル
     spawnParticles(isMain ? 40 : 20, isMain);
-    setTimeout(() => overlay.classList.remove('open'), isMain ? 4000 : 2500);
   }
+
+  window.closeAchievement = () => {
+    document.getElementById('achievement-overlay').classList.remove('open');
+  };
 
   function spawnParticles(count, big) {
     const colors = ['#ffd93d','#ff6b6b','#6bcb77','#4d96ff','#c77dff','#ff9a3c'];
