@@ -1156,7 +1156,6 @@
       userData = snap.data();
       if (userData.avatarConfig) currentAvatarConfig = { ...userData.avatarConfig };
       renderHero();
-      updateAvatarDisplay();
     }
   }
 
@@ -1168,8 +1167,8 @@
     document.getElementById('hero-name').textContent = nickname || '勇者';
     document.getElementById('hero-level-badge').textContent = `Lv.${level}`;
     document.getElementById('hero-class').textContent = getClass(level);
-    // アバターSVGを更新（textContentで上書きしない）
-    updateAvatarDisplay();
+    // アバターSVGを更新（定義後に呼ぶため遅延実行）
+    setTimeout(() => { if(typeof updateAvatarDisplay === 'function') updateAvatarDisplay(); }, 0);
     document.getElementById('exp-text').textContent = `${exp} / ${needed}`;
     document.getElementById('exp-bar').style.width = pct + '%';
     document.getElementById('stat-streak').textContent = loginStreak || 0;
@@ -1737,6 +1736,12 @@
     updateAvatarDisplay();
   }
 
+  function getUnlockLabel(unlock) {
+    if (unlock === 'default') return '';
+    if (unlock.startsWith('level')) return `Lv.${unlock.replace('level','')}で解放`;
+    return `${unlock}で解放`;
+  }
+
   // アンロック判定
   function isUnlocked(unlock) {
     if (unlock === 'default') return true;
@@ -1782,8 +1787,9 @@
           title="${part.name}">
           ${miniSvg}
           <span class="item-name">${part.name}</span>
-          ${!unlocked ? `<span class="lock-icon">🔒</span>` : ''}
+          ${!unlocked ? `<span style="font-family:'DotGothic16',monospace;font-size:8px;color:var(--secondary);text-align:center;">${getUnlockLabel(part.unlock)}</span>` : ''}
           ${selected ? `<span class="lock-icon">✅</span>` : ''}
+          ${!unlocked ? `<span class="lock-icon">🔒</span>` : ''}
         </button>
       `;
     }).join('');
@@ -1802,6 +1808,22 @@
     updateAvatarDisplay();
     closeAvatarEditor();
   };
+
+  // ===== ボタンクリック音 =====
+  function playSoundClick() {
+    try {
+      const ac = getAudioCtx();
+      playTone(880, 'square', 0, 0.05, 0.15, ac);
+      playTone(1100, 'square', 0.05, 0.05, 0.1, ac);
+    } catch(e) {}
+  }
+
+  // 全ボタンにクリック音を一括適用
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('button') || e.target.tagName === 'BUTTON') {
+      playSoundClick();
+    }
+  });
 
   // ===== SOUND SYSTEM =====
   let audioCtx = null;
