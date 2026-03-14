@@ -1168,7 +1168,8 @@
     document.getElementById('hero-name').textContent = nickname || '勇者';
     document.getElementById('hero-level-badge').textContent = `Lv.${level}`;
     document.getElementById('hero-class').textContent = getClass(level);
-    document.getElementById('hero-avatar').textContent = getAvatar(level);
+    // アバターSVGを更新（textContentで上書きしない）
+    updateAvatarDisplay();
     document.getElementById('exp-text').textContent = `${exp} / ${needed}`;
     document.getElementById('exp-bar').style.width = pct + '%';
     document.getElementById('stat-streak').textContent = loginStreak || 0;
@@ -1727,6 +1728,13 @@
   function updateAvatarDisplay() {
     const mainSvg = document.getElementById('avatar-svg');
     if (mainSvg) renderAvatarSVG(currentAvatarConfig, mainSvg);
+  }
+
+  // renderHero内のアバター表示も上書き
+  const _origRenderHero = renderHero;
+  function renderHeroWithAvatar() {
+    _origRenderHero();
+    updateAvatarDisplay();
   }
 
   // アンロック判定
