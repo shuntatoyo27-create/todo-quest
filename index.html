@@ -620,6 +620,33 @@
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+    /* ===== GROUP SCREEN CSS ===== */
+    .group-card { background:var(--surface); border:4px solid var(--surface2); border-radius:var(--radius); padding:20px; box-shadow:4px 4px 0 rgba(0,0,0,0.5); }
+    .group-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .group-name { font-family:'Press Start 2P',monospace; font-size:13px; line-height:1.6; }
+    .invite-btn { background:var(--blue); border:3px solid #2255cc; color:white; padding:8px 12px; border-radius:var(--radius); font-family:'DotGothic16',monospace; font-size:11px; cursor:pointer; box-shadow:3px 3px 0 #2255cc; }
+    .invite-btn:hover { transform:translate(2px,2px); box-shadow:1px 1px 0 #2255cc; }
+    .member-card { background:var(--surface2); border-radius:var(--radius-sm); padding:14px; display:flex; align-items:center; gap:12px; border:3px solid transparent; transition:all 0.1s; }
+    .member-card:hover { border-color:var(--purple); }
+    .member-avatar-wrap { position:relative; flex-shrink:0; }
+    .member-avatar { width:48px; height:48px; background:linear-gradient(135deg,var(--purple),var(--blue)); border-radius:4px; display:flex; align-items:center; justify-content:center; border:3px solid rgba(255,255,255,0.2); overflow:hidden; }
+    .member-info { flex:1; }
+    .member-name { font-family:'DotGothic16',monospace; font-size:13px; margin-bottom:4px; }
+    .member-level { font-size:11px; color:var(--secondary); font-family:'DotGothic16',monospace; }
+    .member-actions { display:flex; gap:6px; }
+    .react-btn { background:var(--surface); border:3px solid var(--surface2); border-radius:var(--radius); padding:6px 8px; font-size:16px; cursor:pointer; transition:all 0.1s; }
+    .react-btn:hover { border-color:var(--primary); transform:scale(1.1); }
+    .reaction-item-btn { background:var(--surface2); border:3px solid var(--surface2); border-radius:var(--radius); padding:12px; font-size:24px; cursor:pointer; text-align:center; transition:all 0.1s; }
+    .reaction-item-btn:hover { border-color:var(--secondary); }
+    .reaction-item-btn.selected { border-color:var(--secondary); box-shadow:3px 3px 0 var(--secondary); }
+    .reaction-feed { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+    .reaction-feed-item { background:var(--bg); border-radius:var(--radius-sm); padding:10px 12px; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted); border:2px solid var(--surface2); }
+    .join-group-btn { background:transparent; border:3px dashed var(--surface2); color:var(--text-muted); border-radius:var(--radius); padding:16px; font-family:'DotGothic16',monospace; font-size:13px; cursor:pointer; width:100%; text-align:center; transition:all 0.2s; }
+    .join-group-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .present-item-btn { background:var(--bg); border:3px solid var(--surface2); border-radius:var(--radius); padding:12px; display:flex; align-items:center; gap:10px; cursor:pointer; transition:all 0.1s; }
+    .present-item-btn:hover { border-color:var(--secondary); }
+    .present-item-btn.selected { border-color:var(--secondary); box-shadow:3px 3px 0 var(--secondary); }
+
     /* Avatar Editor */
     .avatar-cat-btn {
       background: var(--surface2);
@@ -868,6 +895,81 @@
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
+</div>
+
+<!-- ===== GROUP SCREEN ===== -->
+<div class="screen" id="group-screen">
+  <div class="top-bar">
+    <span class="app-title">👥 グループ</span>
+    <button class="add-btn" onclick="openCreateGroup()" style="width:auto;padding:8px 16px;border-radius:4px;font-size:13px;font-family:'DotGothic16',monospace;">+ 作成</button>
+  </div>
+  <div id="group-content" style="padding:0 20px 100px;display:flex;flex-direction:column;gap:16px;">
+    <div class="empty-state"><span>👥</span><p>グループがありません<br>+ボタンで作成しよう！</p></div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
+    <button class="nav-item active" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
+  </nav>
+</div>
+
+<!-- Create Group Modal -->
+<div class="modal-overlay" id="create-group-modal">
+  <div class="modal">
+    <h3>👥 グループ作成</h3>
+    <div class="form-group">
+      <label>グループ名</label>
+      <input type="text" id="group-name-input" placeholder="例：勉強仲間" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeCreateGroup()">キャンセル</button>
+      <button class="btn-add" onclick="createGroup()">作成する ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- Join Group Modal -->
+<div class="modal-overlay" id="join-group-modal">
+  <div class="modal">
+    <h3>🔑 グループに参加</h3>
+    <div class="form-group">
+      <label>招待コード</label>
+      <input type="text" id="invite-code-input" placeholder="招待コードを入力" style="text-transform:uppercase;" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeJoinGroup()">キャンセル</button>
+      <button class="btn-add" onclick="joinGroup()">参加する 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reaction Modal -->
+<div class="modal-overlay" id="reaction-modal">
+  <div class="modal">
+    <h3 id="reaction-modal-title">👏 リアクション</h3>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;" id="reaction-btns"></div>
+    <div class="form-group" id="comment-group">
+      <label>コメント（任意）</label>
+      <input type="text" id="reaction-comment-input" placeholder="一言メッセージ" maxlength="50" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeReactionModal()">キャンセル</button>
+      <button class="btn-add" onclick="sendReaction()">送る 💌</button>
+    </div>
+  </div>
+</div>
+
+<!-- Item Present Modal -->
+<div class="modal-overlay" id="present-modal">
+  <div class="modal">
+    <h3>🎁 アイテムをプレゼント</h3>
+    <div id="present-items-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:200px;overflow-y:auto;"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closePresentModal()">キャンセル</button>
+      <button class="btn-add" onclick="sendPresent()">贈る 🎁</button>
+    </div>
+  </div>
 </div>
 
 <!-- Add Main Quest Modal -->
@@ -1339,11 +1441,12 @@
       b.classList.toggle('active', map[label] === page);
     });
     // 画面切り替え
-    const screens = { home: 'home-screen', quests: 'quest-screen' };
+    const screens = { home: 'home-screen', quests: 'quest-screen', group: 'group-screen' };
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const targetId = screens[page] || 'home-screen';
     document.getElementById(targetId).classList.add('active');
     if (page === 'quests') subscribeToQuests();
+    if (page === 'group') subscribeToGroups();
   };
 
   // ===== QUEST STATE =====
@@ -1621,6 +1724,253 @@
     if (!confirm('タスクを削除しますか？')) return;
     await deleteDoc(doc(db, 'questTasks', id));
     subscribeToQuests();
+  };
+
+  // ===== GROUP SYSTEM =====
+  let groupsUnsub = null;
+  let currentGroupId = null;
+  let currentTargetUserId = null;
+  let currentTargetUserName = null;
+  let selectedReaction = null;
+  let selectedPresentItem = null;
+
+  const REACTIONS = [
+    { id:'clap', emoji:'👏', label:'拍手' },
+    { id:'smart', emoji:'🧠', label:'頭いい！' },
+    { id:'fire', emoji:'🔥', label:'熱い！' },
+    { id:'star', emoji:'⭐', label:'すごい！' },
+  ];
+
+  function generateInviteCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function subscribeToGroups() {
+    if (groupsUnsub) groupsUnsub();
+    const q = query(collection(db, 'groups'), where('members', 'array-contains', currentUser.uid));
+    groupsUnsub = onSnapshot(q, async snap => {
+      const groups = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      await renderGroups(groups);
+    });
+  }
+
+  async function renderGroups(groups) {
+    const content = document.getElementById('group-content');
+    content.innerHTML = '';
+    if (groups.length === 0) {
+      content.innerHTML = `
+        <div class="empty-state"><span>👥</span><p>グループがありません<br>+ボタンで作成しよう！</p></div>
+        <button class="join-group-btn" onclick="openJoinGroup()">🔑 招待コードで参加する</button>
+      `;
+      return;
+    }
+    for (const group of groups) {
+      const card = document.createElement('div');
+      card.className = 'group-card';
+      // メンバー情報取得
+      const memberHtml = [];
+      for (const uid of group.members) {
+        const uSnap = await getDoc(doc(db, 'users', uid));
+        if (!uSnap.exists()) continue;
+        const u = uSnap.data();
+        const isMe = uid === currentUser.uid;
+        // アバターSVG
+        const avatarConfig = u.avatarConfig || { body:'body_default', hat:'hat_none', weapon:'weapon_none', effect:'effect_none' };
+        const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svgEl.setAttribute('viewBox','0 0 16 16');
+        svgEl.setAttribute('width','48');
+        svgEl.setAttribute('height','48');
+        svgEl.style.imageRendering = 'pixelated';
+        renderAvatarSVG(avatarConfig, svgEl);
+        const svgStr = svgEl.outerHTML;
+
+        // リアクション取得
+        const rSnap = await getDocs(query(collection(db, 'reactions'), where('toUserId','==',uid), where('groupId','==',group.id), orderBy('createdAt','desc')));
+        const reactions = rSnap.docs.slice(0,3).map(d => d.data());
+        const reactionHtml = reactions.length > 0 ? `
+          <div class="reaction-feed">
+            ${reactions.map(r => `
+              <div class="reaction-feed-item">
+                <span>${r.emoji}</span>
+                <span>${escHtml(r.fromName)}から ${r.comment ? `「${escHtml(r.comment)}」` : ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : '';
+
+        memberHtml.push(`
+          <div class="member-card">
+            <div class="member-avatar-wrap">
+              <div class="member-avatar">${svgStr}</div>
+            </div>
+            <div class="member-info">
+              <div class="member-name">${escHtml(u.nickname || '勇者')} ${isMe ? '（自分）' : ''}</div>
+              <div class="member-level">Lv.${u.level || 1} ${getClass(u.level || 1)}</div>
+              ${reactionHtml}
+            </div>
+            ${!isMe ? `
+            <div class="member-actions">
+              <button class="react-btn" onclick="openReactionModal('${uid}','${escHtml(u.nickname||'勇者')}','${group.id}')" title="リアクション">👏</button>
+              <button class="react-btn" onclick="openPresentModal('${uid}','${escHtml(u.nickname||'勇者')}','${group.id}')" title="プレゼント">🎁</button>
+            </div>` : ''}
+          </div>
+        `);
+      }
+      card.innerHTML = `
+        <div class="group-card-header">
+          <div class="group-name">👥 ${escHtml(group.name)}</div>
+          <button class="invite-btn" onclick="shareInvite('${group.inviteCode}')">🔗 招待</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${memberHtml.join('')}
+        </div>
+      `;
+      content.appendChild(card);
+    }
+    content.innerHTML += `<button class="join-group-btn" onclick="openJoinGroup()">🔑 招待コードで参加する</button>`;
+  }
+
+  // グループ作成
+  window.openCreateGroup = () => { document.getElementById('create-group-modal').classList.add('open'); document.getElementById('group-name-input').focus(); };
+  window.closeCreateGroup = () => { document.getElementById('create-group-modal').classList.remove('open'); document.getElementById('group-name-input').value = ''; };
+  window.createGroup = async () => {
+    const name = document.getElementById('group-name-input').value.trim();
+    if (!name) return;
+    const inviteCode = generateInviteCode();
+    await addDoc(collection(db, 'groups'), {
+      name, inviteCode,
+      createdBy: currentUser.uid,
+      members: [currentUser.uid],
+      createdAt: serverTimestamp()
+    });
+    closeCreateGroup();
+  };
+
+  // グループ参加
+  window.openJoinGroup = () => { document.getElementById('join-group-modal').classList.add('open'); document.getElementById('invite-code-input').focus(); };
+  window.closeJoinGroup = () => { document.getElementById('join-group-modal').classList.remove('open'); document.getElementById('invite-code-input').value = ''; };
+  window.joinGroup = async () => {
+    const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+    if (!code) return;
+    const q = query(collection(db, 'groups'), where('inviteCode', '==', code));
+    const snap = await getDocs(q);
+    if (snap.empty) { alert('招待コードが見つかりません'); return; }
+    const groupDoc = snap.docs[0];
+    const members = groupDoc.data().members || [];
+    if (members.includes(currentUser.uid)) { alert('すでに参加しています'); closeJoinGroup(); return; }
+    await updateDoc(doc(db, 'groups', groupDoc.id), { members: [...members, currentUser.uid] });
+    closeJoinGroup();
+  };
+
+  // 招待リンク共有
+  window.shareInvite = (code) => {
+    const msg = `To Do Questに招待します！\n招待コード：${code}\nhttps://shuntatoyo27-create.github.io/todo-quest/`;
+    if (navigator.share) {
+      navigator.share({ title: 'To Do Quest', text: msg });
+    } else {
+      navigator.clipboard.writeText(msg);
+      alert('招待文をコピーしました！');
+    }
+  };
+
+  // リアクションモーダル
+  window.openReactionModal = (toUserId, toUserName, groupId) => {
+    currentTargetUserId = toUserId;
+    currentTargetUserName = toUserName;
+    currentGroupId = groupId;
+    selectedReaction = null;
+    document.getElementById('reaction-modal-title').textContent = `${toUserName}にリアクション`;
+    document.getElementById('reaction-comment-input').value = '';
+    const btns = document.getElementById('reaction-btns');
+    btns.innerHTML = REACTIONS.map(r => `
+      <button class="reaction-item-btn" id="rbtn-${r.id}" onclick="selectReaction('${r.id}','${r.emoji}')">
+        ${r.emoji}<br><span style="font-size:11px;font-family:'DotGothic16',monospace;">${r.label}</span>
+      </button>
+    `).join('');
+    document.getElementById('reaction-modal').classList.add('open');
+  };
+  window.closeReactionModal = () => { document.getElementById('reaction-modal').classList.remove('open'); };
+  window.selectReaction = (id, emoji) => {
+    selectedReaction = { id, emoji };
+    document.querySelectorAll('.reaction-item-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById(`rbtn-${id}`).classList.add('selected');
+  };
+  window.sendReaction = async () => {
+    if (!selectedReaction) { alert('リアクションを選んでください'); return; }
+    const comment = document.getElementById('reaction-comment-input').value.trim();
+    await addDoc(collection(db, 'reactions'), {
+      fromUserId: currentUser.uid,
+      fromName: userData.nickname || '勇者',
+      toUserId: currentTargetUserId,
+      groupId: currentGroupId,
+      emoji: selectedReaction.emoji,
+      reactionId: selectedReaction.id,
+      comment: comment || null,
+      createdAt: serverTimestamp()
+    });
+    closeReactionModal();
+    playSoundTaskDone();
+    subscribeToGroups();
+  };
+
+  // プレゼントモーダル
+  window.openPresentModal = (toUserId, toUserName, groupId) => {
+    currentTargetUserId = toUserId;
+    currentTargetUserName = toUserName;
+    currentGroupId = groupId;
+    selectedPresentItem = null;
+    const myItems = userData.items || [];
+    const list = document.getElementById('present-items-list');
+    if (myItems.length === 0) {
+      list.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px;">アイテムがありません😢<br>ログインボーナスで入手しよう！</div>`;
+    } else {
+      list.innerHTML = myItems.map((item, i) => `
+        <button class="present-item-btn" id="pitem-${i}" onclick="selectPresentItem(${i},'${escHtml(item)}')">
+          <span style="font-size:24px;">🎁</span>
+          <span style="font-family:'DotGothic16',monospace;font-size:13px;">${escHtml(item)}</span>
+        </button>
+      `).join('');
+    }
+    document.getElementById('present-modal').classList.add('open');
+  };
+  window.closePresentModal = () => { document.getElementById('present-modal').classList.remove('open'); };
+  window.selectPresentItem = (index, itemName) => {
+    selectedPresentItem = { index, itemName };
+    document.querySelectorAll('.present-item-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById(`pitem-${index}`).classList.add('selected');
+  };
+  window.sendPresent = async () => {
+    if (!selectedPresentItem) { alert('アイテムを選んでください'); return; }
+    // 送り主のアイテムを削除
+    const myItems = [...(userData.items || [])];
+    myItems.splice(selectedPresentItem.index, 1);
+    await updateDoc(doc(db, 'users', currentUser.uid), { items: myItems });
+    userData.items = myItems;
+    // 受け取り手のアイテムに追加
+    const toSnap = await getDoc(doc(db, 'users', currentTargetUserId));
+    if (toSnap.exists()) {
+      const theirItems = [...(toSnap.data().items || []), selectedPresentItem.itemName];
+      await updateDoc(doc(db, 'users', currentTargetUserId), { items: theirItems });
+    }
+    // リアクションとして記録
+    await addDoc(collection(db, 'reactions'), {
+      fromUserId: currentUser.uid,
+      fromName: userData.nickname || '勇者',
+      toUserId: currentTargetUserId,
+      groupId: currentGroupId,
+      emoji: '🎁',
+      reactionId: 'present',
+      comment: `${selectedPresentItem.itemName}をプレゼント！`,
+      createdAt: serverTimestamp()
+    });
+    closePresentModal();
+    renderHero();
+    playSoundTaskDone();
+    subscribeToGroups();
+    alert(`${currentTargetUserName}に${selectedPresentItem.itemName}を贈りました！🎁`);
   };
 
   // ===== AVATAR SYSTEM =====
