@@ -1822,7 +1822,14 @@
       card.innerHTML = `
         <div class="group-card-header">
           <div class="group-name">👥 ${escHtml(group.name)}</div>
-          <button class="invite-btn" onclick="shareInvite('${group.inviteCode}')">🔗 招待</button>
+          <div style="display:flex;gap:6px;">
+            <button class="invite-btn" onclick="shareInvite('${group.inviteCode}')">🔗 招待</button>
+            ${group.createdBy === currentUser.uid ? `
+            <button onclick="deleteGroup('${group.id}')" style="background:transparent;border:3px solid var(--primary);color:var(--primary);padding:8px 10px;border-radius:var(--radius);font-size:14px;cursor:pointer;box-shadow:3px 3px 0 #cc4444;" title="グループを削除">🗑️</button>
+            ` : `
+            <button onclick="leaveGroup('${group.id}')" style="background:transparent;border:3px solid var(--text-muted);color:var(--text-muted);padding:8px 10px;border-radius:var(--radius);font-family:'DotGothic16',monospace;font-size:11px;cursor:pointer;" title="グループから退出">退出</button>
+            `}
+          </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           ${memberHtml.join('')}
@@ -1863,6 +1870,24 @@
     if (members.includes(currentUser.uid)) { alert('すでに参加しています'); closeJoinGroup(); return; }
     await updateDoc(doc(db, 'groups', groupDoc.id), { members: [...members, currentUser.uid] });
     closeJoinGroup();
+  };
+
+  // グループ削除（作成者のみ）
+  window.deleteGroup = async (groupId) => {
+    if (!confirm('グループを削除しますか？\nメンバー全員がグループから外れます。')) return;
+    // リアクションも削除
+    const rSnap = await getDocs(query(collection(db, 'reactions'), where('groupId', '==', groupId)));
+    for (const r of rSnap.docs) await deleteDoc(doc(db, 'reactions', r.id));
+    await deleteDoc(doc(db, 'groups', groupId));
+  };
+
+  // グループ退出（メンバー）
+  window.leaveGroup = async (groupId) => {
+    if (!confirm('グループから退出しますか？')) return;
+    const gSnap = await getDoc(doc(db, 'groups', groupId));
+    if (!gSnap.exists()) return;
+    const members = gSnap.data().members.filter(uid => uid !== currentUser.uid);
+    await updateDoc(doc(db, 'groups', groupId), { members });
   };
 
   // 招待リンク共有
