@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>To Do Quest</title>
   <link rel="manifest" href="manifest.json" />
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0f0e17;
@@ -18,19 +18,31 @@
       --purple: #c77dff;
       --text: #fffffe;
       --text-muted: #a7a9be;
-      --radius: 20px;
-      --radius-sm: 12px;
+      --radius: 4px;
+      --radius-sm: 4px;
+      --pixel-font: 'DotGothic16', 'Press Start 2P', monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DotGothic16', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
+      image-rendering: pixelated;
     }
+
+    /* ドット絵風ボーダー */
+    .pixel-border {
+      border-style: solid;
+      border-width: 4px;
+      border-image: none;
+      box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+    }
+    /* ピクセルボタン共通 */
+    button { image-rendering: pixelated; }
 
     /* ===== STARS BACKGROUND ===== */
     .stars {
@@ -74,8 +86,8 @@
       padding: 40px 32px;
       width: 100%;
       max-width: 400px;
-      border: 2px solid var(--surface2);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 4px solid var(--primary);
+      box-shadow: 6px 6px 0px rgba(0,0,0,0.8);
       animation: slideUp 0.5s ease;
     }
 
@@ -98,13 +110,14 @@
       50% { transform: translateY(-8px); }
     }
     .logo h1 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 32px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 20px;
       background: linear-gradient(135deg, var(--primary), var(--secondary), var(--purple));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-top: 8px;
+      line-height: 1.6;
     }
     .logo p {
       color: var(--text-muted);
@@ -166,19 +179,19 @@
     .btn-primary {
       width: 100%;
       padding: 16px;
-      background: linear-gradient(135deg, var(--primary), #ff8e53);
-      border: none;
-      border-radius: var(--radius-sm);
+      background: var(--primary);
+      border: 4px solid #cc4444;
+      border-radius: var(--radius);
       color: white;
-      font-family: 'Fredoka One', cursive;
-      font-size: 18px;
+      font-family: 'DotGothic16', monospace;
+      font-size: 16px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 20px rgba(255,107,107,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 4px 4px 0px #cc4444;
       margin-top: 8px;
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,107,107,0.5); }
-    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0px #cc4444; }
+    .btn-primary:active { transform: translate(4px,4px); box-shadow: 0px 0px 0px #cc4444; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .error-msg {
@@ -199,12 +212,13 @@
       padding: 20px 20px 12px;
     }
     .app-title {
-      font-family: 'Fredoka One', cursive;
-      font-size: 22px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1.6;
     }
     .logout-btn {
       background: var(--surface2);
@@ -226,9 +240,10 @@
       background: linear-gradient(135deg, #1e1b4b, #312e81);
       border-radius: var(--radius);
       padding: 24px;
-      border: 2px solid rgba(255,255,255,0.08);
+      border: 4px solid var(--purple);
       position: relative;
       overflow: hidden;
+      box-shadow: 6px 6px 0px rgba(0,0,0,0.6);
     }
     .hero-card::before {
       content: '';
@@ -318,12 +333,13 @@
       border-radius: var(--radius-sm);
       padding: 16px 12px;
       text-align: center;
-      border: 2px solid var(--surface2);
+      border: 4px solid var(--surface2);
+      box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
     }
     .stat-icon { font-size: 24px; display: block; margin-bottom: 4px; }
     .stat-num {
-      font-family: 'Fredoka One', cursive;
-      font-size: 22px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 18px;
       display: block;
     }
     .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
@@ -337,25 +353,25 @@
       margin-bottom: 12px;
     }
     .section-title {
-      font-family: 'Fredoka One', cursive;
-      font-size: 18px;
+      font-family: 'DotGothic16', monospace;
+      font-size: 16px;
     }
     .add-btn {
       background: var(--primary);
-      border: none;
+      border: 4px solid #cc4444;
       color: white;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
       font-size: 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.2s;
-      box-shadow: 0 4px 12px rgba(255,107,107,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 3px 3px 0px #cc4444;
     }
-    .add-btn:hover { transform: scale(1.1) rotate(90deg); }
+    .add-btn:hover { transform: translate(2px,2px); box-shadow: 1px 1px 0px #cc4444; }
 
     /* Task Cards */
     .tasks-list { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
@@ -364,18 +380,19 @@
       background: var(--surface);
       border-radius: var(--radius-sm);
       padding: 16px;
-      border: 2px solid var(--surface2);
+      border: 4px solid var(--surface2);
+      box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
       display: flex;
       align-items: center;
       gap: 12px;
-      transition: all 0.2s;
+      transition: all 0.1s;
       animation: fadeIn 0.3s ease;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateX(-10px); }
       to { opacity: 1; transform: translateX(0); }
     }
-    .task-card:hover { border-color: rgba(255,107,107,0.3); transform: translateX(4px); }
+    .task-card:hover { border-color: var(--primary); transform: translate(-2px,-2px); box-shadow: 6px 6px 0px rgba(0,0,0,0.5); }
     .task-card.done { opacity: 0.5; }
     .task-card.done .task-title { text-decoration: line-through; }
 
@@ -475,7 +492,9 @@
       width: 100%;
       max-width: 500px;
       animation: slideUpModal 0.3s ease;
-      border-top: 2px solid var(--surface2);
+      border: 4px solid var(--primary);
+      border-bottom: none;
+      box-shadow: 0 -6px 0px rgba(0,0,0,0.5);
     }
     @keyframes slideUpModal {
       from { transform: translateY(100%); }
@@ -708,7 +727,10 @@
   <!-- Top Bar -->
   <div class="top-bar">
     <span class="app-title">⚔️ To Do Quest</span>
-    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="bgm-btn" onclick="toggleBGM()" style="background:transparent;border:3px solid var(--text-muted);color:var(--text-muted);padding:6px 12px;border-radius:var(--radius);font-family:'DotGothic16',monospace;font-size:12px;cursor:pointer;">🔇 OFF</button>
+      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    </div>
   </div>
 
   <!-- Hero Card -->
@@ -1156,6 +1178,7 @@
     if (isDone) return;
     const taskEl = document.getElementById(`task-${taskId}`);
     await updateDoc(doc(db, 'tasks', taskId), { isComplete: true, completedAt: serverTimestamp() });
+    playSoundTaskDone();
     await gainExp(EXP_PER_TASK, taskEl);
     await updateDoc(doc(db, 'users', currentUser.uid), { totalCompleted: (userData.totalCompleted || 0) + 1 });
     userData.totalCompleted = (userData.totalCompleted || 0) + 1;
@@ -1180,6 +1203,7 @@
     await updateDoc(doc(db, 'users', currentUser.uid), { exp, level });
     renderHero();
     if (leveled) showLevelUp(level);
+    if (leveled) playSoundLevelUp();
   }
 
   function showExpPopup(text, sourceEl) {
@@ -1403,6 +1427,7 @@
   window.toggleQuestTask = async (taskId, isDone, subQuestId, mainQuestId) => {
     if (isDone) return;
     await updateDoc(doc(db, 'questTasks', taskId), { isComplete: true, completedAt: serverTimestamp() });
+    playSoundTaskDone();
     await gainExp(EXP_PER_TASK, document.body);
     await updateDoc(doc(db, 'users', currentUser.uid), { totalCompleted: (userData.totalCompleted || 0) + 1 });
     userData.totalCompleted = (userData.totalCompleted || 0) + 1;
@@ -1417,6 +1442,7 @@
       if (sqDoc.exists() && !sqDoc.data().isComplete) {
         await updateDoc(doc(db, 'subQuests', subQuestId), { isComplete: true });
         showAchievement('subquest');
+        playSoundQuestClear(false);
 
         // メインクエスト達成チェック
         const subSnap = await getDocs(query(collection(db, 'subQuests'), where('mainQuestId', '==', mainQuestId)));
@@ -1427,6 +1453,7 @@
           if (mqDoc.exists() && !mqDoc.data().isComplete) {
             await updateDoc(doc(db, 'mainQuests', mainQuestId), { isComplete: true });
             setTimeout(() => showAchievement('mainquest'), 2000);
+            setTimeout(() => playSoundQuestClear(true), 2000);
           }
         }
       }
@@ -1498,7 +1525,106 @@
     subscribeToQuests();
   };
 
-  // ===== UTILS =====
+  // ===== SOUND SYSTEM =====
+  let audioCtx = null;
+  let bgmNodes = [];
+  let bgmPlaying = false;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playTone(freq, type, start, duration, vol=0.3, ctx=null) {
+    const ac = ctx || getAudioCtx();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ac.currentTime + start);
+    gain.gain.setValueAtTime(0, ac.currentTime + start);
+    gain.gain.linearRampToValueAtTime(vol, ac.currentTime + start + 0.01);
+    gain.gain.linearRampToValueAtTime(0, ac.currentTime + start + duration);
+    osc.start(ac.currentTime + start);
+    osc.stop(ac.currentTime + start + duration + 0.05);
+    return { osc, gain };
+  }
+
+  // タスク完了音（ピコン！）
+  function playSoundTaskDone() {
+    const ac = getAudioCtx();
+    playTone(523, 'square', 0, 0.1, 0.2, ac);
+    playTone(659, 'square', 0.1, 0.1, 0.2, ac);
+    playTone(784, 'square', 0.2, 0.15, 0.25, ac);
+  }
+
+  // レベルアップ音（ファンファーレ）
+  function playSoundLevelUp() {
+    const ac = getAudioCtx();
+    const melody = [523,587,659,698,784,880,988,1047];
+    melody.forEach((freq, i) => playTone(freq, 'square', i*0.1, 0.12, 0.2, ac));
+  }
+
+  // クエスト達成音（豪華なファンファーレ）
+  function playSoundQuestClear(isMain) {
+    const ac = getAudioCtx();
+    if (isMain) {
+      const m = [392,523,659,784,659,784,880,1047];
+      m.forEach((f,i) => {
+        playTone(f, 'square', i*0.12, 0.15, 0.25, ac);
+        playTone(f*0.5, 'triangle', i*0.12, 0.15, 0.1, ac);
+      });
+    } else {
+      const m = [523,659,784,1047];
+      m.forEach((f,i) => playTone(f, 'square', i*0.1, 0.12, 0.2, ac));
+    }
+  }
+
+  // RPG風BGM（ループ）
+  function startBGM() {
+    if (bgmPlaying) return;
+    bgmPlaying = true;
+    const ac = getAudioCtx();
+    // シンプルなRPGメロディ
+    const melody = [
+      {f:392,d:0.2},{f:440,d:0.2},{f:494,d:0.2},{f:523,d:0.4},
+      {f:494,d:0.2},{f:440,d:0.2},{f:392,d:0.4},
+      {f:349,d:0.2},{f:392,d:0.2},{f:440,d:0.2},{f:494,d:0.4},
+      {f:440,d:0.2},{f:392,d:0.2},{f:349,d:0.6},
+      {f:392,d:0.2},{f:523,d:0.2},{f:494,d:0.2},{f:440,d:0.4},
+      {f:392,d:0.2},{f:440,d:0.2},{f:494,d:0.6},
+      {f:523,d:0.2},{f:494,d:0.2},{f:440,d:0.2},{f:392,d:0.4},
+      {f:349,d:0.4},{f:392,d:0.8},
+    ];
+    const totalDur = melody.reduce((a,n) => a+n.d, 0);
+    let t = 0;
+    melody.forEach(note => {
+      playTone(note.f, 'square', t, note.d*0.8, 0.08, ac);
+      playTone(note.f*0.5, 'triangle', t, note.d*0.8, 0.04, ac);
+      t += note.d;
+    });
+    setTimeout(() => { bgmPlaying = false; if(bgmEnabled) startBGM(); }, totalDur * 1000);
+  }
+
+  let bgmEnabled = false;
+
+  // BGMトグルボタン
+  function toggleBGM() {
+    bgmEnabled = !bgmEnabled;
+    const btn = document.getElementById('bgm-btn');
+    if (bgmEnabled) {
+      btn.textContent = '🎵 ON';
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.color = 'var(--accent)';
+      startBGM();
+    } else {
+      btn.textContent = '🔇 OFF';
+      btn.style.borderColor = 'var(--text-muted)';
+      btn.style.color = 'var(--text-muted)';
+      bgmPlaying = false;
+    }
+  }
+  window.toggleBGM = toggleBGM;
   function getAuthError(code) {
     const map = {
       'auth/email-already-in-use': 'このメールアドレスは既に使用中です',
