@@ -1809,6 +1809,16 @@
     closeAvatarEditor();
   };
 
+  // ===== SOUND SYSTEM =====
+  let audioCtx = null;
+  let bgmNodes = [];
+  let bgmPlaying = false;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
   // ===== ボタンクリック音 =====
   function playSoundClick() {
     try {
@@ -1824,16 +1834,6 @@
       playSoundClick();
     }
   });
-
-  // ===== SOUND SYSTEM =====
-  let audioCtx = null;
-  let bgmNodes = [];
-  let bgmPlaying = false;
-
-  function getAudioCtx() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    return audioCtx;
-  }
 
   function playTone(freq, type, start, duration, vol=0.3, ctx=null) {
     const ac = ctx || getAudioCtx();
