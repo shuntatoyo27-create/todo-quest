@@ -615,6 +615,44 @@
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+    /* Avatar Editor */
+    .avatar-cat-btn {
+      background: var(--surface2);
+      border: 3px solid var(--surface2);
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      font-family: 'DotGothic16', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.1s;
+    }
+    .avatar-cat-btn.active {
+      background: var(--primary);
+      border-color: #cc4444;
+      color: white;
+      box-shadow: 3px 3px 0 #cc4444;
+    }
+    .avatar-item-btn {
+      background: var(--bg);
+      border: 3px solid var(--surface2);
+      border-radius: var(--radius);
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.1s;
+      position: relative;
+    }
+    .avatar-item-btn:hover { border-color: var(--blue); transform: translate(-1px,-1px); box-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
+    .avatar-item-btn.selected { border-color: var(--secondary); box-shadow: 3px 3px 0 var(--secondary); }
+    .avatar-item-btn.locked { opacity: 0.4; cursor: not-allowed; }
+    .avatar-item-btn .item-name { font-family: 'DotGothic16', monospace; font-size: 9px; color: var(--text-muted); text-align: center; }
+    .avatar-item-btn .lock-icon { position: absolute; top: 4px; right: 4px; font-size: 10px; }
+
     /* Achievement Overlay */
     .achievement-overlay {
       display: none;
@@ -736,9 +774,12 @@
   <!-- Hero Card -->
   <div class="hero-card">
     <div class="hero-top">
-      <div class="avatar-wrap">
-        <div class="avatar" id="hero-avatar">🧙</div>
+      <div class="avatar-wrap" onclick="openAvatarEditor()" style="cursor:pointer;" title="タップして着せ替え">
+        <div class="avatar" id="hero-avatar">
+          <svg id="avatar-svg" width="64" height="64" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;width:64px;height:64px;"></svg>
+        </div>
         <span class="level-badge" id="hero-level-badge">Lv.1</span>
+        <span style="position:absolute;top:-4px;right:-4px;background:var(--secondary);border-radius:4px;font-size:10px;padding:2px 4px;border:2px solid var(--bg);font-family:'DotGothic16',monospace;">✏️</span>
       </div>
       <div class="hero-info">
         <h2 id="hero-name">勇者</h2>
@@ -892,6 +933,32 @@
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeAddTask()">キャンセル</button>
       <button class="btn-add" onclick="addTask()">追加する ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar Editor Modal -->
+<div class="modal-overlay" id="avatar-editor-modal">
+  <div class="modal" style="max-height:85vh;overflow-y:auto;">
+    <h3 style="font-family:'Press Start 2P',monospace;font-size:13px;margin-bottom:20px;">👾 着せ替え</h3>
+    <!-- Preview -->
+    <div style="display:flex;justify-content:center;margin-bottom:20px;">
+      <div style="background:var(--bg);border:4px solid var(--purple);padding:16px;border-radius:4px;box-shadow:4px 4px 0 rgba(0,0,0,0.5);">
+        <svg id="avatar-preview-svg" width="96" height="96" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;width:96px;height:96px;"></svg>
+      </div>
+    </div>
+    <!-- Category Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;">
+      <button class="avatar-cat-btn active" onclick="switchAvatarCat('body')" id="cat-body">🧍 ボディ</button>
+      <button class="avatar-cat-btn" onclick="switchAvatarCat('hat')" id="cat-hat">👒 帽子</button>
+      <button class="avatar-cat-btn" onclick="switchAvatarCat('weapon')" id="cat-weapon">⚔️ 武器</button>
+      <button class="avatar-cat-btn" onclick="switchAvatarCat('effect')" id="cat-effect">✨ エフェクト</button>
+    </div>
+    <!-- Items Grid -->
+    <div id="avatar-items-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeAvatarEditor()">閉じる</button>
+      <button class="btn-add" onclick="saveAvatar()">保存する 💾</button>
     </div>
   </div>
 </div>
@@ -1087,7 +1154,9 @@
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
     if (snap.exists()) {
       userData = snap.data();
+      if (userData.avatarConfig) currentAvatarConfig = { ...userData.avatarConfig };
       renderHero();
+      updateAvatarDisplay();
     }
   }
 
@@ -1523,6 +1592,207 @@
     if (!confirm('タスクを削除しますか？')) return;
     await deleteDoc(doc(db, 'questTasks', id));
     subscribeToQuests();
+  };
+
+  // ===== AVATAR SYSTEM =====
+
+  // ドット絵パーツ定義（16x16グリッド）
+  const AVATAR_PARTS = {
+    body: [
+      { id:'body_default', name:'勇者', unlock:'default', pixels: [
+        // 顔
+        {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
+        {x:5,y:3,c:'#ffcc99'},{x:6,y:3,c:'#ffcc99'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#ffcc99'},{x:10,y:3,c:'#ffcc99'},
+        {x:5,y:4,c:'#ffcc99'},{x:6,y:4,c:'#333'},{x:7,y:4,c:'#ffcc99'},{x:8,y:4,c:'#ffcc99'},{x:9,y:4,c:'#333'},{x:10,y:4,c:'#ffcc99'},
+        {x:5,y:5,c:'#ffcc99'},{x:6,y:5,c:'#ffcc99'},{x:7,y:5,c:'#ffcc99'},{x:8,y:5,c:'#ffcc99'},{x:9,y:5,c:'#ffcc99'},{x:10,y:5,c:'#ffcc99'},
+        {x:6,y:6,c:'#ff9999'},{x:7,y:6,c:'#ff9999'},{x:8,y:6,c:'#ff9999'},{x:9,y:6,c:'#ff9999'},
+        // 体
+        {x:5,y:7,c:'#4466cc'},{x:6,y:7,c:'#4466cc'},{x:7,y:7,c:'#4466cc'},{x:8,y:7,c:'#4466cc'},{x:9,y:7,c:'#4466cc'},{x:10,y:7,c:'#4466cc'},
+        {x:5,y:8,c:'#4466cc'},{x:6,y:8,c:'#4466cc'},{x:7,y:8,c:'#4466cc'},{x:8,y:8,c:'#4466cc'},{x:9,y:8,c:'#4466cc'},{x:10,y:8,c:'#4466cc'},
+        {x:4,y:7,c:'#ffcc99'},{x:4,y:8,c:'#ffcc99'},{x:11,y:7,c:'#ffcc99'},{x:11,y:8,c:'#ffcc99'},
+        {x:4,y:9,c:'#ffcc99'},{x:11,y:9,c:'#ffcc99'},
+        // 足
+        {x:5,y:9,c:'#333'},{x:6,y:9,c:'#333'},{x:9,y:9,c:'#333'},{x:10,y:9,c:'#333'},
+        {x:5,y:10,c:'#333'},{x:6,y:10,c:'#333'},{x:9,y:10,c:'#333'},{x:10,y:10,c:'#333'},
+        {x:5,y:11,c:'#553311'},{x:6,y:11,c:'#553311'},{x:9,y:11,c:'#553311'},{x:10,y:11,c:'#553311'},
+      ]},
+      { id:'body_mage', name:'魔法使い', unlock:'level5', pixels: [
+        {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
+        {x:5,y:3,c:'#ffcc99'},{x:6,y:3,c:'#ffcc99'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#ffcc99'},{x:10,y:3,c:'#ffcc99'},
+        {x:5,y:4,c:'#ffcc99'},{x:6,y:4,c:'#6644cc'},{x:7,y:4,c:'#ffcc99'},{x:8,y:4,c:'#ffcc99'},{x:9,y:4,c:'#6644cc'},{x:10,y:4,c:'#ffcc99'},
+        {x:5,y:5,c:'#ffcc99'},{x:6,y:5,c:'#ffcc99'},{x:7,y:5,c:'#ffcc99'},{x:8,y:5,c:'#ffcc99'},{x:9,y:5,c:'#ffcc99'},{x:10,y:5,c:'#ffcc99'},
+        {x:6,y:6,c:'#cc88ff'},{x:7,y:6,c:'#cc88ff'},{x:8,y:6,c:'#cc88ff'},{x:9,y:6,c:'#cc88ff'},
+        {x:4,y:7,c:'#8855cc'},{x:5,y:7,c:'#8855cc'},{x:6,y:7,c:'#8855cc'},{x:7,y:7,c:'#8855cc'},{x:8,y:7,c:'#8855cc'},{x:9,y:7,c:'#8855cc'},{x:10,y:7,c:'#8855cc'},{x:11,y:7,c:'#8855cc'},
+        {x:4,y:8,c:'#8855cc'},{x:5,y:8,c:'#8855cc'},{x:6,y:8,c:'#8855cc'},{x:7,y:8,c:'#8855cc'},{x:8,y:8,c:'#8855cc'},{x:9,y:8,c:'#8855cc'},{x:10,y:8,c:'#8855cc'},{x:11,y:8,c:'#8855cc'},
+        {x:5,y:9,c:'#8855cc'},{x:6,y:9,c:'#8855cc'},{x:9,y:9,c:'#8855cc'},{x:10,y:9,c:'#8855cc'},
+        {x:5,y:10,c:'#8855cc'},{x:6,y:10,c:'#8855cc'},{x:9,y:10,c:'#8855cc'},{x:10,y:10,c:'#8855cc'},
+        {x:5,y:11,c:'#553311'},{x:6,y:11,c:'#553311'},{x:9,y:11,c:'#553311'},{x:10,y:11,c:'#553311'},
+      ]},
+      { id:'body_knight', name:'騎士', unlock:'level10', pixels: [
+        {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
+        {x:5,y:3,c:'#aaaaaa'},{x:6,y:3,c:'#aaaaaa'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#aaaaaa'},{x:10,y:3,c:'#aaaaaa'},
+        {x:5,y:4,c:'#aaaaaa'},{x:6,y:4,c:'#333'},{x:7,y:4,c:'#aaaaaa'},{x:8,y:4,c:'#aaaaaa'},{x:9,y:4,c:'#333'},{x:10,y:4,c:'#aaaaaa'},
+        {x:5,y:5,c:'#aaaaaa'},{x:6,y:5,c:'#aaaaaa'},{x:7,y:5,c:'#aaaaaa'},{x:8,y:5,c:'#aaaaaa'},{x:9,y:5,c:'#aaaaaa'},{x:10,y:5,c:'#aaaaaa'},
+        {x:5,y:6,c:'#aaaaaa'},{x:6,y:6,c:'#aaaaaa'},{x:7,y:6,c:'#aaaaaa'},{x:8,y:6,c:'#aaaaaa'},{x:9,y:6,c:'#aaaaaa'},{x:10,y:6,c:'#aaaaaa'},
+        {x:4,y:7,c:'#888888'},{x:5,y:7,c:'#888888'},{x:6,y:7,c:'#888888'},{x:7,y:7,c:'#888888'},{x:8,y:7,c:'#888888'},{x:9,y:7,c:'#888888'},{x:10,y:7,c:'#888888'},{x:11,y:7,c:'#888888'},
+        {x:4,y:8,c:'#888888'},{x:5,y:8,c:'#888888'},{x:6,y:8,c:'#888888'},{x:7,y:8,c:'#888888'},{x:8,y:8,c:'#888888'},{x:9,y:8,c:'#888888'},{x:10,y:8,c:'#888888'},{x:11,y:8,c:'#888888'},
+        {x:5,y:9,c:'#888888'},{x:6,y:9,c:'#888888'},{x:9,y:9,c:'#888888'},{x:10,y:9,c:'#888888'},
+        {x:5,y:10,c:'#888888'},{x:6,y:10,c:'#888888'},{x:9,y:10,c:'#888888'},{x:10,y:10,c:'#888888'},
+        {x:5,y:11,c:'#555555'},{x:6,y:11,c:'#555555'},{x:9,y:11,c:'#555555'},{x:10,y:11,c:'#555555'},
+      ]},
+    ],
+    hat: [
+      { id:'hat_none', name:'なし', unlock:'default', pixels:[] },
+      { id:'hat_bandana', name:'バンダナ', unlock:'default', pixels:[
+        {x:5,y:2,c:'#ff4444'},{x:6,y:2,c:'#ff4444'},{x:7,y:2,c:'#ff4444'},{x:8,y:2,c:'#ff4444'},{x:9,y:2,c:'#ff4444'},{x:10,y:2,c:'#ff4444'},
+        {x:11,y:2,c:'#ff4444'},{x:12,y:3,c:'#ff4444'},{x:12,y:4,c:'#ff4444'},
+      ]},
+      { id:'hat_crown', name:'王冠', unlock:'level10', pixels:[
+        {x:5,y:1,c:'#ffd700'},{x:7,y:0,c:'#ffd700'},{x:9,y:1,c:'#ffd700'},{x:11,y:1,c:'#ffd700'},
+        {x:5,y:2,c:'#ffd700'},{x:6,y:2,c:'#ffd700'},{x:7,y:2,c:'#ffd700'},{x:8,y:2,c:'#ffd700'},{x:9,y:2,c:'#ffd700'},{x:10,y:2,c:'#ffd700'},{x:11,y:2,c:'#ffd700'},
+        {x:7,y:1,c:'#ff4444'},{x:9,y:2,c:'#4444ff'},
+      ]},
+      { id:'hat_witch', name:'魔女帽', unlock:'level5', pixels:[
+        {x:7,y:0,c:'#333'},{x:8,y:0,c:'#333'},
+        {x:6,y:1,c:'#333'},{x:7,y:1,c:'#333'},{x:8,y:1,c:'#333'},{x:9,y:1,c:'#333'},
+        {x:5,y:2,c:'#333'},{x:6,y:2,c:'#333'},{x:7,y:2,c:'#333'},{x:8,y:2,c:'#333'},{x:9,y:2,c:'#333'},{x:10,y:2,c:'#333'},
+        {x:4,y:3,c:'#553300'},{x:5,y:3,c:'#553300'},{x:6,y:3,c:'#553300'},{x:7,y:3,c:'#553300'},{x:8,y:3,c:'#553300'},{x:9,y:3,c:'#553300'},{x:10,y:3,c:'#553300'},{x:11,y:3,c:'#553300'},
+      ]},
+    ],
+    weapon: [
+      { id:'weapon_none', name:'なし', unlock:'default', pixels:[] },
+      { id:'weapon_sword', name:'剣', unlock:'default', pixels:[
+        {x:12,y:5,c:'#aaaaaa'},{x:12,y:6,c:'#aaaaaa'},{x:12,y:7,c:'#aaaaaa'},{x:12,y:8,c:'#aaaaaa'},
+        {x:11,y:9,c:'#888888'},{x:12,y:9,c:'#888888'},{x:13,y:9,c:'#888888'},
+        {x:12,y:10,c:'#553311'},{x:12,y:11,c:'#553311'},
+        {x:13,y:4,c:'#dddddd'},
+      ]},
+      { id:'weapon_staff', name:'杖', unlock:'level5', pixels:[
+        {x:12,y:3,c:'#ffd700'},{x:13,y:2,c:'#ffd700'},{x:11,y:2,c:'#ffd700'},{x:12,y:1,c:'#cc88ff'},
+        {x:12,y:4,c:'#8B4513'},{x:12,y:5,c:'#8B4513'},{x:12,y:6,c:'#8B4513'},{x:12,y:7,c:'#8B4513'},{x:12,y:8,c:'#8B4513'},{x:12,y:9,c:'#8B4513'},{x:12,y:10,c:'#8B4513'},{x:12,y:11,c:'#8B4513'},
+      ]},
+      { id:'weapon_bow', name:'弓', unlock:'level10', pixels:[
+        {x:13,y:3,c:'#8B4513'},{x:13,y:4,c:'#8B4513'},{x:13,y:5,c:'#8B4513'},{x:13,y:6,c:'#8B4513'},{x:13,y:7,c:'#8B4513'},{x:13,y:8,c:'#8B4513'},{x:13,y:9,c:'#8B4513'},{x:13,y:10,c:'#8B4513'},
+        {x:12,y:3,c:'#aaaaaa'},{x:12,y:10,c:'#aaaaaa'},
+        {x:11,y:4,c:'#aaaaaa'},{x:11,y:9,c:'#aaaaaa'},
+        {x:12,y:6,c:'#ffff88'},{x:12,y:7,c:'#ffff88'},
+      ]},
+    ],
+    effect: [
+      { id:'effect_none', name:'なし', unlock:'default', pixels:[] },
+      { id:'effect_stars', name:'スター', unlock:'default', pixels:[
+        {x:2,y:2,c:'#ffd700'},{x:14,y:4,c:'#ffd700'},{x:1,y:7,c:'#ffd700'},{x:14,y:9,c:'#ffd700'},{x:3,y:11,c:'#ffd700'},
+        {x:2,y:3,c:'#ffff88'},{x:13,y:3,c:'#ffff88'},
+      ]},
+      { id:'effect_fire', name:'炎オーラ', unlock:'level5', pixels:[
+        {x:3,y:9,c:'#ff4400'},{x:3,y:8,c:'#ff8800'},{x:3,y:7,c:'#ffcc00'},{x:4,y:10,c:'#ff4400'},{x:4,y:9,c:'#ff8800'},
+        {x:13,y:9,c:'#ff4400'},{x:13,y:8,c:'#ff8800'},{x:13,y:7,c:'#ffcc00'},{x:12,y:10,c:'#ff4400'},{x:12,y:9,c:'#ff8800'},
+        {x:7,y:12,c:'#ff4400'},{x:8,y:13,c:'#ff8800'},{x:9,y:12,c:'#ff4400'},
+      ]},
+      { id:'effect_rainbow', name:'虹オーラ', unlock:'level20', pixels:[
+        {x:2,y:4,c:'#ff0000'},{x:2,y:5,c:'#ff8800'},{x:2,y:6,c:'#ffff00'},{x:2,y:7,c:'#00ff00'},{x:2,y:8,c:'#0088ff'},
+        {x:14,y:4,c:'#ff0000'},{x:14,y:5,c:'#ff8800'},{x:14,y:6,c:'#ffff00'},{x:14,y:7,c:'#00ff00'},{x:14,y:8,c:'#0088ff'},
+        {x:4,y:2,c:'#cc00ff'},{x:5,y:1,c:'#cc00ff'},{x:10,y:1,c:'#cc00ff'},{x:11,y:2,c:'#cc00ff'},
+      ]},
+    ],
+  };
+
+  // 現在の選択状態
+  let currentAvatarConfig = { body: 'body_default', hat: 'hat_none', weapon: 'weapon_none', effect: 'effect_none' };
+  let tempAvatarConfig = { ...currentAvatarConfig };
+  let currentAvatarCat = 'body';
+
+  // アバターをSVGで描画
+  function renderAvatarSVG(config, svgEl) {
+    svgEl.innerHTML = '';
+    const layers = ['effect', 'body', 'hat', 'weapon'];
+    layers.forEach(cat => {
+      const partId = config[cat];
+      const parts = AVATAR_PARTS[cat];
+      if (!parts) return;
+      const part = parts.find(p => p.id === partId);
+      if (!part || !part.pixels) return;
+      part.pixels.forEach(px => {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', px.x);
+        rect.setAttribute('y', px.y);
+        rect.setAttribute('width', 1);
+        rect.setAttribute('height', 1);
+        rect.setAttribute('fill', px.c);
+        svgEl.appendChild(rect);
+      });
+    });
+  }
+
+  function updateAvatarDisplay() {
+    const mainSvg = document.getElementById('avatar-svg');
+    if (mainSvg) renderAvatarSVG(currentAvatarConfig, mainSvg);
+  }
+
+  // アンロック判定
+  function isUnlocked(unlock) {
+    if (unlock === 'default') return true;
+    if (unlock.startsWith('level')) {
+      const required = parseInt(unlock.replace('level',''));
+      return (userData?.level || 1) >= required;
+    }
+    if (userData?.items?.includes(unlock)) return true;
+    return false;
+  }
+
+  // 着せ替えエディタを開く
+  window.openAvatarEditor = () => {
+    tempAvatarConfig = { ...currentAvatarConfig };
+    document.getElementById('avatar-editor-modal').classList.add('open');
+    switchAvatarCat('body');
+    renderAvatarSVG(tempAvatarConfig, document.getElementById('avatar-preview-svg'));
+  };
+  window.closeAvatarEditor = () => {
+    document.getElementById('avatar-editor-modal').classList.remove('open');
+  };
+
+  window.switchAvatarCat = (cat) => {
+    currentAvatarCat = cat;
+    document.querySelectorAll('.avatar-cat-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`cat-${cat}`).classList.add('active');
+    renderAvatarItemsGrid(cat);
+  };
+
+  function renderAvatarItemsGrid(cat) {
+    const grid = document.getElementById('avatar-items-grid');
+    const parts = AVATAR_PARTS[cat];
+    grid.innerHTML = parts.map(part => {
+      const unlocked = isUnlocked(part.unlock);
+      const selected = tempAvatarConfig[cat] === part.id;
+      // ミニSVGプレビュー
+      const miniSvg = `<svg width="40" height="40" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">${
+        (part.pixels||[]).map(px => `<rect x="${px.x}" y="${px.y}" width="1" height="1" fill="${px.c}"/>`).join('')
+      }</svg>`;
+      return `
+        <button class="avatar-item-btn ${selected?'selected':''} ${!unlocked?'locked':''}"
+          onclick="${unlocked ? `selectAvatarItem('${cat}','${part.id}')` : ''}"
+          title="${part.name}">
+          ${miniSvg}
+          <span class="item-name">${part.name}</span>
+          ${!unlocked ? `<span class="lock-icon">🔒</span>` : ''}
+          ${selected ? `<span class="lock-icon">✅</span>` : ''}
+        </button>
+      `;
+    }).join('');
+  }
+
+  window.selectAvatarItem = (cat, itemId) => {
+    tempAvatarConfig[cat] = itemId;
+    renderAvatarSVG(tempAvatarConfig, document.getElementById('avatar-preview-svg'));
+    renderAvatarItemsGrid(cat);
+  };
+
+  window.saveAvatar = async () => {
+    currentAvatarConfig = { ...tempAvatarConfig };
+    await updateDoc(doc(db, 'users', currentUser.uid), { avatarConfig: currentAvatarConfig });
+    userData.avatarConfig = currentAvatarConfig;
+    updateAvatarDisplay();
+    closeAvatarEditor();
   };
 
   // ===== SOUND SYSTEM =====
