@@ -620,6 +620,26 @@
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+    /* ===== BULLETIN BOARD ===== */
+    .board-cat-btn { background:var(--surface2); border:3px solid var(--surface2); color:var(--text-muted); padding:6px 12px; border-radius:var(--radius); font-family:'DotGothic16',monospace; font-size:11px; cursor:pointer; white-space:nowrap; transition:all 0.1s; }
+    .board-cat-btn.active { background:var(--primary); border-color:#cc4444; color:white; box-shadow:3px 3px 0 #cc4444; }
+    .post-card { background:var(--surface); border:4px solid var(--surface2); border-radius:var(--radius); padding:16px; box-shadow:4px 4px 0 rgba(0,0,0,0.5); transition:all 0.1s; }
+    .post-card:hover { border-color:var(--blue); transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(0,0,0,0.5); }
+    .post-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .post-cat-badge { font-size:10px; font-family:'DotGothic16',monospace; padding:3px 8px; border-radius:4px; border:2px solid; }
+    .post-cat-badge.request { background:rgba(77,150,255,0.2); border-color:var(--blue); color:var(--blue); }
+    .post-cat-badge.bug { background:rgba(255,107,107,0.2); border-color:var(--primary); color:var(--primary); }
+    .post-cat-badge.comment { background:rgba(107,203,119,0.2); border-color:var(--accent); color:var(--accent); }
+    .post-title { font-family:'DotGothic16',monospace; font-size:14px; margin-bottom:6px; }
+    .post-body { font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:10px; }
+    .post-footer { display:flex; align-items:center; justify-content:space-between; }
+    .post-meta { font-size:11px; color:var(--text-muted); font-family:'DotGothic16',monospace; }
+    .like-btn { display:flex; align-items:center; gap:4px; background:transparent; border:3px solid var(--surface2); border-radius:var(--radius); padding:6px 10px; cursor:pointer; font-family:'DotGothic16',monospace; font-size:12px; color:var(--text-muted); transition:all 0.1s; }
+    .like-btn:hover { border-color:var(--primary); color:var(--primary); }
+    .like-btn.liked { border-color:var(--primary); color:var(--primary); background:rgba(255,107,107,0.1); }
+    .delete-post-btn { background:transparent; border:none; color:var(--text-muted); font-size:14px; cursor:pointer; padding:4px; }
+    .delete-post-btn:hover { color:var(--primary); }
+
     /* ===== GROUP SCREEN CSS ===== */
     .group-card { background:var(--surface); border:4px solid var(--surface2); border-radius:var(--radius); padding:20px; box-shadow:4px 4px 0 rgba(0,0,0,0.5); }
     .group-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
@@ -858,6 +878,24 @@
     </div>
   </div>
 
+  <!-- Bulletin Board -->
+  <div class="section-header" style="margin-top:24px;">
+    <span class="section-title">📋 掲示板</span>
+    <button class="add-btn" onclick="openAddPost()">+</button>
+  </div>
+
+  <!-- Category Filter -->
+  <div style="display:flex;gap:6px;padding:0 20px 12px;overflow-x:auto;">
+    <button class="board-cat-btn active" onclick="filterPosts('all')" id="bcat-all">すべて</button>
+    <button class="board-cat-btn" onclick="filterPosts('request')" id="bcat-request">💡 要望</button>
+    <button class="board-cat-btn" onclick="filterPosts('bug')" id="bcat-bug">🐛 バグ</button>
+    <button class="board-cat-btn" onclick="filterPosts('comment')" id="bcat-comment">💬 感想</button>
+  </div>
+
+  <div id="board-list" style="padding:0 20px 100px;display:flex;flex-direction:column;gap:10px;">
+    <div class="empty-state"><span>📋</span><p>まだ投稿がありません</p></div>
+  </div>
+
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="navTo('home')">
@@ -912,6 +950,33 @@
     <button class="nav-item active" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
+</div>
+
+<!-- Add Post Modal -->
+<div class="modal-overlay" id="add-post-modal">
+  <div class="modal">
+    <h3>📋 投稿する</h3>
+    <div class="form-group">
+      <label>カテゴリ</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="board-cat-btn active" onclick="selectPostCat('request',this)" id="pcat-request">💡 機能要望</button>
+        <button class="board-cat-btn" onclick="selectPostCat('bug',this)" id="pcat-bug">🐛 バグ報告</button>
+        <button class="board-cat-btn" onclick="selectPostCat('comment',this)" id="pcat-comment">💬 感想</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>タイトル</label>
+      <input type="text" id="post-title-input" placeholder="タイトルを入力" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label>内容</label>
+      <textarea id="post-body-input" placeholder="詳しく教えてください" maxlength="200" style="width:100%;padding:14px 16px;background:var(--bg);border:2px solid transparent;border-radius:4px;color:var(--text);font-family:'DotGothic16',monospace;font-size:13px;outline:none;resize:none;height:100px;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='transparent'"></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeAddPost()">キャンセル</button>
+      <button class="btn-add" onclick="submitPost()">投稿する 📢</button>
+    </div>
+  </div>
 </div>
 
 <!-- Create Group Modal -->
@@ -1187,6 +1252,7 @@
       await loadUserData();
       showScreen('home-screen');
       subscribeToTasks();
+      subscribeToBoard();
       checkLoginBonus();
     } else {
       currentUser = null;
@@ -1724,6 +1790,113 @@
     if (!confirm('タスクを削除しますか？')) return;
     await deleteDoc(doc(db, 'questTasks', id));
     subscribeToQuests();
+  };
+
+  // ===== BULLETIN BOARD =====
+  let boardUnsub = null;
+  let currentPostCat = 'request';
+  let currentBoardFilter = 'all';
+  const CAT_LABELS = { request:'💡 機能要望', bug:'🐛 バグ報告', comment:'💬 感想' };
+  const CAT_CLASSES = { request:'request', bug:'bug', comment:'comment' };
+
+  function subscribeToBoard() {
+    if (boardUnsub) boardUnsub();
+    const q = query(collection(db, 'boardPosts'), orderBy('createdAt', 'desc'));
+    boardUnsub = onSnapshot(q, snap => {
+      const posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderBoard(posts);
+    });
+  }
+
+  function renderBoard(posts) {
+    const list = document.getElementById('board-list');
+    if (!list) return;
+    const filtered = currentBoardFilter === 'all' ? posts : posts.filter(p => p.category === currentBoardFilter);
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><span>📋</span><p>まだ投稿がありません</p></div>`;
+      return;
+    }
+    list.innerHTML = filtered.map(p => {
+      const isLiked = (p.likes || []).includes(currentUser.uid);
+      const isOwner = p.userId === currentUser.uid;
+      return `
+        <div class="post-card">
+          <div class="post-header">
+            <span class="post-cat-badge ${CAT_CLASSES[p.category]}">${CAT_LABELS[p.category]}</span>
+            <span style="font-size:11px;color:var(--text-muted);font-family:'DotGothic16',monospace;">${escHtml(p.authorName)}</span>
+            ${isOwner ? `<button class="delete-post-btn" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
+          </div>
+          <div class="post-title">${escHtml(p.title)}</div>
+          <div class="post-body">${escHtml(p.body)}</div>
+          <div class="post-footer">
+            <span class="post-meta">${p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString('ja-JP') : ''}</span>
+            <button class="like-btn ${isLiked?'liked':''}" onclick="toggleLike('${p.id}',${isLiked})">
+              ❤️ ${(p.likes||[]).length}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.filterPosts = (cat) => {
+    currentBoardFilter = cat;
+    document.querySelectorAll('.board-cat-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`bcat-${cat}`)?.classList.add('active');
+    if (boardUnsub) boardUnsub();
+    subscribeToBoard();
+  };
+
+  // 投稿モーダル
+  window.openAddPost = () => {
+    currentPostCat = 'request';
+    document.querySelectorAll('[id^="pcat-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('pcat-request').classList.add('active');
+    document.getElementById('post-title-input').value = '';
+    document.getElementById('post-body-input').value = '';
+    document.getElementById('add-post-modal').classList.add('open');
+    document.getElementById('post-title-input').focus();
+  };
+  window.closeAddPost = () => { document.getElementById('add-post-modal').classList.remove('open'); };
+
+  window.selectPostCat = (cat, btn) => {
+    currentPostCat = cat;
+    document.querySelectorAll('[id^="pcat-"]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+
+  window.submitPost = async () => {
+    const title = document.getElementById('post-title-input').value.trim();
+    const body = document.getElementById('post-body-input').value.trim();
+    if (!title) { alert('タイトルを入力してください'); return; }
+    await addDoc(collection(db, 'boardPosts'), {
+      userId: currentUser.uid,
+      authorName: userData.nickname || '勇者',
+      category: currentPostCat,
+      title, body,
+      likes: [],
+      createdAt: serverTimestamp()
+    });
+    closeAddPost();
+    playSoundTaskDone();
+  };
+
+  // いいね
+  window.toggleLike = async (postId, isLiked) => {
+    const postRef = doc(db, 'boardPosts', postId);
+    const snap = await getDoc(postRef);
+    if (!snap.exists()) return;
+    const likes = snap.data().likes || [];
+    const newLikes = isLiked
+      ? likes.filter(uid => uid !== currentUser.uid)
+      : [...likes, currentUser.uid];
+    await updateDoc(postRef, { likes: newLikes });
+  };
+
+  // 投稿削除
+  window.deletePost = async (postId) => {
+    if (!confirm('この投稿を削除しますか？')) return;
+    await deleteDoc(doc(db, 'boardPosts', postId));
   };
 
   // ===== GROUP SYSTEM =====
