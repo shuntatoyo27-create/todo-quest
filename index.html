@@ -2258,44 +2258,48 @@
     showExpPopup(`🎟️ +${amount}`, document.getElementById('hero-avatar') || document.body);
   }
 
+  // ===== ガチャ確率テーブル =====
+  // レアリティ枠で抽選 → その中からランダム1種
+  // legend: 0.4%  epic_set: 5%  epic: 4.6%  rare: 15%  uncommon: 30%  common: 45%
+
+  const GACHA_SET_ITEMS = [
+    'body_zeus','hat_zeus','weapon_zeus','effect_zeus',
+    'body_abyss','hat_abyss','weapon_abyss','effect_abyss',
+    'body_dark','hat_dark','weapon_dark','effect_dark_set',
+    'body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure',
+  ];
+  const GACHA_NORMAL_ITEMS = CHEST_DROP_TABLE.filter(id => !GACHA_SET_ITEMS.includes(id));
+  // コモン枠（レベル解放アイテム含む）
+  const GACHA_COMMON_ITEMS = ['hat_bandana','weapon_sword','effect_stars'];
+
+  function pickRandom(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
   function gachaDraw() {
-    // レジェンド各0.1%
-    for (const id of GACHA_LEGEND_TABLE) {
-      if (Math.random() < 0.001) return id;
-    }
-    const SET_ITEMS = [
-      'body_zeus','hat_zeus','weapon_zeus','effect_zeus',
-      'body_abyss','hat_abyss','weapon_abyss','effect_abyss',
-      'body_dark','hat_dark','weapon_dark','effect_dark_set',
-      'body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure',
-    ];
-    // セットアイテム個別0.5%
-    for (const id of SET_ITEMS) {
-      if (Math.random() < 0.005) return id;
-    }
-    // 通常レアリティ
-    const NORMAL = CHEST_DROP_TABLE.filter(id => !SET_ITEMS.includes(id));
     const r = Math.random();
+    if (r < 0.004)  return pickRandom(GACHA_LEGEND_TABLE);   // 0.4% レジェンド
+    if (r < 0.054)  return pickRandom(GACHA_SET_ITEMS);       // 5%   エピック(セット)
+    // 残り94.6%を通常レアリティで振り分け
+    const r2 = Math.random();
     let rarity;
-    if (r < 0.50) rarity = 'common';
-    else if (r < 0.80) rarity = 'uncommon';
-    else if (r < 0.95) rarity = 'rare';
-    else rarity = 'epic';
-    const pool = NORMAL.filter(id => ITEM_MASTER[id]?.rarity === rarity);
-    return pool.length > 0 ? pool[Math.floor(Math.random()*pool.length)] : NORMAL[Math.floor(Math.random()*NORMAL.length)];
+    if      (r2 < 0.474) rarity = 'common';    // 45%
+    else if (r2 < 0.790) rarity = 'uncommon';  // 31.6%
+    else if (r2 < 0.941) rarity = 'rare';       // 15.1%
+    else                 rarity = 'epic';        // 5.9%
+    const pool = GACHA_NORMAL_ITEMS.filter(id => ITEM_MASTER[id]?.rarity === rarity);
+    if (pool.length > 0) return pickRandom(pool);
+    if (rarity === 'common') return pickRandom(GACHA_COMMON_ITEMS);
+    return pickRandom(GACHA_NORMAL_ITEMS);
   }
 
   function gachaDrawGuaranteedRare() {
-    // レア以上確定
-    const SET_ITEMS = ['body_zeus','hat_zeus','weapon_zeus','effect_zeus','body_abyss','hat_abyss','weapon_abyss','effect_abyss','body_dark','hat_dark','weapon_dark','effect_dark_set','body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure'];
-    for (const id of SET_ITEMS) {
-      if (Math.random() < 0.01) return id; // セットは2倍確率
-    }
-    const NORMAL = CHEST_DROP_TABLE.filter(id => !SET_ITEMS.includes(id));
+    // レア以上確定（10連の1枠）
     const r = Math.random();
-    let rarity = r < 0.75 ? 'rare' : 'epic';
-    const pool = NORMAL.filter(id => ITEM_MASTER[id]?.rarity === rarity);
-    return pool.length > 0 ? pool[Math.floor(Math.random()*pool.length)] : NORMAL[0];
+    if (r < 0.008) return pickRandom(GACHA_LEGEND_TABLE);   // 0.8%
+    if (r < 0.108) return pickRandom(GACHA_SET_ITEMS);       // 10%
+    const r2 = Math.random();
+    const rarity = r2 < 0.75 ? 'rare' : 'epic';
+    const pool = GACHA_NORMAL_ITEMS.filter(id => ITEM_MASTER[id]?.rarity === rarity);
+    return pool.length > 0 ? pickRandom(pool) : pickRandom(GACHA_NORMAL_ITEMS);
   }
 
   window.doGacha = async (count) => {
@@ -4209,11 +4213,15 @@
   }
 
   // アンロック判定
-  function isUnlocked(unlock) {
+  function isUnlocked(unlock, partId) {
     if (unlock === 'default') return true;
     if (unlock.startsWith('level')) {
       const required = parseInt(unlock.replace('level',''));
       return (userData?.level || 1) >= required;
+    }
+    if (unlock === 'chest') {
+      // chestItemsまたはガチャで入手済みか確認
+      return (userData?.chestItems || []).includes(partId);
     }
     if (userData?.items?.includes(unlock)) return true;
     return false;
@@ -4291,10 +4299,10 @@
   function renderAvatarItemsGrid(cat) {
     const grid = document.getElementById('avatar-items-grid');
     const parts = AVATAR_PARTS[cat];
+    grid.style.gridTemplateColumns = 'repeat(4,1fr)';
     grid.innerHTML = parts.map(part => {
-      const unlocked = isUnlocked(part.unlock);
+      const unlocked = isUnlocked(part.unlock, part.id);
       const selected = tempAvatarConfig[cat] === part.id;
-      // ミニSVGプレビュー
       const miniSvg = `<svg width="40" height="40" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">${
         (part.pixels||[]).map(px => `<rect x="${px.x}" y="${px.y}" width="1" height="1" fill="${px.c}"/>`).join('')
       }</svg>`;
