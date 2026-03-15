@@ -627,6 +627,12 @@
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+    @keyframes epicPulse { from { opacity:0.7; transform:scale(0.97); } to { opacity:1; transform:scale(1.03); } }
+    @keyframes epicFloat { 0%,100% { transform:translateY(0) rotate(-3deg); } 50% { transform:translateY(-12px) rotate(3deg); } }
+    @keyframes epicShine { 0% { background-position:0% 50%; } 100% { background-position:200% 50%; } }
+    @keyframes epicRay { 0% { transform:rotate(var(--r)) scaleY(0); opacity:0.8; } 100% { transform:rotate(var(--r)) scaleY(1); opacity:0; } }
+    @keyframes epicStar { 0% { transform:translate(var(--sx),var(--sy)) scale(0) rotate(0deg); opacity:1; } 100% { transform:translate(calc(var(--sx)*3),calc(var(--sy)*3)) scale(1.5) rotate(720deg); opacity:0; } }
+
     @keyframes bsEffect {
       0% { opacity:1; transform:translateY(0) scale(1); }
       100% { opacity:0; transform:translateY(-30px) scale(1.5); }
@@ -906,7 +912,7 @@
       <span class="stat-num" id="stat-streak">0</span>
       <span class="stat-label">連続日数</span>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" onclick="openItemList()" style="cursor:pointer;" title="アイテム一覧">
       <span class="stat-icon">🎒</span>
       <span class="stat-num" id="stat-items">0</span>
       <span class="stat-label">アイテム</span>
@@ -997,6 +1003,37 @@
     <button class="nav-item active" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
+</div>
+
+<!-- Rare Drop Toast -->
+<div id="rare-toast" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:390;text-align:center;animation:achieveIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);">
+  <div style="background:linear-gradient(135deg,#1a1a3a,#2a1a4a);border:4px solid #4488ff;border-radius:var(--radius);padding:28px 32px;box-shadow:0 0 40px rgba(68,136,255,0.6),4px 4px 0 rgba(0,0,0,0.5);">
+    <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#4488ff;letter-spacing:3px;margin-bottom:12px;text-shadow:0 0 10px #4488ff;">★ RARE DROP ★</div>
+    <div id="rare-icon" style="font-size:64px;display:block;margin-bottom:10px;filter:drop-shadow(0 0 12px #4488ff);"></div>
+    <div id="rare-name" style="font-family:'DotGothic16',monospace;font-size:16px;color:#88aaff;margin-bottom:6px;text-shadow:0 0 8px #4488ff;"></div>
+    <div id="rare-desc" style="font-family:'DotGothic16',monospace;font-size:11px;color:var(--text-muted);"></div>
+  </div>
+</div>
+
+<!-- Epic Drop Overlay -->
+<div id="epic-overlay" style="display:none;position:fixed;inset:0;z-index:400;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);">
+  <div id="epic-rays" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
+  <div id="epic-content" style="text-align:center;position:relative;z-index:2;padding:32px;">
+    <div id="epic-label" style="font-family:'Press Start 2P',monospace;font-size:11px;color:#cc44ff;letter-spacing:4px;margin-bottom:16px;text-shadow:0 0 20px #cc44ff;animation:epicPulse 0.5s ease infinite alternate;">★ EPIC DROP ★</div>
+    <div id="epic-icon" style="font-size:96px;display:block;margin-bottom:16px;animation:epicFloat 1s ease-in-out infinite;filter:drop-shadow(0 0 20px #cc44ff);"></div>
+    <div id="epic-name" style="font-family:'Press Start 2P',monospace;font-size:16px;background:linear-gradient(135deg,#cc44ff,#ff44cc,#ffcc00,#cc44ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;line-height:1.8;animation:epicShine 1s linear infinite;background-size:200%;"></div>
+    <div id="epic-desc" style="font-family:'DotGothic16',monospace;font-size:13px;color:#cc44ff;margin-bottom:24px;text-shadow:0 0 10px #cc44ff;"></div>
+    <button onclick="closeEpicDrop()" style="background:linear-gradient(135deg,#cc44ff,#ff44cc);border:4px solid #8822aa;color:white;font-family:'Press Start 2P',monospace;font-size:12px;padding:16px 32px;border-radius:4px;cursor:pointer;box-shadow:0 0 30px #cc44ff,4px 4px 0 #8822aa;animation:epicPulse 0.8s ease infinite alternate;">受け取る！✨</button>
+  </div>
+</div>
+
+<!-- Item List Modal -->
+<div class="modal-overlay" id="item-list-modal">
+  <div class="modal" style="max-height:85vh;overflow-y:auto;">
+    <h3 style="font-family:'Press Start 2P',monospace;font-size:12px;margin-bottom:16px;">🎒 アイテムバッグ</h3>
+    <div id="item-list-content" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <button class="btn-secondary" onclick="closeItemList()" style="margin-top:16px;width:100%;">閉じる</button>
+  </div>
 </div>
 
 <!-- Add Post Modal -->
@@ -1399,7 +1436,7 @@
     document.getElementById('exp-bar').style.width = pct + '%';
     document.getElementById('stat-streak').textContent = loginStreak || 0;
     document.getElementById('stat-done').textContent = totalCompleted || 0;
-    document.getElementById('stat-items').textContent = (items || []).length;
+    document.getElementById('stat-items').textContent = (userData.chestItems || []).length;
   }
 
   // ===== LOGIN BONUS =====
@@ -2231,9 +2268,51 @@
   // ===== AVATAR SYSTEM =====
 
   // ドット絵パーツ定義（16x16グリッド）
+  // アイテムマスターデータ（宝箱ドロップ対象）
+  const ITEM_MASTER = {
+    // 帽子
+    'hat_bandana':    { name:'バンダナ',       cat:'hat',    desc:'赤いバンダナ。基本装備。',              rarity:'common',  icon:'🎀' },
+    'hat_crown':      { name:'王冠',           cat:'hat',    desc:'Lv10で解放。威厳ある金の王冠。',       rarity:'rare',    icon:'👑' },
+    'hat_witch':      { name:'魔女帽',         cat:'hat',    desc:'Lv5で解放。神秘的な三角帽子。',        rarity:'uncommon',icon:'🎩' },
+    'hat_helmet':     { name:'鉄兜',           cat:'hat',    desc:'宝箱ドロップ。頑丈な鉄の兜。',         rarity:'uncommon',icon:'⛑️' },
+    'hat_halo':       { name:'光の輪',         cat:'hat',    desc:'宝箱ドロップ。天使の輪っか。',         rarity:'rare',    icon:'😇' },
+    'hat_ninja':      { name:'忍者頭巾',       cat:'hat',    desc:'宝箱ドロップ。素早さ+10（演出）。',   rarity:'uncommon',icon:'🥷' },
+    'hat_pirate':     { name:'海賊帽',         cat:'hat',    desc:'宝箱ドロップ。勇敢な海賊の帽子。',    rarity:'uncommon',icon:'🏴‍☠️' },
+    // 武器
+    'weapon_sword':   { name:'剣',             cat:'weapon', desc:'基本の剣。シンプルで強い。',           rarity:'common',  icon:'⚔️' },
+    'weapon_staff':   { name:'魔法の杖',       cat:'weapon', desc:'Lv5で解放。魔力を秘めた杖。',         rarity:'uncommon',icon:'🪄' },
+    'weapon_bow':     { name:'弓',             cat:'weapon', desc:'Lv10で解放。遠距離攻撃が得意。',      rarity:'rare',    icon:'🏹' },
+    'weapon_axe':     { name:'斧',             cat:'weapon', desc:'宝箱ドロップ。重くて強力な斧。',      rarity:'uncommon',icon:'🪓' },
+    'weapon_lance':   { name:'槍',             cat:'weapon', desc:'宝箱ドロップ。リーチが長い槍。',      rarity:'uncommon',icon:'🗡️' },
+    'weapon_hammer':  { name:'ハンマー',       cat:'weapon', desc:'宝箱ドロップ。豪快な大ハンマー。',    rarity:'rare',    icon:'🔨' },
+    'weapon_wand':    { name:'光の杖',         cat:'weapon', desc:'宝箱レアドロップ。聖なる光を放つ。', rarity:'epic',    icon:'✨' },
+    // エフェクト
+    'effect_stars':   { name:'スターオーラ',   cat:'effect', desc:'基本オーラ。キラキラ輝く。',          rarity:'common',  icon:'⭐' },
+    'effect_fire':    { name:'炎オーラ',       cat:'effect', desc:'Lv5で解放。燃え盛る炎のオーラ。',    rarity:'uncommon',icon:'🔥' },
+    'effect_rainbow': { name:'虹オーラ',       cat:'effect', desc:'Lv20で解放。七色に輝くオーラ。',     rarity:'epic',    icon:'🌈' },
+    'effect_ice':     { name:'氷オーラ',       cat:'effect', desc:'宝箱ドロップ。冷たく輝く氷晶。',     rarity:'uncommon',icon:'❄️' },
+    'effect_thunder': { name:'雷オーラ',       cat:'effect', desc:'宝箱ドロップ。稲妻が走るオーラ。',   rarity:'rare',    icon:'⚡' },
+    'effect_dark':    { name:'闇オーラ',       cat:'effect', desc:'宝箱レアドロップ。不気味な闇。',     rarity:'epic',    icon:'🌑' },
+    'effect_sakura':  { name:'桜オーラ',       cat:'effect', desc:'宝箱ドロップ。舞い散る桜の花びら。', rarity:'rare',    icon:'🌸' },
+    // コスチューム（body）
+    'body_ninja':     { name:'忍者',           cat:'body',   desc:'宝箱ドロップ。素早い忍者スタイル。', rarity:'rare',    icon:'🥷' },
+    'body_santa':     { name:'サンタ',         cat:'body',   desc:'宝箱レアドロップ。赤い衣装。',       rarity:'epic',    icon:'🎅' },
+  };
+
+  const RARITY_COLOR = { common:'#aaaaaa', uncommon:'#44cc44', rare:'#4488ff', epic:'#cc44ff' };
+  const RARITY_LABEL = { common:'コモン', uncommon:'アンコモン', rare:'レア', epic:'エピック' };
+
+  // 宝箱ドロップテーブル（IDリスト）
+  const CHEST_DROP_TABLE = [
+    'hat_helmet','hat_halo','hat_ninja','hat_pirate',
+    'weapon_axe','weapon_lance','weapon_hammer','weapon_wand',
+    'effect_ice','effect_thunder','effect_dark','effect_sakura',
+    'body_ninja','body_santa',
+  ];
+
   const AVATAR_PARTS = {
     body: [
-      { id:'body_default', name:'勇者', unlock:'default', pixels: [
+      { id:'body_default', name:'勇者', unlock:'default', desc:'はじめから使える基本スタイル。', pixels: [
         // 顔
         {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
         {x:5,y:3,c:'#ffcc99'},{x:6,y:3,c:'#ffcc99'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#ffcc99'},{x:10,y:3,c:'#ffcc99'},
@@ -2250,7 +2329,7 @@
         {x:5,y:10,c:'#333'},{x:6,y:10,c:'#333'},{x:9,y:10,c:'#333'},{x:10,y:10,c:'#333'},
         {x:5,y:11,c:'#553311'},{x:6,y:11,c:'#553311'},{x:9,y:11,c:'#553311'},{x:10,y:11,c:'#553311'},
       ]},
-      { id:'body_mage', name:'魔法使い', unlock:'level5', pixels: [
+      { id:'body_mage', name:'魔法使い', unlock:'level5', desc:'Lv5で解放。紫のローブを纏った魔法使い。', pixels: [
         {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
         {x:5,y:3,c:'#ffcc99'},{x:6,y:3,c:'#ffcc99'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#ffcc99'},{x:10,y:3,c:'#ffcc99'},
         {x:5,y:4,c:'#ffcc99'},{x:6,y:4,c:'#6644cc'},{x:7,y:4,c:'#ffcc99'},{x:8,y:4,c:'#ffcc99'},{x:9,y:4,c:'#6644cc'},{x:10,y:4,c:'#ffcc99'},
@@ -2262,7 +2341,7 @@
         {x:5,y:10,c:'#8855cc'},{x:6,y:10,c:'#8855cc'},{x:9,y:10,c:'#8855cc'},{x:10,y:10,c:'#8855cc'},
         {x:5,y:11,c:'#553311'},{x:6,y:11,c:'#553311'},{x:9,y:11,c:'#553311'},{x:10,y:11,c:'#553311'},
       ]},
-      { id:'body_knight', name:'騎士', unlock:'level10', pixels: [
+      { id:'body_knight', name:'騎士', unlock:'level10', desc:'Lv10で解放。銀の鎧を纏った騎士。', pixels: [
         {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
         {x:5,y:3,c:'#aaaaaa'},{x:6,y:3,c:'#aaaaaa'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#aaaaaa'},{x:10,y:3,c:'#aaaaaa'},
         {x:5,y:4,c:'#aaaaaa'},{x:6,y:4,c:'#333'},{x:7,y:4,c:'#aaaaaa'},{x:8,y:4,c:'#aaaaaa'},{x:9,y:4,c:'#333'},{x:10,y:4,c:'#aaaaaa'},
@@ -2273,6 +2352,29 @@
         {x:5,y:9,c:'#888888'},{x:6,y:9,c:'#888888'},{x:9,y:9,c:'#888888'},{x:10,y:9,c:'#888888'},
         {x:5,y:10,c:'#888888'},{x:6,y:10,c:'#888888'},{x:9,y:10,c:'#888888'},{x:10,y:10,c:'#888888'},
         {x:5,y:11,c:'#555555'},{x:6,y:11,c:'#555555'},{x:9,y:11,c:'#555555'},{x:10,y:11,c:'#555555'},
+      ]},
+      { id:'body_ninja', name:'忍者', unlock:'chest', desc:'宝箱ドロップ。素早い忍者スタイル。', pixels: [
+        {x:6,y:2,c:'#222'},{x:7,y:2,c:'#222'},{x:8,y:2,c:'#222'},{x:9,y:2,c:'#222'},
+        {x:5,y:3,c:'#222'},{x:6,y:3,c:'#222'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#222'},{x:10,y:3,c:'#222'},
+        {x:5,y:4,c:'#222'},{x:6,y:4,c:'#ff4444'},{x:7,y:4,c:'#ffcc99'},{x:8,y:4,c:'#ffcc99'},{x:9,y:4,c:'#ff4444'},{x:10,y:4,c:'#222'},
+        {x:5,y:5,c:'#222'},{x:6,y:5,c:'#222'},{x:7,y:5,c:'#222'},{x:8,y:5,c:'#222'},{x:9,y:5,c:'#222'},{x:10,y:5,c:'#222'},
+        {x:4,y:6,c:'#222'},{x:5,y:6,c:'#222'},{x:6,y:6,c:'#222'},{x:7,y:6,c:'#222'},{x:8,y:6,c:'#222'},{x:9,y:6,c:'#222'},{x:10,y:6,c:'#222'},{x:11,y:6,c:'#222'},
+        {x:4,y:7,c:'#222'},{x:5,y:7,c:'#222'},{x:6,y:7,c:'#222'},{x:7,y:7,c:'#222'},{x:8,y:7,c:'#222'},{x:9,y:7,c:'#222'},{x:10,y:7,c:'#222'},{x:11,y:7,c:'#222'},
+        {x:5,y:8,c:'#222'},{x:6,y:8,c:'#222'},{x:9,y:8,c:'#222'},{x:10,y:8,c:'#222'},
+        {x:5,y:9,c:'#222'},{x:6,y:9,c:'#222'},{x:9,y:9,c:'#222'},{x:10,y:9,c:'#222'},
+        {x:5,y:10,c:'#333'},{x:6,y:10,c:'#333'},{x:9,y:10,c:'#333'},{x:10,y:10,c:'#333'},
+      ]},
+      { id:'body_santa', name:'サンタ', unlock:'chest', desc:'宝箱レアドロップ。赤いサンタ衣装。', pixels: [
+        {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
+        {x:5,y:3,c:'#ffcc99'},{x:6,y:3,c:'#ffcc99'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#ffcc99'},{x:10,y:3,c:'#ffcc99'},
+        {x:5,y:4,c:'#ffcc99'},{x:6,y:4,c:'#333'},{x:7,y:4,c:'#ffcc99'},{x:8,y:4,c:'#ffcc99'},{x:9,y:4,c:'#333'},{x:10,y:4,c:'#ffcc99'},
+        {x:5,y:5,c:'#ffcc99'},{x:6,y:5,c:'#ffcc99'},{x:7,y:5,c:'#ff9999'},{x:8,y:5,c:'#ffcc99'},{x:9,y:5,c:'#ffcc99'},{x:10,y:5,c:'#ffcc99'},
+        {x:5,y:6,c:'#ffffff'},{x:6,y:6,c:'#ffffff'},{x:7,y:6,c:'#ffffff'},{x:8,y:6,c:'#ffffff'},{x:9,y:6,c:'#ffffff'},{x:10,y:6,c:'#ffffff'},
+        {x:4,y:7,c:'#cc2222'},{x:5,y:7,c:'#cc2222'},{x:6,y:7,c:'#cc2222'},{x:7,y:7,c:'#cc2222'},{x:8,y:7,c:'#cc2222'},{x:9,y:7,c:'#cc2222'},{x:10,y:7,c:'#cc2222'},{x:11,y:7,c:'#cc2222'},
+        {x:4,y:8,c:'#cc2222'},{x:5,y:8,c:'#cc2222'},{x:6,y:8,c:'#cc2222'},{x:7,y:8,c:'#ffffff'},{x:8,y:8,c:'#cc2222'},{x:9,y:8,c:'#cc2222'},{x:10,y:8,c:'#cc2222'},{x:11,y:8,c:'#cc2222'},
+        {x:5,y:9,c:'#cc2222'},{x:6,y:9,c:'#cc2222'},{x:9,y:9,c:'#cc2222'},{x:10,y:9,c:'#cc2222'},
+        {x:5,y:10,c:'#cc2222'},{x:6,y:10,c:'#cc2222'},{x:9,y:10,c:'#cc2222'},{x:10,y:10,c:'#cc2222'},
+        {x:5,y:11,c:'#553311'},{x:6,y:11,c:'#553311'},{x:9,y:11,c:'#553311'},{x:10,y:11,c:'#553311'},
       ]},
     ],
     hat: [
@@ -2286,11 +2388,32 @@
         {x:5,y:2,c:'#ffd700'},{x:6,y:2,c:'#ffd700'},{x:7,y:2,c:'#ffd700'},{x:8,y:2,c:'#ffd700'},{x:9,y:2,c:'#ffd700'},{x:10,y:2,c:'#ffd700'},{x:11,y:2,c:'#ffd700'},
         {x:7,y:1,c:'#ff4444'},{x:9,y:2,c:'#4444ff'},
       ]},
-      { id:'hat_witch', name:'魔女帽', unlock:'level5', pixels:[
+      { id:'hat_witch', name:'魔女帽', unlock:'level5', desc:'Lv5で解放。神秘的な三角帽子。', pixels:[
         {x:7,y:0,c:'#333'},{x:8,y:0,c:'#333'},
         {x:6,y:1,c:'#333'},{x:7,y:1,c:'#333'},{x:8,y:1,c:'#333'},{x:9,y:1,c:'#333'},
         {x:5,y:2,c:'#333'},{x:6,y:2,c:'#333'},{x:7,y:2,c:'#333'},{x:8,y:2,c:'#333'},{x:9,y:2,c:'#333'},{x:10,y:2,c:'#333'},
         {x:4,y:3,c:'#553300'},{x:5,y:3,c:'#553300'},{x:6,y:3,c:'#553300'},{x:7,y:3,c:'#553300'},{x:8,y:3,c:'#553300'},{x:9,y:3,c:'#553300'},{x:10,y:3,c:'#553300'},{x:11,y:3,c:'#553300'},
+      ]},
+      { id:'hat_helmet', name:'鉄兜', unlock:'chest', desc:'宝箱ドロップ。頑丈な鉄の兜。', pixels:[
+        {x:5,y:1,c:'#888'},{x:6,y:1,c:'#888'},{x:7,y:1,c:'#888'},{x:8,y:1,c:'#888'},{x:9,y:1,c:'#888'},{x:10,y:1,c:'#888'},
+        {x:4,y:2,c:'#888'},{x:5,y:2,c:'#aaa'},{x:6,y:2,c:'#aaa'},{x:7,y:2,c:'#aaa'},{x:8,y:2,c:'#aaa'},{x:9,y:2,c:'#aaa'},{x:10,y:2,c:'#aaa'},{x:11,y:2,c:'#888'},
+        {x:4,y:3,c:'#888'},{x:5,y:3,c:'#888'},{x:6,y:3,c:'#ffd700'},{x:7,y:3,c:'#ffd700'},{x:8,y:3,c:'#ffd700'},{x:9,y:3,c:'#888'},{x:10,y:3,c:'#888'},{x:11,y:3,c:'#888'},
+      ]},
+      { id:'hat_halo', name:'光の輪', unlock:'chest', desc:'宝箱ドロップ。天使の輪っか。', pixels:[
+        {x:5,y:0,c:'#ffd700'},{x:6,y:0,c:'#ffd700'},{x:7,y:0,c:'#ffd700'},{x:8,y:0,c:'#ffd700'},{x:9,y:0,c:'#ffd700'},{x:10,y:0,c:'#ffd700'},
+        {x:4,y:1,c:'#ffd700'},{x:11,y:1,c:'#ffd700'},
+        {x:5,y:2,c:'#ffff88'},{x:6,y:2,c:'#ffff88'},{x:7,y:2,c:'#ffff88'},{x:8,y:2,c:'#ffff88'},{x:9,y:2,c:'#ffff88'},{x:10,y:2,c:'#ffff88'},
+      ]},
+      { id:'hat_ninja', name:'忍者頭巾', unlock:'chest', desc:'宝箱ドロップ。素早さUP（演出）。', pixels:[
+        {x:5,y:1,c:'#222'},{x:6,y:1,c:'#222'},{x:7,y:1,c:'#222'},{x:8,y:1,c:'#222'},{x:9,y:1,c:'#222'},{x:10,y:1,c:'#222'},
+        {x:4,y:2,c:'#222'},{x:5,y:2,c:'#222'},{x:6,y:2,c:'#222'},{x:7,y:2,c:'#222'},{x:8,y:2,c:'#222'},{x:9,y:2,c:'#222'},{x:10,y:2,c:'#222'},{x:11,y:2,c:'#222'},
+        {x:4,y:3,c:'#222'},{x:5,y:3,c:'#ff4444'},{x:6,y:3,c:'#ff4444'},{x:7,y:3,c:'#ff4444'},{x:8,y:3,c:'#ff4444'},{x:9,y:3,c:'#ff4444'},{x:10,y:3,c:'#222'},{x:11,y:3,c:'#222'},
+      ]},
+      { id:'hat_pirate', name:'海賊帽', unlock:'chest', desc:'宝箱ドロップ。勇敢な海賊の帽子。', pixels:[
+        {x:6,y:0,c:'#222'},{x:7,y:0,c:'#222'},{x:8,y:0,c:'#222'},{x:9,y:0,c:'#222'},
+        {x:5,y:1,c:'#222'},{x:6,y:1,c:'#222'},{x:7,y:1,c:'#ffffff'},{x:8,y:1,c:'#ff4444'},{x:9,y:1,c:'#222'},{x:10,y:1,c:'#222'},
+        {x:4,y:2,c:'#222'},{x:5,y:2,c:'#222'},{x:6,y:2,c:'#222'},{x:7,y:2,c:'#222'},{x:8,y:2,c:'#222'},{x:9,y:2,c:'#222'},{x:10,y:2,c:'#222'},{x:11,y:2,c:'#222'},
+        {x:3,y:3,c:'#333'},{x:4,y:3,c:'#333'},{x:5,y:3,c:'#333'},{x:6,y:3,c:'#333'},{x:7,y:3,c:'#333'},{x:8,y:3,c:'#333'},{x:9,y:3,c:'#333'},{x:10,y:3,c:'#333'},{x:11,y:3,c:'#333'},{x:12,y:3,c:'#333'},
       ]},
     ],
     weapon: [
@@ -2305,11 +2428,34 @@
         {x:12,y:3,c:'#ffd700'},{x:13,y:2,c:'#ffd700'},{x:11,y:2,c:'#ffd700'},{x:12,y:1,c:'#cc88ff'},
         {x:12,y:4,c:'#8B4513'},{x:12,y:5,c:'#8B4513'},{x:12,y:6,c:'#8B4513'},{x:12,y:7,c:'#8B4513'},{x:12,y:8,c:'#8B4513'},{x:12,y:9,c:'#8B4513'},{x:12,y:10,c:'#8B4513'},{x:12,y:11,c:'#8B4513'},
       ]},
-      { id:'weapon_bow', name:'弓', unlock:'level10', pixels:[
+      { id:'weapon_bow', name:'弓', unlock:'level10', desc:'Lv10で解放。遠距離攻撃が得意。', pixels:[
         {x:13,y:3,c:'#8B4513'},{x:13,y:4,c:'#8B4513'},{x:13,y:5,c:'#8B4513'},{x:13,y:6,c:'#8B4513'},{x:13,y:7,c:'#8B4513'},{x:13,y:8,c:'#8B4513'},{x:13,y:9,c:'#8B4513'},{x:13,y:10,c:'#8B4513'},
         {x:12,y:3,c:'#aaaaaa'},{x:12,y:10,c:'#aaaaaa'},
         {x:11,y:4,c:'#aaaaaa'},{x:11,y:9,c:'#aaaaaa'},
         {x:12,y:6,c:'#ffff88'},{x:12,y:7,c:'#ffff88'},
+      ]},
+      { id:'weapon_axe', name:'斧', unlock:'chest', desc:'宝箱ドロップ。重くて強力な斧。', pixels:[
+        {x:11,y:3,c:'#aaaaaa'},{x:12,y:2,c:'#aaaaaa'},{x:13,y:3,c:'#aaaaaa'},
+        {x:11,y:4,c:'#aaaaaa'},{x:12,y:3,c:'#aaaaaa'},{x:13,y:4,c:'#aaaaaa'},
+        {x:12,y:5,c:'#8B4513'},{x:12,y:6,c:'#8B4513'},{x:12,y:7,c:'#8B4513'},{x:12,y:8,c:'#8B4513'},{x:12,y:9,c:'#8B4513'},{x:12,y:10,c:'#8B4513'},{x:12,y:11,c:'#8B4513'},
+      ]},
+      { id:'weapon_lance', name:'槍', unlock:'chest', desc:'宝箱ドロップ。リーチが長い槍。', pixels:[
+        {x:12,y:1,c:'#aaaaaa'},{x:13,y:2,c:'#aaaaaa'},{x:11,y:2,c:'#aaaaaa'},
+        {x:12,y:2,c:'#dddddd'},{x:12,y:3,c:'#aaaaaa'},
+        {x:12,y:4,c:'#8B4513'},{x:12,y:5,c:'#8B4513'},{x:12,y:6,c:'#8B4513'},{x:12,y:7,c:'#8B4513'},{x:12,y:8,c:'#8B4513'},{x:12,y:9,c:'#8B4513'},{x:12,y:10,c:'#8B4513'},{x:12,y:11,c:'#8B4513'},
+        {x:11,y:5,c:'#aaaaaa'},{x:11,y:6,c:'#aaaaaa'},
+      ]},
+      { id:'weapon_hammer', name:'ハンマー', unlock:'chest', desc:'宝箱ドロップ。豪快な大ハンマー。', pixels:[
+        {x:10,y:2,c:'#888'},{x:11,y:2,c:'#888'},{x:12,y:2,c:'#888'},{x:13,y:2,c:'#888'},
+        {x:10,y:3,c:'#888'},{x:11,y:3,c:'#888'},{x:12,y:3,c:'#888'},{x:13,y:3,c:'#888'},
+        {x:10,y:4,c:'#aaa'},{x:11,y:4,c:'#aaa'},{x:12,y:4,c:'#aaa'},{x:13,y:4,c:'#aaa'},
+        {x:12,y:5,c:'#8B4513'},{x:12,y:6,c:'#8B4513'},{x:12,y:7,c:'#8B4513'},{x:12,y:8,c:'#8B4513'},{x:12,y:9,c:'#8B4513'},{x:12,y:10,c:'#8B4513'},{x:12,y:11,c:'#8B4513'},
+      ]},
+      { id:'weapon_wand', name:'光の杖', unlock:'chest', desc:'宝箱エピックドロップ。聖なる光を放つ。', pixels:[
+        {x:12,y:1,c:'#ffffff'},{x:11,y:1,c:'#ffff88'},{x:13,y:1,c:'#ffff88'},{x:12,y:0,c:'#ffff88'},
+        {x:11,y:2,c:'#ffd700'},{x:13,y:2,c:'#ffd700'},
+        {x:12,y:2,c:'#ffffff'},{x:12,y:3,c:'#ffd700'},
+        {x:12,y:4,c:'#cc88ff'},{x:12,y:5,c:'#cc88ff'},{x:12,y:6,c:'#cc88ff'},{x:12,y:7,c:'#cc88ff'},{x:12,y:8,c:'#cc88ff'},{x:12,y:9,c:'#cc88ff'},{x:12,y:10,c:'#cc88ff'},{x:12,y:11,c:'#cc88ff'},
       ]},
     ],
     effect: [
@@ -2323,10 +2469,34 @@
         {x:13,y:9,c:'#ff4400'},{x:13,y:8,c:'#ff8800'},{x:13,y:7,c:'#ffcc00'},{x:12,y:10,c:'#ff4400'},{x:12,y:9,c:'#ff8800'},
         {x:7,y:12,c:'#ff4400'},{x:8,y:13,c:'#ff8800'},{x:9,y:12,c:'#ff4400'},
       ]},
-      { id:'effect_rainbow', name:'虹オーラ', unlock:'level20', pixels:[
+      { id:'effect_rainbow', name:'虹オーラ', unlock:'level20', desc:'Lv20で解放。七色に輝くオーラ。', pixels:[
         {x:2,y:4,c:'#ff0000'},{x:2,y:5,c:'#ff8800'},{x:2,y:6,c:'#ffff00'},{x:2,y:7,c:'#00ff00'},{x:2,y:8,c:'#0088ff'},
         {x:14,y:4,c:'#ff0000'},{x:14,y:5,c:'#ff8800'},{x:14,y:6,c:'#ffff00'},{x:14,y:7,c:'#00ff00'},{x:14,y:8,c:'#0088ff'},
         {x:4,y:2,c:'#cc00ff'},{x:5,y:1,c:'#cc00ff'},{x:10,y:1,c:'#cc00ff'},{x:11,y:2,c:'#cc00ff'},
+      ]},
+      { id:'effect_ice', name:'氷オーラ', unlock:'chest', desc:'宝箱ドロップ。冷たく輝く氷晶。', pixels:[
+        {x:2,y:5,c:'#88eeff'},{x:2,y:6,c:'#aaffff'},{x:2,y:7,c:'#88eeff'},
+        {x:14,y:5,c:'#88eeff'},{x:14,y:6,c:'#aaffff'},{x:14,y:7,c:'#88eeff'},
+        {x:4,y:2,c:'#aaffff'},{x:5,y:1,c:'#88eeff'},{x:10,y:1,c:'#88eeff'},{x:11,y:2,c:'#aaffff'},
+        {x:3,y:10,c:'#aaffff'},{x:12,y:10,c:'#aaffff'},{x:7,y:13,c:'#88eeff'},{x:8,y:13,c:'#88eeff'},
+      ]},
+      { id:'effect_thunder', name:'雷オーラ', unlock:'chest', desc:'宝箱ドロップ。稲妻が走るオーラ。', pixels:[
+        {x:2,y:4,c:'#ffff00'},{x:3,y:5,c:'#ffff00'},{x:2,y:6,c:'#ffff00'},{x:3,y:7,c:'#ffff00'},
+        {x:14,y:4,c:'#ffff00'},{x:13,y:5,c:'#ffff00'},{x:14,y:6,c:'#ffff00'},{x:13,y:7,c:'#ffff00'},
+        {x:7,y:12,c:'#ffff00'},{x:8,y:13,c:'#ffcc00'},{x:9,y:12,c:'#ffff00'},
+        {x:1,y:8,c:'#ffcc00'},{x:14,y:9,c:'#ffcc00'},
+      ]},
+      { id:'effect_dark', name:'闇オーラ', unlock:'chest', desc:'宝箱エピックドロップ。不気味な闇。', pixels:[
+        {x:2,y:4,c:'#440066'},{x:2,y:5,c:'#660099'},{x:2,y:6,c:'#440066'},{x:2,y:7,c:'#220044'},
+        {x:14,y:4,c:'#440066'},{x:14,y:5,c:'#660099'},{x:14,y:6,c:'#440066'},{x:14,y:7,c:'#220044'},
+        {x:4,y:12,c:'#440066'},{x:5,y:13,c:'#220044'},{x:11,y:13,c:'#220044'},{x:12,y:12,c:'#440066'},
+        {x:3,y:3,c:'#660099'},{x:13,y:3,c:'#660099'},
+      ]},
+      { id:'effect_sakura', name:'桜オーラ', unlock:'chest', desc:'宝箱ドロップ。舞い散る桜の花びら。', pixels:[
+        {x:2,y:3,c:'#ffaacc'},{x:3,y:4,c:'#ff88bb'},{x:2,y:8,c:'#ffaacc'},
+        {x:14,y:3,c:'#ffaacc'},{x:13,y:4,c:'#ff88bb'},{x:14,y:8,c:'#ffaacc'},
+        {x:5,y:13,c:'#ffaacc'},{x:7,y:14,c:'#ff88bb'},{x:9,y:13,c:'#ffaacc'},{x:11,y:14,c:'#ffaacc'},
+        {x:1,y:6,c:'#ff88bb'},{x:15,y:6,c:'#ff88bb'},
       ]},
     ],
   };
@@ -2559,6 +2729,191 @@
     }
   }
   window.toggleBGM = toggleBGM;
+  function showRareDrop(itemName) {
+    const info = Object.values(ITEM_MASTER).find(i => i.icon + i.name === itemName);
+    const toast = document.getElementById('rare-toast');
+    document.getElementById('rare-icon').textContent = info?.icon || '⭐';
+    document.getElementById('rare-name').textContent = info?.name || itemName;
+    document.getElementById('rare-desc').textContent = info?.desc || '';
+    toast.style.display = 'block';
+    playSoundRareDrop();
+    // パーティクル少し
+    spawnParticles(15, false);
+    setTimeout(() => { toast.style.display = 'none'; }, 2500);
+  }
+
+  function playSoundRareDrop() {
+    try {
+      const ac = getAudioCtx();
+      const melody = [523, 659, 784, 1047, 1319];
+      melody.forEach((freq, i) => {
+        playTone(freq, 'square', i*0.1, 0.12, 0.2, ac);
+        playTone(freq*1.5, 'sine', i*0.1, 0.1, 0.08, ac);
+      });
+      playTone(1568, 'sine', 0.6, 0.4, 0.15, ac);
+    } catch(e) {}
+  }
+
+  // ===== EPIC DROP EFFECT =====
+  function showEpicDrop(itemName) {
+    const overlay = document.getElementById('epic-overlay');
+    const info = Object.values(ITEM_MASTER).find(i => i.icon + i.name === itemName);
+    document.getElementById('epic-icon').textContent = info?.icon || '✨';
+    document.getElementById('epic-name').textContent = info?.name || itemName;
+    document.getElementById('epic-desc').textContent = info?.desc || '';
+
+    // 光線エフェクト
+    const rays = document.getElementById('epic-rays');
+    rays.innerHTML = '';
+    for (let i = 0; i < 12; i++) {
+      const ray = document.createElement('div');
+      const angle = (i / 12) * 360;
+      ray.style.cssText = `
+        position:absolute;
+        left:50%;top:50%;
+        width:4px;height:60vh;
+        background:linear-gradient(to bottom,#cc44ff,transparent);
+        transform-origin:top center;
+        --r:${angle}deg;
+        animation:epicRay 1.5s ease-out ${i*0.05}s infinite;
+        opacity:0;
+      `;
+      rays.appendChild(ray);
+    }
+
+    // 星パーティクル
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const star = document.createElement('div');
+        const sx = (Math.random()-0.5)*200;
+        const sy = (Math.random()-0.5)*200;
+        star.textContent = ['✨','⭐','💜','🌟','💫'][Math.floor(Math.random()*5)];
+        star.style.cssText = `
+          position:absolute;
+          left:calc(50% + ${sx}px);
+          top:calc(50% + ${sy}px);
+          font-size:${16+Math.random()*16}px;
+          --sx:${sx}px;--sy:${sy}px;
+          animation:epicStar 1.2s ease-out forwards;
+          pointer-events:none;
+          z-index:3;
+        `;
+        overlay.appendChild(star);
+        setTimeout(() => star.remove(), 1200);
+      }, i * 80);
+    }
+
+    overlay.style.display = 'flex';
+    playSoundEpicDrop();
+  }
+
+  window.closeEpicDrop = () => {
+    document.getElementById('epic-overlay').style.display = 'none';
+  };
+
+  // エピックドロップ音（超豪華ファンファーレ）
+  function playSoundEpicDrop() {
+    try {
+      const ac = getAudioCtx();
+      // 低音ドラム
+      const drum = ac.createOscillator();
+      const drumGain = ac.createGain();
+      drum.connect(drumGain); drumGain.connect(ac.destination);
+      drum.type = 'sine';
+      drum.frequency.setValueAtTime(80, ac.currentTime);
+      drum.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.3);
+      drumGain.gain.setValueAtTime(0.6, ac.currentTime);
+      drumGain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3);
+      drum.start(ac.currentTime); drum.stop(ac.currentTime + 0.3);
+
+      // キラキラ上昇音
+      const sparkMelody = [523,659,784,1047,1319,1568,2093];
+      sparkMelody.forEach((freq, i) => {
+        playTone(freq, 'square', i*0.08, 0.1, 0.15, ac);
+        playTone(freq*2, 'sine', i*0.08, 0.08, 0.08, ac);
+      });
+
+      // 豪華ファンファーレ
+      const fanfare = [
+        {f:523,t:0.7},{f:523,t:0.8},{f:523,t:0.9},{f:415,t:0.95},
+        {f:466,t:1.0},{f:523,t:1.2},{f:466,t:1.3},{f:523,t:1.5},
+      ];
+      fanfare.forEach(n => {
+        playTone(n.f, 'square', n.t, 0.15, 0.25, ac);
+        playTone(n.f*0.5, 'triangle', n.t, 0.15, 0.1, ac);
+      });
+
+      // 最後にキラーン
+      playTone(2093, 'sine', 1.8, 0.4, 0.15, ac);
+      playTone(2637, 'sine', 1.9, 0.4, 0.12, ac);
+      playTone(3136, 'sine', 2.0, 0.6, 0.1, ac);
+    } catch(e) {}
+  }
+
+  // ===== ITEM LIST =====
+  window.openItemList = () => {
+    renderItemList();
+    document.getElementById('item-list-modal').classList.add('open');
+  };
+  window.closeItemList = () => {
+    document.getElementById('item-list-modal').classList.remove('open');
+  };
+
+  function renderItemList() {
+    const content = document.getElementById('item-list-content');
+    const chestItems = userData?.chestItems || [];
+    if (chestItems.length === 0) {
+      content.innerHTML = `<div class="empty-state"><span>🎒</span><p>まだアイテムがありません<br>バトルシーンで宝箱を開けよう！</p></div>`;
+      return;
+    }
+    content.innerHTML = chestItems.map(itemId => {
+      const info = ITEM_MASTER[itemId];
+      if (!info) return '';
+      const rarityColor = RARITY_COLOR[info.rarity] || '#aaa';
+      const rarityLabel = RARITY_LABEL[info.rarity] || '';
+      const isEquipped = currentAvatarConfig[info.cat] === itemId;
+      return `
+        <div style="background:var(--surface2);border:3px solid ${rarityColor};border-radius:var(--radius);padding:14px;display:flex;align-items:center;gap:12px;box-shadow:3px 3px 0 rgba(0,0,0,0.4);">
+          <span style="font-size:36px;">${info.icon}</span>
+          <div style="flex:1;">
+            <div style="font-family:'DotGothic16',monospace;font-size:13px;margin-bottom:3px;">${info.name} ${isEquipped ? '✅' : ''}</div>
+            <div style="font-size:10px;color:${rarityColor};font-family:'DotGothic16',monospace;margin-bottom:4px;">${rarityLabel}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${info.desc}</div>
+          </div>
+          ${!isEquipped ? `
+          <button onclick="equipChestItem('${itemId}','${info.cat}')" style="background:var(--primary);border:3px solid #cc4444;color:white;padding:8px 10px;border-radius:var(--radius);font-family:'DotGothic16',monospace;font-size:11px;cursor:pointer;box-shadow:2px 2px 0 #cc4444;white-space:nowrap;">装備する</button>
+          ` : `
+          <button onclick="unequipItem('${info.cat}')" style="background:var(--surface);border:3px solid var(--text-muted);color:var(--text-muted);padding:8px 10px;border-radius:var(--radius);font-family:'DotGothic16',monospace;font-size:11px;cursor:pointer;white-space:nowrap;">外す</button>
+          `}
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.equipChestItem = async (itemId, cat) => {
+    // AVATAR_PARTSに存在しない場合は追加
+    const parts = AVATAR_PARTS[cat];
+    if (parts && !parts.find(p => p.id === itemId)) {
+      const info = ITEM_MASTER[itemId];
+      if (info) parts.push({ id: itemId, name: info.name, unlock: 'chest', desc: info.desc, pixels: [] });
+    }
+    currentAvatarConfig[cat] = itemId;
+    await updateDoc(doc(db, 'users', currentUser.uid), { avatarConfig: currentAvatarConfig });
+    userData.avatarConfig = { ...currentAvatarConfig };
+    updateAvatarDisplay();
+    renderItemList();
+    playSoundTaskDone();
+  };
+
+  window.unequipItem = async (cat) => {
+    const noneId = `${cat}_none`;
+    currentAvatarConfig[cat] = noneId;
+    await updateDoc(doc(db, 'users', currentUser.uid), { avatarConfig: currentAvatarConfig });
+    userData.avatarConfig = { ...currentAvatarConfig };
+    updateAvatarDisplay();
+    renderItemList();
+  };
+
   // ===== BATTLE SCENE =====
   const MONSTERS = {
     1:  { name:'スライム',    color:'#44cc44', pixels:[
@@ -2669,7 +3024,7 @@
     const delay = 3000 + Math.random() * 4000;
     bsEventTimer = setTimeout(() => {
       const roll = Math.random();
-      if (roll < 0.6) startBattleEvent();
+      if (roll < 0.9) startBattleEvent();
       else startTreasureEvent();
     }, delay);
   }
@@ -2722,7 +3077,7 @@
   }
 
   function startTreasureEvent() {
-    bsIsMimic = Math.random() < 0.2; // 20%でミミック
+    bsIsMimic = Math.random() < 0.2;
     const enemySvg = document.getElementById('bs-enemy-svg');
     if (!enemySvg) return;
     enemySvg.setAttribute('viewBox','0 0 16 16');
@@ -2733,7 +3088,6 @@
     if (playerEl) playerEl.style.left = '60px';
     bsAnimFrame = setTimeout(() => {
       if (bsIsMimic) {
-        // ミミック！
         drawPixels(enemySvg, MIMIC);
         setMsg('ミミックだ！！逃げろ！');
         showBattleEffect('😱', 100, 40);
@@ -2744,13 +3098,49 @@
           bsAnimFrame = setTimeout(() => { setMsg(''); bsState='idle'; scheduleNextEvent(); }, 1500);
         }, 1200);
       } else {
-        // 宝箱オープン！
+        // 宝箱オープン！アイテムをドロップ
         setMsg('宝箱を開けた！');
         showBattleEffect('🎁', 110, 40);
-        const items = ['EXPブースト','応援チケット','きらきらエフェクト','レアジェム'];
-        const got = items[Math.floor(Math.random()*items.length)];
+        // レアリティ別ドロップテーブル
+        const rarityRoll = Math.random();
+        let targetRarity;
+        if (rarityRoll < 0.50) targetRarity = 'common';
+        else if (rarityRoll < 0.80) targetRarity = 'uncommon';
+        else if (rarityRoll < 0.95) targetRarity = 'rare';
+        else targetRarity = 'epic';
+
+        // 対象レアリティのアイテムをフィルタ
+        const candidates = CHEST_DROP_TABLE.filter(id => {
+          const info = ITEM_MASTER[id];
+          return info && info.rarity === targetRarity;
+        });
+        // 候補がなければ全体からランダム
+        const pool = candidates.length > 0 ? candidates : CHEST_DROP_TABLE;
+        const dropId = pool[Math.floor(Math.random() * pool.length)];
+        const dropInfo = ITEM_MASTER[dropId];
+        const rarityLabel = dropInfo ? (RARITY_LABEL[dropInfo.rarity] || '') : '';
+        const gotName = dropInfo ? dropInfo.icon + dropInfo.name : '???';
         const itemEl = document.getElementById('bs-item-get');
-        if (itemEl) { itemEl.textContent = `${got}ゲット！`; itemEl.style.display='block'; }
+        if (itemEl) { 
+          itemEl.textContent = `【${rarityLabel}】${gotName}ゲット！`; 
+          itemEl.style.display='block';
+          itemEl.style.color = RARITY_COLOR[dropInfo?.rarity] || 'var(--secondary)';
+        }
+        // Firestoreに保存
+        if (currentUser && userData) {
+          const myItems = [...(userData.chestItems || [])];
+          if (!myItems.includes(dropId)) myItems.push(dropId);
+          userData.chestItems = myItems;
+          updateDoc(doc(db, 'users', currentUser.uid), { chestItems: myItems });
+          const statEl = document.getElementById('stat-items');
+          if (statEl) statEl.textContent = myItems.length;
+        }
+        // エピックなら豪華演出！レアもちょっと演出
+        if (dropInfo?.rarity === 'epic') {
+          setTimeout(() => showEpicDrop(gotName), 300);
+        } else if (dropInfo?.rarity === 'rare') {
+          setTimeout(() => showRareDrop(gotName), 300);
+        }
         bsAnimFrame = setTimeout(() => {
           if (playerEl) playerEl.style.left = '20px';
           if (enemySvg) enemySvg.innerHTML = '';
@@ -2758,7 +3148,7 @@
           setMsg('');
           bsState='idle';
           scheduleNextEvent();
-        }, 2000);
+        }, dropInfo?.rarity === 'epic' ? 5000 : 2500);
       }
     }, 1000);
   }
