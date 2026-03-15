@@ -2069,13 +2069,12 @@
       avatarDiv.appendChild(svg);
     }
 
-    // 今日のクエスト（未完了のみ）
+    // 今日のクエスト（未完了のみ）- isCompleteフィルタはJS側で
     const tasksSnap = await getDocs(query(
       collection(db, 'tasks'),
-      where('userId', '==', uid),
-      where('isComplete', '==', false)
+      where('userId', '==', uid)
     ));
-    const dailyTasks = tasksSnap.docs.map(d => d.data());
+    const dailyTasks = tasksSnap.docs.map(d => d.data()).filter(t => !t.isComplete);
     const dailyEl = document.getElementById('md-daily-tasks');
     if (dailyTasks.length === 0) {
       dailyEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px;text-align:center;">未完了のクエストなし🎉</div>';
@@ -2091,13 +2090,12 @@
       `).join('');
     }
 
-    // 進行中のメインクエスト（未完了のみ）
+    // 進行中のメインクエスト（未完了のみ）- JS側でフィルタ
     const mqSnap = await getDocs(query(
       collection(db, 'mainQuests'),
-      where('userId', '==', uid),
-      where('isComplete', '==', false)
+      where('userId', '==', uid)
     ));
-    const mainQuests = mqSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const mainQuests = mqSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(mq => !mq.isComplete);
     const mqEl = document.getElementById('md-main-quests');
     if (mainQuests.length === 0) {
       mqEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px;text-align:center;">進行中のクエストなし</div>';
