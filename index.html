@@ -420,7 +420,14 @@
 
     .task-info { flex: 1; }
     .task-title { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
-    .task-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; }
+    .task-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; flex-direction: column; }
+    .countdown { font-family:'DotGothic16',monospace; font-size:11px; font-weight:700; }
+    .countdown.safe { color: var(--accent); }
+    .countdown.warning { color: var(--secondary); }
+    .countdown.danger { color: #ff8800; }
+    .countdown.critical { color: var(--primary); animation: blink 1s ease-in-out infinite; }
+    .countdown.expired { color: var(--text-muted); }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
     .task-exp {
       font-family: 'Fredoka One', cursive;
       font-size: 13px;
@@ -1099,8 +1106,9 @@
       <input type="text" id="task-title-input" placeholder="例：参考書を1章読む" />
     </div>
     <div class="form-group">
-      <label>期限（任意）</label>
-      <input type="date" id="task-deadline-input" />
+      <label>期限日時（任意）</label>
+      <input type="date" id="task-deadline-date" />
+      <input type="time" id="task-deadline-time" style="margin-top:8px;width:100%;padding:14px 16px;background:var(--surface2);border:2px solid transparent;border-radius:4px;color:var(--text);font-family:'DotGothic16',monospace;font-size:15px;outline:none;" />
     </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeAddTask()">キャンセル</button>
@@ -1399,14 +1407,15 @@
       return;
     }
     list.innerHTML = tasks.map(t => `
-      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}">
+      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''}>
         <button class="task-check ${t.isComplete ? 'checked' : ''}" onclick="toggleTask('${t.id}', ${t.isComplete})">
           ${t.isComplete ? '✓' : ''}
         </button>
         <div class="task-info">
           <div class="task-title">${escHtml(t.title)}</div>
           <div class="task-meta">
-            ${t.deadline ? `📅 ${t.deadline}` : '期限なし'}
+            ${t.deadline ? `<span>📅 ${formatDeadline(t.deadline)}</span>` : '<span>期限なし</span>'}
+            ${t.deadline && !t.isComplete ? `<span class="countdown ${getCountdownClass(t.deadline)}" id="cd-${t.id}">${getCountdownText(t.deadline)}</span>` : ''}
           </div>
         </div>
         <span class="task-exp">+${EXP_PER_TASK}EXP</span>
@@ -1481,12 +1490,19 @@
   window.closeAddTask = () => {
     document.getElementById('add-task-modal').classList.remove('open');
     document.getElementById('task-title-input').value = '';
-    document.getElementById('task-deadline-input').value = '';
+    document.getElementById('task-deadline-date').value = '';
+    document.getElementById('task-deadline-time').value = '';
   };
   window.addTask = async () => {
     const title = document.getElementById('task-title-input').value.trim();
-    const deadline = document.getElementById('task-deadline-input').value;
+    const date = document.getElementById('task-deadline-date').value;
+    const time = document.getElementById('task-deadline-time').value;
     if (!title) return;
+    // 日時をISO文字列で保存
+    let deadline = null;
+    if (date) {
+      deadline = time ? `${date}T${time}` : `${date}T23:59`;
+    }
     await addDoc(collection(db, 'tasks'), {
       userId: currentUser.uid,
       title,
@@ -2502,6 +2518,62 @@
     }
   }
   window.toggleBGM = toggleBGM;
+  // ===== COUNTDOWN =====
+  function formatDeadline(deadline) {
+    const d = new Date(deadline);
+    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  function getCountdownMs(deadline) {
+    return new Date(deadline).getTime() - Date.now();
+  }
+
+  function getCountdownClass(deadline) {
+    const ms = getCountdownMs(deadline);
+    if (ms < 0) return 'expired';
+    if (ms < 60 * 60 * 1000) return 'critical';
+    if (ms < 6 * 60 * 60 * 1000) return 'danger';
+    if (ms < 24 * 60 * 60 * 1000) return 'warning';
+    return 'safe';
+  }
+
+  function getCountdownText(deadline) {
+    const ms = getCountdownMs(deadline);
+    if (ms < 0) return '⏰ 期限切れ';
+    const totalSec = Math.floor(ms / 1000);
+    const d = Math.floor(totalSec / 86400);
+    const h = Math.floor((totalSec % 86400) / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (d > 0) return `⏳ あと${d}日${h}時間`;
+    if (h > 0) return `⏳ あと${h}時間${m}分`;
+    if (m > 0) return `⚠️ あと${m}分${s}秒`;
+    return `🚨 あと${s}秒`;
+  }
+
+  // タスクカードにdeadlineをdata属性で持たせるためrenderTasksを拡張
+  const _origRenderTasks = renderTasks;
+  function renderTasksWithData(tasks) {
+    _origRenderTasks(tasks);
+    tasks.forEach(t => {
+      const card = document.getElementById(`task-${t.id}`);
+      if (card && t.deadline) card.dataset.deadline = t.deadline;
+    });
+  }
+
+  // カウントダウンを1秒ごとに更新
+  setInterval(() => {
+    document.querySelectorAll('[id^="cd-"]').forEach(el => {
+      const taskId = el.id.replace('cd-', '');
+      const taskCard = document.getElementById(`task-${taskId}`);
+      if (!taskCard || taskCard.classList.contains('done')) return;
+      const dl = taskCard.dataset.deadline;
+      if (!dl) return;
+      el.textContent = getCountdownText(dl);
+      el.className = `countdown ${getCountdownClass(dl)}`;
+    });
+  }, 1000);
+
   function getAuthError(code) {
     const map = {
       'auth/email-already-in-use': 'このメールアドレスは既に使用中です',
