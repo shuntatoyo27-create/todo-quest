@@ -931,14 +931,14 @@
   <!-- Today's Tasks -->
   <div class="section-header">
     <span class="section-title">📜 今日のクエスト</span>
-    <button class="add-btn" onclick="openAddTask()">+</button>
-  </div>
-  <div class="tasks-list" id="tasks-list">
-    <div class="empty-state">
-      <span>🗺️</span>
-      <p>まだクエストがありません<br>+ボタンで追加しよう！</p>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button id="sort-btn" onclick="toggleTaskSort()" style="background:var(--surface2);border:3px solid var(--surface2);color:var(--text-muted);font-family:'DotGothic16',monospace;font-size:10px;padding:5px 8px;border-radius:4px;cursor:pointer;transition:all 0.2s;" title="並び替え">
+        📅 期限順
+      </button>
+      <button class="add-btn" onclick="openAddTask()">+</button>
     </div>
   </div>
+  <div class="tasks-list" id="tasks-list"></div>
 
   <!-- Bulletin Board -->
   <div class="section-header" style="margin-top:24px;">
@@ -1812,23 +1812,53 @@
   };
 
   // ===== TASKS =====
+  let taskSortMode = 'deadline'; // 'deadline' | 'created'
+  let cachedTasks = [];
+
+  window.toggleTaskSort = () => {
+    taskSortMode = taskSortMode === 'deadline' ? 'created' : 'deadline';
+    const btn = document.getElementById('sort-btn');
+    if (btn) {
+      btn.textContent = taskSortMode === 'deadline' ? '📅 期限順' : '🕐 追加順';
+      btn.style.borderColor = taskSortMode === 'deadline' ? 'var(--secondary)' : 'var(--surface2)';
+      btn.style.color = taskSortMode === 'deadline' ? 'var(--secondary)' : 'var(--text-muted)';
+    }
+    renderTasks(cachedTasks);
+  };
+
   function subscribeToTasks() {
     if (tasksUnsub) tasksUnsub();
-    const today = new Date(); today.setHours(0,0,0,0);
     const q = query(collection(db, 'tasks'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
     tasksUnsub = onSnapshot(q, snap => {
-      const tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderTasks(tasks);
+      cachedTasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderTasks(cachedTasks);
+    });
+  }
+
+  function sortTasks(tasks) {
+    if (taskSortMode === 'created') return [...tasks];
+    return [...tasks].sort((a, b) => {
+      const aComplete = a.isComplete ? 1 : 0;
+      const bComplete = b.isComplete ? 1 : 0;
+      if (aComplete !== bComplete) return aComplete - bComplete;
+      // 完了済みは下へ
+      if (a.isComplete) return 0;
+      // 期限なしは一番下
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline) - new Date(b.deadline);
     });
   }
 
   function renderTasks(tasks) {
     const list = document.getElementById('tasks-list');
-    if (tasks.length === 0) {
+    const sorted = sortTasks(tasks);
+    if (sorted.length === 0) {
       list.innerHTML = `<div class="empty-state"><span>🗺️</span><p>まだクエストがありません<br>+ボタンで追加しよう！</p></div>`;
       return;
     }
-    list.innerHTML = tasks.map(t => `
+    list.innerHTML = sorted.map(t => `
       <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''}>
         <button class="task-check ${t.isComplete ? 'checked' : ''}" onclick="toggleTask('${t.id}', ${t.isComplete})">
           ${t.isComplete ? '✓' : ''}
