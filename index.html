@@ -1042,6 +1042,36 @@
   </div>
 </div>
 
+<!-- Member Detail Modal -->
+<div class="modal-overlay" id="member-detail-modal">
+  <div class="modal" style="max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div id="md-avatar" style="width:56px;height:56px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:4px;border:3px solid var(--purple);overflow:hidden;flex-shrink:0;"></div>
+      <div>
+        <div id="md-name" style="font-family:'DotGothic16',monospace;font-size:16px;margin-bottom:4px;"></div>
+        <div id="md-level" style="font-size:12px;color:var(--secondary);font-family:'DotGothic16',monospace;"></div>
+      </div>
+    </div>
+
+    <!-- 今日のクエスト -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'DotGothic16',monospace;font-size:13px;color:var(--secondary);margin-bottom:10px;">📜 今日のクエスト</div>
+      <div id="md-daily-tasks" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <!-- 進行中のメインクエスト -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'DotGothic16',monospace;font-size:13px;color:var(--accent);margin-bottom:10px;">🏰 進行中のクエスト</div>
+      <div id="md-main-quests" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button id="md-react-btn" class="btn-add" style="flex:1;" onclick="openReactionFromDetail()">👏 リアクション</button>
+      <button class="btn-secondary" onclick="closeMemberDetail()">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- Item List Modal -->
 <div class="modal-overlay" id="item-list-modal">
   <div class="modal" style="max-height:85vh;overflow-y:auto;">
@@ -2010,6 +2040,102 @@
     await deleteDoc(doc(db, 'boardPosts', postId));
   };
 
+  // ===== MEMBER DETAIL =====
+  let mdCurrentUserId = null;
+  let mdCurrentGroupId = null;
+
+  window.openMemberDetail = async (uid, name, groupId) => {
+    mdCurrentUserId = uid;
+    mdCurrentGroupId = groupId;
+    document.getElementById('member-detail-modal').classList.add('open');
+    document.getElementById('md-name').textContent = name;
+    document.getElementById('md-daily-tasks').innerHTML = '<div style="color:var(--text-muted);font-size:12px;">読み込み中...</div>';
+    document.getElementById('md-main-quests').innerHTML = '<div style="color:var(--text-muted);font-size:12px;">読み込み中...</div>';
+
+    // ユーザー情報取得
+    const uSnap = await getDoc(doc(db, 'users', uid));
+    if (uSnap.exists()) {
+      const u = uSnap.data();
+      document.getElementById('md-level').textContent = `Lv.${u.level || 1} ${getClass(u.level || 1)}`;
+      // アバター描画
+      const avatarDiv = document.getElementById('md-avatar');
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 16 16');
+      svg.setAttribute('width', '56');
+      svg.setAttribute('height', '56');
+      svg.style.imageRendering = 'pixelated';
+      renderAvatarSVG(u.avatarConfig || currentAvatarConfig, svg);
+      avatarDiv.innerHTML = '';
+      avatarDiv.appendChild(svg);
+    }
+
+    // 今日のクエスト（未完了のみ）
+    const tasksSnap = await getDocs(query(
+      collection(db, 'tasks'),
+      where('userId', '==', uid),
+      where('isComplete', '==', false)
+    ));
+    const dailyTasks = tasksSnap.docs.map(d => d.data());
+    const dailyEl = document.getElementById('md-daily-tasks');
+    if (dailyTasks.length === 0) {
+      dailyEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px;text-align:center;">未完了のクエストなし🎉</div>';
+    } else {
+      dailyEl.innerHTML = dailyTasks.map(t => `
+        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;display:flex;align-items:center;gap:8px;border:2px solid var(--surface2);">
+          <span style="font-size:14px;">📜</span>
+          <div style="flex:1;">
+            <div style="font-family:'DotGothic16',monospace;font-size:12px;">${escHtml(t.title)}</div>
+            ${t.deadline ? `<div style="font-size:10px;color:${getCountdownClass(t.deadline)==='critical'?'var(--primary)':getCountdownClass(t.deadline)==='danger'?'#ff8800':'var(--text-muted)'};">${getCountdownText(t.deadline)}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 進行中のメインクエスト（未完了のみ）
+    const mqSnap = await getDocs(query(
+      collection(db, 'mainQuests'),
+      where('userId', '==', uid),
+      where('isComplete', '==', false)
+    ));
+    const mainQuests = mqSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const mqEl = document.getElementById('md-main-quests');
+    if (mainQuests.length === 0) {
+      mqEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px;text-align:center;">進行中のクエストなし</div>';
+    } else {
+      const mqHtmlArr = [];
+      for (const mq of mainQuests) {
+        // タスク数を取得
+        const subSnap = await getDocs(query(collection(db, 'subQuests'), where('mainQuestId', '==', mq.id)));
+        let total = 0, done = 0;
+        for (const sq of subSnap.docs) {
+          const tSnap = await getDocs(query(collection(db, 'questTasks'), where('subQuestId', '==', sq.id)));
+          total += tSnap.size;
+          done += tSnap.docs.filter(d => d.data().isComplete).length;
+        }
+        const pct = total > 0 ? Math.round((done/total)*100) : 0;
+        mqHtmlArr.push(`
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;">
+            <div style="font-family:'DotGothic16',monospace;font-size:12px;margin-bottom:6px;">🏰 ${escHtml(mq.title)}</div>
+            <div style="background:rgba(0,0,0,0.3);border-radius:4px;height:6px;margin-bottom:4px;">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--blue));border-radius:4px;"></div>
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);font-family:'DotGothic16',monospace;">${done}/${total} タスク完了 (${pct}%)</div>
+          </div>
+        `);
+      }
+      mqEl.innerHTML = mqHtmlArr.join('');
+    }
+  };
+
+  window.closeMemberDetail = () => {
+    document.getElementById('member-detail-modal').classList.remove('open');
+  };
+
+  window.openReactionFromDetail = () => {
+    closeMemberDetail();
+    setTimeout(() => openReactionModal(mdCurrentUserId, document.getElementById('md-name').textContent, mdCurrentGroupId), 200);
+  };
+
   // ===== GROUP SYSTEM =====
   let groupsUnsub = null;
   let currentGroupId = null;
@@ -2086,7 +2212,7 @@
         ` : '';
 
         memberHtml.push(`
-          <div class="member-card">
+          <div class="member-card" onclick="openMemberDetail('${uid}','${escHtml(u.nickname||'勇者')}','${group.id}')" style="cursor:pointer;">
             <div class="member-avatar-wrap">
               <div class="member-avatar">${svgStr}</div>
             </div>
@@ -2095,11 +2221,13 @@
               <div class="member-level">Lv.${u.level || 1} ${getClass(u.level || 1)}</div>
               ${reactionHtml}
             </div>
-            ${!isMe ? `
-            <div class="member-actions">
-              <button class="react-btn" onclick="openReactionModal('${uid}','${escHtml(u.nickname||'勇者')}','${group.id}')" title="リアクション">👏</button>
-              <button class="react-btn" onclick="openPresentModal('${uid}','${escHtml(u.nickname||'勇者')}','${group.id}')" title="プレゼント">🎁</button>
-            </div>` : ''}
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+              ${!isMe ? `
+              <button class="react-btn" onclick="event.stopPropagation();openReactionModal('${uid}','${escHtml(u.nickname||'勇者')}','${group.id}')" title="リアクション">👏</button>
+              <button class="react-btn" onclick="event.stopPropagation();openPresentModal('${uid}','${escHtml(u.nickname||'勇者')}','${group.id}')" title="プレゼント">🎁</button>
+              ` : ''}
+              <span style="font-size:10px;color:var(--text-muted);font-family:'DotGothic16',monospace;">詳細 ›</span>
+            </div>
           </div>
         `);
       }
