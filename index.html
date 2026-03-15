@@ -627,6 +627,9 @@
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+    @keyframes titleShimmer { from { opacity:0.8; filter:brightness(0.9); } to { opacity:1; filter:brightness(1.3) drop-shadow(0 0 4px currentColor); } }
+    @keyframes rainbowBorder { 0% { filter:hue-rotate(0deg); } 100% { filter:hue-rotate(360deg); } }
+
     @keyframes setGlow { from { filter:brightness(1); } to { filter:brightness(1.4) drop-shadow(0 0 12px currentColor); } }
     .set-badge { display:inline-block; font-family:'DotGothic16',monospace; font-size:10px; padding:3px 8px; border-radius:4px; border:2px solid; margin-left:6px; }
 
@@ -891,6 +894,7 @@
       </div>
       <div class="hero-info">
         <h2 id="hero-name">勇者</h2>
+        <div id="hero-title-plate" style="margin:4px 0 2px;"></div>
         <div class="hero-class" id="hero-class">見習い冒険者</div>
       </div>
     </div>
@@ -1013,6 +1017,7 @@
         <div id="pf-name" style="font-family:'DotGothic16',monospace;font-size:18px;"></div>
         <button onclick="openEditNickname()" style="background:transparent;border:2px solid var(--surface2);border-radius:4px;padding:3px 7px;font-size:11px;color:var(--text-muted);cursor:pointer;">✏️</button>
       </div>
+      <div id="pf-title-plate" style="margin-bottom:6px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;"></div>
       <div id="pf-class" style="font-family:'DotGothic16',monospace;font-size:12px;color:var(--purple);margin-bottom:12px;"></div>
       <!-- EXPバー -->
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;">
@@ -1047,6 +1052,12 @@
         <span class="stat-num" id="pf-items">0</span>
         <span class="stat-label">アイテム数</span>
       </div>
+    </div>
+
+    <!-- 二つ名 -->
+    <div>
+      <div style="font-family:'DotGothic16',monospace;font-size:14px;color:var(--purple);margin-bottom:10px;">⚜️ 二つ名</div>
+      <div id="pf-titles-list" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
     <!-- 実績・バッジ -->
@@ -1595,6 +1606,8 @@
     document.getElementById('hero-class').textContent = getClass(level);
     // アバターSVGを更新（定義後に呼ぶため遅延実行）
     setTimeout(() => { if(typeof updateAvatarDisplay === 'function') updateAvatarDisplay(); }, 0);
+    // 二つ名プレートを更新
+    setTimeout(() => { if(typeof updateTitlePlates === 'function') updateTitlePlates(); }, 0);
     document.getElementById('exp-text').textContent = `${exp} / ${needed}`;
     document.getElementById('exp-bar').style.width = pct + '%';
     document.getElementById('stat-streak').textContent = loginStreak || 0;
@@ -2050,6 +2063,284 @@
     subscribeToQuests();
   };
 
+  window.equipTitle = async (titleId) => {
+    await updateDoc(doc(db, 'users', currentUser.uid), { equippedTitle: titleId });
+    userData.equippedTitle = titleId;
+    updateTitlePlates();
+    renderProfile();
+    playSoundTaskDone();
+  };
+
+  // ===== 二つ名システム =====
+  const TITLES = [
+    {
+      id: 'beginner',
+      name: '始まりの旅人',
+      check: u => true,
+      plate: {
+        bg: 'linear-gradient(135deg,#3a2a1a,#2a1a0a)',
+        border: '#8B6544',
+        shadow: 'none',
+        textColor: '#cc9966',
+        decoration: '',
+        fontSize: '10px',
+      }
+    },
+    {
+      id: 'task10',
+      name: '駆け出し冒険者',
+      check: u => (u.totalCompleted||0) >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a2a1a,#0a1a0a)',
+        border: '#44aa44',
+        shadow: '0 0 6px rgba(68,170,68,0.3)',
+        textColor: '#66cc66',
+        decoration: '⚔️',
+        fontSize: '10px',
+      }
+    },
+    {
+      id: 'task50',
+      name: '歴戦の勇士',
+      check: u => (u.totalCompleted||0) >= 50,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a1a2a,#0a0a2a)',
+        border: '#4488ff',
+        shadow: '0 0 8px rgba(68,136,255,0.4)',
+        textColor: '#88aaff',
+        decoration: '🛡️',
+        fontSize: '10px',
+      }
+    },
+    {
+      id: 'task100',
+      name: 'クエストマスター',
+      check: u => (u.totalCompleted||0) >= 100,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a2a0a,#1a1a00)',
+        border: '#ffd700',
+        shadow: '0 0 12px rgba(255,215,0,0.5)',
+        textColor: '#ffd700',
+        decoration: '👑',
+        fontSize: '10px',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'level10',
+      name: '勇者の証',
+      check: u => (u.level||1) >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a2a2a,#1a1a1a)',
+        border: '#aaaaaa',
+        shadow: '0 0 8px rgba(200,200,200,0.4)',
+        textColor: '#dddddd',
+        decoration: '⚔️',
+        fontSize: '10px',
+      }
+    },
+    {
+      id: 'level20',
+      name: '伝説の覇者',
+      check: u => (u.level||1) >= 20,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a1a00,#1a0800)',
+        border: '#ff8800',
+        shadow: '0 0 16px rgba(255,136,0,0.6), 0 0 32px rgba(255,136,0,0.3)',
+        textColor: '#ffcc44',
+        decoration: '🌟',
+        fontSize: '10px',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'streak30',
+      name: '鋼の意志',
+      check: u => (u.loginStreak||0) >= 30,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a1a2a,#0a0a1a)',
+        border: '#8888ff',
+        shadow: '0 0 10px rgba(136,136,255,0.4)',
+        textColor: '#aaaaff',
+        decoration: '💎',
+        fontSize: '10px',
+      }
+    },
+    {
+      id: 'dragon_slayer',
+      name: 'ドラゴンスレイヤー',
+      check: u => (u.level||1) >= 20,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a0000,#1a0000)',
+        border: '#ff4400',
+        shadow: '0 0 14px rgba(255,68,0,0.6), 0 0 28px rgba(255,68,0,0.3)',
+        textColor: '#ff8844',
+        decoration: '🐉',
+        fontSize: '10px',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'metal_hunter',
+      name: 'フルメタルボディ',
+      check: u => (u.metalKingCount||0) >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a2a2a,#111)',
+        border: '#aaddff',
+        shadow: '0 0 16px rgba(170,221,255,0.6), 0 0 32px rgba(170,221,255,0.3)',
+        textColor: '#aaddff',
+        decoration: '👑',
+        fontSize: '10px',
+        shimmer: true,
+        metallic: true,
+      }
+    },
+    {
+      id: 'collector',
+      name: '宝物庫の主',
+      check: u => (u.chestItems||[]).length >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a2a0a,#0a1a00)',
+        border: '#44cc88',
+        shadow: '0 0 8px rgba(68,204,136,0.4)',
+        textColor: '#66ffaa',
+        decoration: '🎁',
+        fontSize: '10px',
+      }
+    },
+    {
+      id: 'zeus_set',
+      name: '雷神の申し子',
+      check: u => u.chestItems && ['body_zeus','hat_zeus','weapon_zeus','effect_zeus'].every(id => u.chestItems.includes(id)),
+      plate: {
+        bg: 'linear-gradient(135deg,#2a2a00,#1a1800)',
+        border: '#ffdd00',
+        shadow: '0 0 20px rgba(255,221,0,0.7), 0 0 40px rgba(255,221,0,0.4)',
+        textColor: '#ffee44',
+        decoration: '⚡',
+        fontSize: '10px',
+        shimmer: true,
+        lightning: true,
+      }
+    },
+    {
+      id: 'abyss_set',
+      name: '深海の王',
+      check: u => u.chestItems && ['body_abyss','hat_abyss','weapon_abyss','effect_abyss'].every(id => u.chestItems.includes(id)),
+      plate: {
+        bg: 'linear-gradient(135deg,#001a2a,#000a1a)',
+        border: '#00aaff',
+        shadow: '0 0 20px rgba(0,170,255,0.7), 0 0 40px rgba(0,170,255,0.4)',
+        textColor: '#00ccff',
+        decoration: '🌊',
+        fontSize: '10px',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'dark_set',
+      name: '闇の支配者',
+      check: u => u.chestItems && ['body_dark','hat_dark','weapon_dark','effect_dark_set'].every(id => u.chestItems.includes(id)),
+      plate: {
+        bg: 'linear-gradient(135deg,#0a0010,#050008)',
+        border: '#8800ff',
+        shadow: '0 0 20px rgba(136,0,255,0.7), 0 0 40px rgba(136,0,255,0.4)',
+        textColor: '#cc44ff',
+        decoration: '🖤',
+        fontSize: '10px',
+        shimmer: true,
+        dark: true,
+      }
+    },
+    {
+      id: 'all_sets',
+      name: '万物の覇者',
+      check: u => {
+        const all = ['body_zeus','hat_zeus','weapon_zeus','effect_zeus','body_abyss','hat_abyss','weapon_abyss','effect_abyss','body_dark','hat_dark','weapon_dark','effect_dark_set'];
+        return u.chestItems && all.every(id => u.chestItems.includes(id));
+      },
+      plate: {
+        bg: 'linear-gradient(135deg,#1a0a2a,#0a0015)',
+        border: 'transparent',
+        shadow: '0 0 24px rgba(199,125,255,0.8), 0 0 48px rgba(255,215,0,0.4)',
+        textColor: '#ffffff',
+        decoration: '✦',
+        fontSize: '10px',
+        shimmer: true,
+        rainbow: true,
+      }
+    },
+    {
+      id: 'sabori_catcher',
+      name: 'さぼり監察官',
+      check: u => (u.reactionsSent||0) >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a1a1a,#0a0a0a)',
+        border: '#ff6b6b',
+        shadow: '0 0 8px rgba(255,107,107,0.4)',
+        textColor: '#ff9999',
+        decoration: '👮',
+        fontSize: '10px',
+      }
+    },
+  ];
+
+  // プレートHTML生成
+  function makeTitlePlateHTML(title, small = false) {
+    const p = title.plate;
+    const size = small ? '10px' : '11px';
+    const pad = small ? '3px 8px' : '4px 12px';
+    let borderStyle = `3px solid ${p.border}`;
+    let extra = '';
+
+    if (p.rainbow) {
+      borderStyle = '3px solid transparent';
+      extra = `background-clip:padding-box;outline:2px solid transparent;background-image:${p.bg};animation:rainbowBorder 2s linear infinite;`;
+    }
+    if (p.shimmer) {
+      extra += `animation:titleShimmer 2s ease-in-out infinite alternate;`;
+    }
+    if (p.metallic) {
+      extra += `background-image:linear-gradient(135deg,#aaddff,#ffffff,#aaddff,#88bbdd);background-size:200%;`;
+    }
+
+    return `<span style="
+      display:inline-flex;align-items:center;gap:4px;
+      background:${p.rainbow ? 'linear-gradient(135deg,#cc44ff,#ffdd00,#00ccff,#cc44ff)' : p.bg};
+      border:${borderStyle};
+      border-radius:4px;
+      padding:${pad};
+      font-family:'DotGothic16',monospace;
+      font-size:${size};
+      color:${p.textColor};
+      box-shadow:${p.shadow};
+      ${extra}
+      text-shadow:0 0 8px ${p.textColor}44;
+      white-space:nowrap;
+    ">${p.decoration ? p.decoration + ' ' : ''}${title.name}</span>`;
+  }
+
+  // ユーザーが持っている二つ名を取得
+  function getEarnedTitles(u) {
+    return TITLES.filter(t => t.check(u));
+  }
+
+  // 装備中の二つ名を取得
+  function getEquippedTitle(u) {
+    const equippedId = u.equippedTitle || 'beginner';
+    return TITLES.find(t => t.id === equippedId) || TITLES[0];
+  }
+
+  // プレートを更新
+  function updateTitlePlates() {
+    if (!userData) return;
+    const title = getEquippedTitle(userData);
+    const plateEl = document.getElementById('hero-title-plate');
+    if (plateEl) plateEl.innerHTML = makeTitlePlateHTML(title, true);
+    const pfPlateEl = document.getElementById('pf-title-plate');
+    if (pfPlateEl) pfPlateEl.innerHTML = makeTitlePlateHTML(title, false);
+  }
+
   // ===== さぼり通知システム =====
   let saboriQueue = [];        // 通知キュー
   let saboriShowing = false;   // 表示中フラグ
@@ -2237,6 +2528,25 @@
     const mqSnap = await getDocs(query(collection(db, 'mainQuests'), where('userId','==',currentUser.uid)));
     const completedQuests = mqSnap.docs.filter(d => d.data().isComplete);
     document.getElementById('pf-quests').textContent = completedQuests.length;
+
+    // 二つ名プレート表示
+    updateTitlePlates();
+
+    // 二つ名一覧
+    const titlesEl = document.getElementById('pf-titles-list');
+    const earnedTitles = getEarnedTitles(u);
+    const equippedId = u.equippedTitle || 'beginner';
+    titlesEl.innerHTML = TITLES.map(t => {
+      const earned = t.check(u);
+      const isEquipped = t.id === equippedId;
+      return `
+        <div style="display:flex;align-items:center;gap:10px;background:${earned?'var(--surface)':'rgba(255,255,255,0.02)'};border:3px solid ${earned?'var(--surface2)':'rgba(255,255,255,0.05)'};border-radius:var(--radius);padding:10px 12px;opacity:${earned?1:0.35};">
+          <div style="flex:1;">${earned ? makeTitlePlateHTML(t, false) : `<span style="font-family:'DotGothic16',monospace;font-size:11px;color:var(--text-muted);">🔒 ${t.name}</span>`}</div>
+          ${earned && !isEquipped ? `<button onclick="equipTitle('${t.id}')" style="background:var(--surface2);border:3px solid var(--surface2);color:var(--text-muted);font-family:'DotGothic16',monospace;font-size:10px;padding:6px 8px;border-radius:4px;cursor:pointer;white-space:nowrap;">装備する</button>` : ''}
+          ${isEquipped ? `<span style="font-family:'DotGothic16',monospace;font-size:10px;color:var(--secondary);">装備中✅</span>` : ''}
+        </div>
+      `;
+    }).join('');
 
     // バッジ
     const badgesEl = document.getElementById('pf-badges');
@@ -3929,6 +4239,12 @@
           showBattleEffect('🌟', 60, 60);
           spawnParticles(40, true);
           playSoundEpicDrop();
+          // メタルキング撃破カウント
+          if (currentUser && userData) {
+            const newCount = (userData.metalKingCount || 0) + 1;
+            userData.metalKingCount = newCount;
+            updateDoc(doc(db, 'users', currentUser.uid), { metalKingCount: newCount });
+          }
         } else if (isRare) {
           setMsg(`✨ ${monster.name}をたおした！ +${expGain}EXP！`);
           showBattleEffect('🌟', 130, 50);
