@@ -1176,6 +1176,7 @@
       <div id="md-avatar" style="width:56px;height:56px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:4px;border:3px solid var(--purple);overflow:hidden;flex-shrink:0;"></div>
       <div>
         <div id="md-name" style="font-family:'DotGothic16',monospace;font-size:16px;margin-bottom:4px;"></div>
+        <div id="md-title" style="margin-bottom:4px;"></div>
         <div id="md-level" style="font-size:12px;color:var(--secondary);font-family:'DotGothic16',monospace;"></div>
       </div>
     </div>
@@ -2746,6 +2747,9 @@
     if (uSnap.exists()) {
       const u = uSnap.data();
       document.getElementById('md-level').textContent = `Lv.${u.level || 1} ${getClass(u.level || 1)}`;
+      // 二つ名プレートを追加
+      const mdTitle = document.getElementById('md-title');
+      if (mdTitle) mdTitle.innerHTML = makeTitlePlateHTML(getEquippedTitle(u), false);
       // アバター描画
       const avatarDiv = document.getElementById('md-avatar');
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -2905,6 +2909,7 @@
             </div>
             <div class="member-info">
               <div class="member-name">${escHtml(u.nickname || '勇者')} ${isMe ? '（自分）' : ''}</div>
+              <div style="margin:3px 0;">${makeTitlePlateHTML(getEquippedTitle(u), true)}</div>
               <div class="member-level">Lv.${u.level || 1} ${getClass(u.level || 1)}</div>
               ${reactionHtml}
             </div>
