@@ -991,6 +991,106 @@
   </nav>
 </div>
 
+<!-- ===== PROFILE SCREEN ===== -->
+<div class="screen" id="profile-screen">
+  <div class="top-bar">
+    <span class="app-title">👤 プロフィール</span>
+  </div>
+  <div style="padding:0 20px 100px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;">
+
+    <!-- アバターカード -->
+    <div class="hero-card" style="text-align:center;">
+      <div style="display:flex;justify-content:center;margin-bottom:16px;">
+        <div style="position:relative;display:inline-block;" id="pf-avatar-wrap">
+          <div style="width:96px;height:96px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:8px;border:4px solid var(--purple);overflow:hidden;margin:0 auto;">
+            <svg id="pf-avatar-svg" width="96" height="96" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;"></svg>
+          </div>
+          <button onclick="openAvatarEditor()" style="position:absolute;bottom:-4px;right:-4px;background:var(--secondary);border:2px solid var(--bg);border-radius:4px;padding:4px 6px;font-size:12px;cursor:pointer;">✏️</button>
+        </div>
+      </div>
+      <!-- ニックネーム -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;">
+        <div id="pf-name" style="font-family:'DotGothic16',monospace;font-size:18px;"></div>
+        <button onclick="openEditNickname()" style="background:transparent;border:2px solid var(--surface2);border-radius:4px;padding:3px 7px;font-size:11px;color:var(--text-muted);cursor:pointer;">✏️</button>
+      </div>
+      <div id="pf-class" style="font-family:'DotGothic16',monospace;font-size:12px;color:var(--purple);margin-bottom:12px;"></div>
+      <!-- EXPバー -->
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;">
+        <span>⭐ EXP</span><span id="pf-exp-text"></span>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:20px;height:10px;overflow:hidden;">
+        <div id="pf-exp-bar" style="height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:20px;transition:width 0.8s;"></div>
+      </div>
+      <!-- セットバッジ -->
+      <div id="pf-set-badge" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- 統計カード -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="stat-card">
+        <span class="stat-icon">✅</span>
+        <span class="stat-num" id="pf-done">0</span>
+        <span class="stat-label">累計完了</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🔥</span>
+        <span class="stat-num" id="pf-streak">0</span>
+        <span class="stat-label">連続日数</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🏰</span>
+        <span class="stat-num" id="pf-quests">0</span>
+        <span class="stat-label">クエスト完了</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🎒</span>
+        <span class="stat-num" id="pf-items">0</span>
+        <span class="stat-label">アイテム数</span>
+      </div>
+    </div>
+
+    <!-- 実績・バッジ -->
+    <div>
+      <div style="font-family:'DotGothic16',monospace;font-size:14px;color:var(--secondary);margin-bottom:10px;">🏆 実績・バッジ</div>
+      <div id="pf-badges" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+
+    <!-- 所持アイテム -->
+    <div>
+      <div style="font-family:'DotGothic16',monospace;font-size:14px;color:var(--accent);margin-bottom:10px;">🎒 所持アイテム</div>
+      <div id="pf-items-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- 完了クエスト -->
+    <div>
+      <div style="font-family:'DotGothic16',monospace;font-size:14px;color:var(--blue);margin-bottom:10px;">⚔️ 完了クエスト</div>
+      <div id="pf-completed-quests" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
+  </div>
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
+    <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item active" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
+  </nav>
+</div>
+
+<!-- Edit Nickname Modal -->
+<div class="modal-overlay" id="edit-nickname-modal">
+  <div class="modal">
+    <h3 style="font-family:'DotGothic16',monospace;font-size:15px;margin-bottom:16px;">✏️ ニックネーム変更</h3>
+    <div class="form-group">
+      <label>新しいニックネーム</label>
+      <input type="text" id="nickname-input" placeholder="新しい名前" maxlength="20" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeEditNickname()">キャンセル</button>
+      <button class="btn-add" onclick="saveNickname()">保存する 💾</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== GROUP SCREEN ===== -->
 <div class="screen" id="group-screen">
   <div class="top-bar">
@@ -1006,6 +1106,22 @@
     <button class="nav-item active" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
+</div>
+
+<!-- Sabori Notification Banner -->
+<div id="sabori-banner" style="display:none;position:fixed;bottom:90px;left:12px;right:12px;z-index:300;animation:slideUpModal 0.3s ease;">
+  <div style="background:linear-gradient(135deg,#1a1020,#2a1530);border:3px solid var(--primary);border-radius:var(--radius);padding:14px 16px;box-shadow:0 0 20px rgba(255,107,107,0.4),4px 4px 0 rgba(0,0,0,0.5);">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:28px;flex-shrink:0;">⚠️</span>
+      <div style="flex:1;">
+        <div id="sabori-msg" style="font-family:'DotGothic16',monospace;font-size:12px;color:var(--text);margin-bottom:8px;line-height:1.6;"></div>
+        <div style="display:flex;gap:8px;">
+          <button id="sabori-action-btn" style="background:var(--primary);border:3px solid #cc4444;color:white;font-family:'DotGothic16',monospace;font-size:11px;padding:6px 12px;border-radius:4px;cursor:pointer;box-shadow:2px 2px 0 #cc4444;flex:1;">👏 一言送る</button>
+          <button onclick="closeSaboriBanner()" style="background:var(--surface2);border:3px solid var(--surface2);color:var(--text-muted);font-family:'DotGothic16',monospace;font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">✖</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Set Bonus Overlay -->
@@ -1648,12 +1764,13 @@
       b.classList.toggle('active', map[label] === page);
     });
     // 画面切り替え
-    const screens = { home: 'home-screen', quests: 'quest-screen', group: 'group-screen' };
+    const screens = { home: 'home-screen', quests: 'quest-screen', group: 'group-screen', profile: 'profile-screen' };
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const targetId = screens[page] || 'home-screen';
     document.getElementById(targetId).classList.add('active');
     if (page === 'quests') subscribeToQuests();
     if (page === 'group') subscribeToGroups();
+    if (page === 'profile') renderProfile();
   };
 
   // ===== QUEST STATE =====
@@ -1931,6 +2048,268 @@
     if (!confirm('タスクを削除しますか？')) return;
     await deleteDoc(doc(db, 'questTasks', id));
     subscribeToQuests();
+  };
+
+  // ===== さぼり通知システム =====
+  let saboriQueue = [];        // 通知キュー
+  let saboriShowing = false;   // 表示中フラグ
+  let saboriChecked = new Set(); // 通知済みタスクID（重複防止）
+
+  async function checkSaboriAlerts() {
+    if (!currentUser || !userData) return;
+    const now = Date.now();
+    const ALERT_MS = 30 * 60 * 1000; // 30分
+
+    const newAlerts = [];
+
+    // 自分のタスクをチェック
+    const myTasksSnap = await getDocs(query(
+      collection(db, 'tasks'),
+      where('userId', '==', currentUser.uid),
+      where('isComplete', '==', false)
+    ));
+    for (const d of myTasksSnap.docs) {
+      const t = d.data();
+      if (!t.deadline) continue;
+      const ms = new Date(t.deadline).getTime() - now;
+      const key = `self_${d.id}`;
+      if (ms > 0 && ms <= ALERT_MS && !saboriChecked.has(key)) {
+        saboriChecked.add(key);
+        newAlerts.push({
+          msg: `⏰ 「${t.title}」の期限まで30分を切った！\nさぼらず終わらせよう！`,
+          isSelf: true,
+          taskTitle: t.title,
+          userId: null,
+          userName: null,
+          groupId: null,
+        });
+      }
+    }
+
+    // グループメンバーのタスクをチェック
+    const groupsSnap = await getDocs(query(
+      collection(db, 'groups'),
+      where('members', 'array-contains', currentUser.uid)
+    ));
+    for (const gDoc of groupsSnap.docs) {
+      const group = gDoc.data();
+      for (const uid of group.members) {
+        if (uid === currentUser.uid) continue;
+        const uSnap = await getDoc(doc(db, 'users', uid));
+        if (!uSnap.exists()) continue;
+        const uData = uSnap.data();
+        const memberTasksSnap = await getDocs(query(
+          collection(db, 'tasks'),
+          where('userId', '==', uid),
+          where('isComplete', '==', false)
+        ));
+        for (const d of memberTasksSnap.docs) {
+          const t = d.data();
+          if (!t.deadline) continue;
+          const ms = new Date(t.deadline).getTime() - now;
+          const key = `member_${d.id}`;
+          if (ms > 0 && ms <= ALERT_MS && !saboriChecked.has(key)) {
+            saboriChecked.add(key);
+            newAlerts.push({
+              msg: `😤 ${uData.nickname||'仲間'}さんが「${t.title}」をさぼりそう！\n一言言ってやれ！`,
+              isSelf: false,
+              taskTitle: t.title,
+              userId: uid,
+              userName: uData.nickname || '仲間',
+              groupId: gDoc.id,
+            });
+          }
+        }
+      }
+    }
+
+    // キューに追加
+    if (newAlerts.length > 0) {
+      saboriQueue.push(...newAlerts);
+      if (!saboriShowing) showNextSabori();
+    }
+  }
+
+  function showNextSabori() {
+    if (saboriQueue.length === 0) { saboriShowing = false; return; }
+    saboriShowing = true;
+    const alert = saboriQueue.shift();
+    const banner = document.getElementById('sabori-banner');
+    const msg = document.getElementById('sabori-msg');
+    const btn = document.getElementById('sabori-action-btn');
+
+    msg.textContent = alert.msg;
+
+    if (alert.isSelf) {
+      btn.textContent = '💪 やるぞ！';
+      btn.onclick = () => {
+        closeSaboriBanner();
+        navTo('home');
+      };
+    } else {
+      btn.textContent = '👏 一言送る';
+      btn.onclick = () => {
+        closeSaboriBanner();
+        openReactionModal(alert.userId, alert.userName, alert.groupId);
+      };
+    }
+
+    banner.style.display = 'block';
+    // サウンド
+    try {
+      const ac = getAudioCtx();
+      playTone(880, 'square', 0, 0.08, 0.2, ac);
+      playTone(660, 'square', 0.1, 0.08, 0.2, ac);
+    } catch(e) {}
+
+    // 10秒後に自動で次へ
+    setTimeout(() => {
+      banner.style.display = 'none';
+      saboriShowing = false;
+      if (saboriQueue.length > 0) setTimeout(showNextSabori, 1000);
+    }, 10000);
+  }
+
+  window.closeSaboriBanner = () => {
+    document.getElementById('sabori-banner').style.display = 'none';
+    saboriShowing = false;
+    if (saboriQueue.length > 0) setTimeout(showNextSabori, 500);
+  };
+
+  // 5分ごとにチェック
+  setInterval(checkSaboriAlerts, 5 * 60 * 1000);
+  // ログイン後も即チェック
+  setTimeout(checkSaboriAlerts, 3000);
+
+  // ===== PROFILE =====
+  const BADGES = [
+    { id:'first_task',   icon:'🌱', name:'はじめの一歩',   desc:'初めてタスクを完了',         check: u => (u.totalCompleted||0) >= 1 },
+    { id:'task10',       icon:'⚔️', name:'冒険者',          desc:'タスクを10個完了',           check: u => (u.totalCompleted||0) >= 10 },
+    { id:'task50',       icon:'🛡️', name:'熟練冒険者',      desc:'タスクを50個完了',           check: u => (u.totalCompleted||0) >= 50 },
+    { id:'task100',      icon:'👑', name:'伝説の勇者',      desc:'タスクを100個完了',          check: u => (u.totalCompleted||0) >= 100 },
+    { id:'streak3',      icon:'🔥', name:'3日連続',         desc:'3日連続ログイン',            check: u => (u.loginStreak||0) >= 3 },
+    { id:'streak7',      icon:'💎', name:'1週間連続',       desc:'7日連続ログイン',            check: u => (u.loginStreak||0) >= 7 },
+    { id:'streak30',     icon:'🌟', name:'1ヶ月連続',       desc:'30日連続ログイン',           check: u => (u.loginStreak||0) >= 30 },
+    { id:'level5',       icon:'✨', name:'Lv5達成',         desc:'レベル5に到達',              check: u => (u.level||1) >= 5 },
+    { id:'level10',      icon:'🏆', name:'Lv10達成',        desc:'レベル10に到達',             check: u => (u.level||1) >= 10 },
+    { id:'level20',      icon:'🌈', name:'Lv20達成',        desc:'レベル20に到達',             check: u => (u.level||1) >= 20 },
+    { id:'items5',       icon:'🎁', name:'コレクター',      desc:'アイテムを5個集める',        check: u => (u.chestItems||[]).length >= 5 },
+    { id:'set_complete', icon:'⚡', name:'セット装備',      desc:'セット装備を完成させる',     check: u => u.avatarConfig && !!checkSetBonus(u.avatarConfig) },
+  ];
+
+  async function renderProfile() {
+    if (!userData) return;
+    const u = userData;
+
+    // アバター
+    const pfSvg = document.getElementById('pf-avatar-svg');
+    if (pfSvg) renderAvatarSVG(currentAvatarConfig, pfSvg);
+
+    // セットグロー
+    const setId = checkSetBonus(currentAvatarConfig);
+    const pfInner = document.querySelector('#pf-avatar-wrap > div');
+    if (pfInner && setId) {
+      const setInfo = SET_MASTER[setId];
+      pfInner.style.boxShadow = `0 0 20px ${setInfo.glowColor}, 0 0 40px ${setInfo.glowColor}`;
+    }
+
+    // 基本情報
+    document.getElementById('pf-name').textContent = u.nickname || '勇者';
+    document.getElementById('pf-class').textContent = `Lv.${u.level||1} ${getClass(u.level||1)}`;
+    const needed = (u.level||1) * 100;
+    const pct = Math.min(((u.exp||0) / needed) * 100, 100);
+    document.getElementById('pf-exp-text').textContent = `${u.exp||0} / ${needed}`;
+    document.getElementById('pf-exp-bar').style.width = pct + '%';
+
+    // セットバッジ
+    const setBadgeEl = document.getElementById('pf-set-badge');
+    if (setId) {
+      const si = SET_MASTER[setId];
+      setBadgeEl.innerHTML = `<span style="font-family:'DotGothic16',monospace;font-size:11px;color:${si.color};background:rgba(0,0,0,0.3);border:2px solid ${si.color};border-radius:4px;padding:4px 10px;">${si.icon} ${si.name} 装備中</span>`;
+    } else setBadgeEl.innerHTML = '';
+
+    // 統計
+    document.getElementById('pf-done').textContent = u.totalCompleted || 0;
+    document.getElementById('pf-streak').textContent = u.loginStreak || 0;
+    document.getElementById('pf-items').textContent = (u.chestItems||[]).length;
+
+    // 完了クエスト数
+    const mqSnap = await getDocs(query(collection(db, 'mainQuests'), where('userId','==',currentUser.uid)));
+    const completedQuests = mqSnap.docs.filter(d => d.data().isComplete);
+    document.getElementById('pf-quests').textContent = completedQuests.length;
+
+    // バッジ
+    const badgesEl = document.getElementById('pf-badges');
+    badgesEl.innerHTML = BADGES.map(b => {
+      const earned = b.check(u);
+      return `
+        <div style="background:${earned?'var(--surface)':'rgba(255,255,255,0.03)'};border:3px solid ${earned?'var(--secondary)':'var(--surface2)'};border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:8px;opacity:${earned?1:0.4};min-width:140px;flex:1;">
+          <span style="font-size:24px;">${b.icon}</span>
+          <div>
+            <div style="font-family:'DotGothic16',monospace;font-size:11px;color:${earned?'var(--secondary)':'var(--text-muted)'};">${b.name}</div>
+            <div style="font-size:10px;color:var(--text-muted);">${b.desc}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 所持アイテム
+    const itemsEl = document.getElementById('pf-items-list');
+    const chestItems = u.chestItems || [];
+    if (chestItems.length === 0) {
+      itemsEl.innerHTML = `<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:12px;">まだアイテムがありません<br>バトルシーンで宝箱を開けよう！</div>`;
+    } else {
+      itemsEl.innerHTML = chestItems.map(itemId => {
+        const info = ITEM_MASTER[itemId];
+        if (!info) return '';
+        const rc = RARITY_COLOR[info.rarity] || '#aaa';
+        const isEquipped = currentAvatarConfig[info.cat] === itemId;
+        return `
+          <div style="background:var(--surface2);border:3px solid ${rc};border-radius:var(--radius);padding:12px;display:flex;align-items:center;gap:10px;box-shadow:3px 3px 0 rgba(0,0,0,0.4);">
+            <span style="font-size:28px;">${info.icon}</span>
+            <div style="flex:1;">
+              <div style="font-family:'DotGothic16',monospace;font-size:12px;">${info.name} ${isEquipped?'✅':''}</div>
+              <div style="font-size:10px;color:${rc};margin:2px 0;">${RARITY_LABEL[info.rarity]||''}</div>
+              <div style="font-size:10px;color:var(--text-muted);">${info.desc}</div>
+            </div>
+            ${!isEquipped ? `<button onclick="equipChestItem('${itemId}','${info.cat}');renderProfile()" style="background:var(--primary);border:3px solid #cc4444;color:white;padding:6px 8px;border-radius:4px;font-family:'DotGothic16',monospace;font-size:10px;cursor:pointer;box-shadow:2px 2px 0 #cc4444;white-space:nowrap;">装備</button>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 完了クエスト一覧
+    const mqEl = document.getElementById('pf-completed-quests');
+    if (completedQuests.length === 0) {
+      mqEl.innerHTML = `<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:12px;">まだ完了したクエストがありません</div>`;
+    } else {
+      mqEl.innerHTML = completedQuests.map(d => `
+        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:8px;border:2px solid var(--accent);">
+          <span>🏆</span>
+          <span style="font-family:'DotGothic16',monospace;font-size:12px;">${escHtml(d.data().title)}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  // ニックネーム変更
+  window.openEditNickname = () => {
+    document.getElementById('nickname-input').value = userData?.nickname || '';
+    document.getElementById('edit-nickname-modal').classList.add('open');
+    setTimeout(() => document.getElementById('nickname-input').focus(), 100);
+  };
+  window.closeEditNickname = () => {
+    document.getElementById('edit-nickname-modal').classList.remove('open');
+  };
+  window.saveNickname = async () => {
+    const name = document.getElementById('nickname-input').value.trim();
+    if (!name) return;
+    await updateDoc(doc(db, 'users', currentUser.uid), { nickname: name });
+    userData.nickname = name;
+    document.getElementById('hero-name').textContent = name;
+    document.getElementById('pf-name').textContent = name;
+    closeEditNickname();
+    playSoundTaskDone();
   };
 
   // ===== BULLETIN BOARD =====
