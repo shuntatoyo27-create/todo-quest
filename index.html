@@ -627,6 +627,11 @@
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+    @keyframes bsEffect {
+      0% { opacity:1; transform:translateY(0) scale(1); }
+      100% { opacity:0; transform:translateY(-30px) scale(1.5); }
+    }
+
     /* ===== BULLETIN BOARD ===== */
     .board-cat-btn { background:var(--surface2); border:3px solid var(--surface2); color:var(--text-muted); padding:6px 12px; border-radius:var(--radius); font-family:'DotGothic16',monospace; font-size:11px; cursor:pointer; white-space:nowrap; transition:all 0.1s; }
     .board-cat-btn.active { background:var(--primary); border-color:#cc4444; color:white; box-shadow:3px 3px 0 #cc4444; }
@@ -834,6 +839,34 @@
     <div style="display:flex;gap:8px;align-items:center;">
       <button id="bgm-btn" onclick="toggleBGM()" style="background:transparent;border:3px solid var(--text-muted);color:var(--text-muted);padding:6px 12px;border-radius:var(--radius);font-family:'DotGothic16',monospace;font-size:12px;cursor:pointer;">🔇 OFF</button>
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    </div>
+  </div>
+
+  <!-- Battle Scene -->
+  <div id="battle-scene" style="margin:0 20px 16px;background:linear-gradient(180deg,#0a1628 0%,#1a2a1a 60%,#2a1a0a 100%);border:4px solid var(--surface2);border-radius:var(--radius);height:140px;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.6);">
+    <!-- 背景の星 -->
+    <div id="bs-stars" style="position:absolute;inset:0;"></div>
+    <!-- 地面 -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(180deg,#3a2a0a,#2a1a05);border-top:3px solid #554422;"></div>
+    <!-- イベントメッセージ -->
+    <div id="bs-msg" style="position:absolute;top:6px;left:0;right:0;text-align:center;font-family:'DotGothic16',monospace;font-size:10px;color:var(--secondary);z-index:10;text-shadow:0 0 8px rgba(255,217,61,0.8);"></div>
+    <!-- プレイヤー -->
+    <div id="bs-player" style="position:absolute;bottom:24px;left:20px;image-rendering:pixelated;transition:left 0.3s;">
+      <svg id="bs-player-svg" width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;"></svg>
+    </div>
+    <!-- モンスター/宝箱 -->
+    <div id="bs-enemy" style="position:absolute;bottom:24px;right:20px;image-rendering:pixelated;">
+      <svg id="bs-enemy-svg" width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;"></svg>
+    </div>
+    <!-- エフェクト -->
+    <div id="bs-effect" style="position:absolute;inset:0;pointer-events:none;z-index:5;"></div>
+    <!-- HPバー -->
+    <div id="bs-hp-bar" style="position:absolute;bottom:4px;left:8px;right:8px;display:flex;gap:4px;align-items:center;">
+      <span style="font-family:'DotGothic16',monospace;font-size:8px;color:var(--accent);">HP</span>
+      <div style="flex:1;background:rgba(0,0,0,0.5);border:1px solid #333;height:6px;border-radius:2px;">
+        <div id="bs-hp-fill" style="height:100%;background:linear-gradient(90deg,var(--accent),#88ff88);border-radius:2px;transition:width 0.5s;width:100%;"></div>
+      </div>
+      <div id="bs-item-get" style="font-family:'DotGothic16',monospace;font-size:8px;color:var(--secondary);display:none;"></div>
     </div>
   </div>
 
@@ -1269,6 +1302,7 @@
       subscribeToTasks();
       subscribeToBoard();
       checkLoginBonus();
+      setTimeout(() => initBattleScene(), 500);
     } else {
       currentUser = null;
       userData = null;
@@ -2525,6 +2559,232 @@
     }
   }
   window.toggleBGM = toggleBGM;
+  // ===== BATTLE SCENE =====
+  const MONSTERS = {
+    1:  { name:'スライム',    color:'#44cc44', pixels:[
+      {x:5,y:4,c:'#44cc44'},{x:6,y:4,c:'#44cc44'},{x:7,y:4,c:'#44cc44'},{x:8,y:4,c:'#44cc44'},{x:9,y:4,c:'#44cc44'},
+      {x:4,y:5,c:'#44cc44'},{x:5,y:5,c:'#44cc44'},{x:6,y:5,c:'#ffffff'},{x:7,y:5,c:'#44cc44'},{x:8,y:5,c:'#ffffff'},{x:9,y:5,c:'#44cc44'},{x:10,y:5,c:'#44cc44'},
+      {x:4,y:6,c:'#44cc44'},{x:5,y:6,c:'#44cc44'},{x:6,y:6,c:'#44cc44'},{x:7,y:6,c:'#222'},{x:8,y:6,c:'#44cc44'},{x:9,y:6,c:'#44cc44'},{x:10,y:6,c:'#44cc44'},
+      {x:5,y:7,c:'#33aa33'},{x:6,y:7,c:'#33aa33'},{x:7,y:7,c:'#33aa33'},{x:8,y:7,c:'#33aa33'},{x:9,y:7,c:'#33aa33'},
+      {x:6,y:8,c:'#33aa33'},{x:7,y:8,c:'#33aa33'},{x:8,y:8,c:'#33aa33'},
+    ]},
+    5:  { name:'ゴブリン',    color:'#88cc44', pixels:[
+      {x:6,y:2,c:'#88cc44'},{x:7,y:2,c:'#88cc44'},{x:8,y:2,c:'#88cc44'},
+      {x:5,y:3,c:'#88cc44'},{x:6,y:3,c:'#88cc44'},{x:7,y:3,c:'#88cc44'},{x:8,y:3,c:'#88cc44'},{x:9,y:3,c:'#88cc44'},
+      {x:5,y:4,c:'#88cc44'},{x:6,y:4,c:'#ff4444'},{x:7,y:4,c:'#88cc44'},{x:8,y:4,c:'#ff4444'},{x:9,y:4,c:'#88cc44'},
+      {x:5,y:5,c:'#88cc44'},{x:6,y:5,c:'#88cc44'},{x:7,y:5,c:'#cc8844'},{x:8,y:5,c:'#88cc44'},{x:9,y:5,c:'#88cc44'},
+      {x:6,y:6,c:'#555'},{x:7,y:6,c:'#555'},{x:8,y:6,c:'#555'},
+      {x:6,y:7,c:'#555'},{x:7,y:7,c:'#555'},{x:8,y:7,c:'#555'},
+      {x:5,y:7,c:'#88cc44'},{x:9,y:7,c:'#88cc44'},
+      {x:6,y:8,c:'#553311'},{x:7,y:8,c:'#553311'},{x:8,y:8,c:'#553311'},
+    ]},
+    10: { name:'オーク',      color:'#cc6622', pixels:[
+      {x:5,y:2,c:'#cc6622'},{x:6,y:2,c:'#cc6622'},{x:7,y:2,c:'#cc6622'},{x:8,y:2,c:'#cc6622'},{x:9,y:2,c:'#cc6622'},
+      {x:4,y:3,c:'#cc6622'},{x:5,y:3,c:'#cc6622'},{x:6,y:3,c:'#cc6622'},{x:7,y:3,c:'#cc6622'},{x:8,y:3,c:'#cc6622'},{x:9,y:3,c:'#cc6622'},{x:10,y:3,c:'#cc6622'},
+      {x:4,y:4,c:'#cc6622'},{x:5,y:4,c:'#ff4444'},{x:6,y:4,c:'#cc6622'},{x:7,y:4,c:'#cc6622'},{x:8,y:4,c:'#ff4444'},{x:9,y:4,c:'#cc6622'},{x:10,y:4,c:'#cc6622'},
+      {x:4,y:5,c:'#cc6622'},{x:5,y:5,c:'#cc6622'},{x:6,y:5,c:'#cc6622'},{x:7,y:5,c:'#884411'},{x:8,y:5,c:'#cc6622'},{x:9,y:5,c:'#cc6622'},{x:10,y:5,c:'#cc6622'},
+      {x:5,y:6,c:'#884411'},{x:6,y:6,c:'#884411'},{x:7,y:6,c:'#884411'},{x:8,y:6,c:'#884411'},{x:9,y:6,c:'#884411'},
+      {x:4,y:6,c:'#cc6622'},{x:10,y:6,c:'#cc6622'},
+      {x:4,y:7,c:'#cc6622'},{x:5,y:7,c:'#884411'},{x:9,y:7,c:'#884411'},{x:10,y:7,c:'#cc6622'},
+      {x:5,y:8,c:'#553311'},{x:6,y:8,c:'#553311'},{x:9,y:8,c:'#553311'},{x:10,y:8,c:'#553311'},
+    ]},
+    20: { name:'ドラゴン',    color:'#cc2222', pixels:[
+      {x:2,y:3,c:'#cc2222'},{x:3,y:2,c:'#cc2222'},{x:4,y:3,c:'#cc2222'},
+      {x:2,y:4,c:'#cc2222'},{x:3,y:3,c:'#cc2222'},{x:4,y:4,c:'#cc2222'},{x:5,y:3,c:'#cc2222'},{x:6,y:3,c:'#cc2222'},
+      {x:5,y:4,c:'#cc2222'},{x:6,y:4,c:'#ff4444'},{x:7,y:4,c:'#ff4444'},{x:8,y:4,c:'#cc2222'},
+      {x:5,y:5,c:'#cc2222'},{x:6,y:5,c:'#cc2222'},{x:7,y:5,c:'#ff8800'},{x:8,y:5,c:'#cc2222'},{x:9,y:5,c:'#cc2222'},{x:10,y:5,c:'#cc2222'},
+      {x:6,y:6,c:'#cc2222'},{x:7,y:6,c:'#cc2222'},{x:8,y:6,c:'#cc2222'},{x:9,y:6,c:'#cc2222'},{x:10,y:6,c:'#cc2222'},{x:11,y:6,c:'#cc2222'},
+      {x:7,y:7,c:'#884411'},{x:8,y:7,c:'#884411'},{x:9,y:7,c:'#884411'},{x:10,y:7,c:'#884411'},
+      {x:7,y:8,c:'#553311'},{x:8,y:8,c:'#553311'},{x:10,y:8,c:'#553311'},{x:11,y:8,c:'#553311'},
+      {x:11,y:5,c:'#ff8800'},{x:12,y:4,c:'#ff8800'},{x:13,y:3,c:'#ffcc00'},
+    ]},
+  };
+
+  const TREASURE_NORMAL = [
+    {x:4,y:5,c:'#8B4513'},{x:5,y:5,c:'#8B4513'},{x:6,y:5,c:'#8B4513'},{x:7,y:5,c:'#8B4513'},{x:8,y:5,c:'#8B4513'},{x:9,y:5,c:'#8B4513'},{x:10,y:5,c:'#8B4513'},
+    {x:4,y:6,c:'#8B4513'},{x:5,y:6,c:'#ffd700'},{x:6,y:6,c:'#8B4513'},{x:7,y:6,c:'#ffd700'},{x:8,y:6,c:'#8B4513'},{x:9,y:6,c:'#ffd700'},{x:10,y:6,c:'#8B4513'},
+    {x:4,y:7,c:'#8B4513'},{x:5,y:7,c:'#8B4513'},{x:6,y:7,c:'#8B4513'},{x:7,y:7,c:'#8B4513'},{x:8,y:7,c:'#8B4513'},{x:9,y:7,c:'#8B4513'},{x:10,y:7,c:'#8B4513'},
+    {x:3,y:8,c:'#6B3410'},{x:4,y:8,c:'#6B3410'},{x:5,y:8,c:'#6B3410'},{x:6,y:8,c:'#6B3410'},{x:7,y:8,c:'#6B3410'},{x:8,y:8,c:'#6B3410'},{x:9,y:8,c:'#6B3410'},{x:10,y:8,c:'#6B3410'},{x:11,y:8,c:'#6B3410'},
+  ];
+
+  const MIMIC = [
+    {x:4,y:5,c:'#8B4513'},{x:5,y:5,c:'#8B4513'},{x:6,y:5,c:'#8B4513'},{x:7,y:5,c:'#8B4513'},{x:8,y:5,c:'#8B4513'},{x:9,y:5,c:'#8B4513'},{x:10,y:5,c:'#8B4513'},
+    {x:4,y:6,c:'#8B4513'},{x:5,y:6,c:'#ff4444'},{x:6,y:6,c:'#ff4444'},{x:7,y:6,c:'#ffffff'},{x:8,y:6,c:'#ff4444'},{x:9,y:6,c:'#ff4444'},{x:10,y:6,c:'#8B4513'},
+    {x:4,y:7,c:'#8B4513'},{x:5,y:7,c:'#ff8888'},{x:6,y:7,c:'#ff4444'},{x:7,y:7,c:'#ff4444'},{x:8,y:7,c:'#ff4444'},{x:9,y:7,c:'#ff8888'},{x:10,y:7,c:'#8B4513'},
+    {x:3,y:8,c:'#6B3410'},{x:4,y:8,c:'#6B3410'},{x:5,y:8,c:'#6B3410'},{x:6,y:8,c:'#6B3410'},{x:7,y:8,c:'#6B3410'},{x:8,y:8,c:'#6B3410'},{x:9,y:8,c:'#6B3410'},{x:10,y:8,c:'#6B3410'},{x:11,y:8,c:'#6B3410'},
+    {x:3,y:9,c:'#553311'},{x:11,y:9,c:'#553311'},
+  ];
+
+  function drawPixels(svgEl, pixels, scale=1) {
+    svgEl.innerHTML = '';
+    pixels.forEach(px => {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x', px.x * scale);
+      rect.setAttribute('y', px.y * scale);
+      rect.setAttribute('width', scale);
+      rect.setAttribute('height', scale);
+      rect.setAttribute('fill', px.c);
+      svgEl.appendChild(rect);
+    });
+  }
+
+  function getMonsterForLevel(level) {
+    const keys = Object.keys(MONSTERS).map(Number).sort((a,b)=>b-a);
+    for (const k of keys) { if (level >= k) return MONSTERS[k]; }
+    return MONSTERS[1];
+  }
+
+  let bsState = 'idle';
+  let bsHp = 100;
+  let bsEventTimer = null;
+  let bsAnimFrame = null;
+  let bsPlayerX = 20;
+  let bsIsMimic = false;
+
+  function initBattleScene() {
+    // 星を生成
+    const starsEl = document.getElementById('bs-stars');
+    if (!starsEl) return;
+    starsEl.innerHTML = '';
+    for (let i = 0; i < 20; i++) {
+      const s = document.createElement('div');
+      s.style.cssText = `position:absolute;width:${Math.random()*2+1}px;height:${Math.random()*2+1}px;background:white;border-radius:50%;left:${Math.random()*100}%;top:${Math.random()*50}%;opacity:${Math.random()*0.6+0.2};`;
+      starsEl.appendChild(s);
+    }
+    // プレイヤーSVG描画
+    const playerSvg = document.getElementById('bs-player-svg');
+    if (playerSvg) {
+      playerSvg.setAttribute('viewBox','0 0 16 16');
+      renderAvatarSVG(currentAvatarConfig, playerSvg);
+    }
+    startBattleLoop();
+  }
+
+  function startBattleLoop() {
+    if (bsEventTimer) clearTimeout(bsEventTimer);
+    scheduleNextEvent();
+  }
+
+  function scheduleNextEvent() {
+    const delay = 3000 + Math.random() * 4000;
+    bsEventTimer = setTimeout(() => {
+      const roll = Math.random();
+      if (roll < 0.6) startBattleEvent();
+      else startTreasureEvent();
+    }, delay);
+  }
+
+  function startBattleEvent() {
+    const monster = getMonsterForLevel(userData?.level || 1);
+    const enemySvg = document.getElementById('bs-enemy-svg');
+    if (!enemySvg) return;
+    enemySvg.setAttribute('viewBox','0 0 16 16');
+    drawPixels(enemySvg, monster.pixels);
+    setMsg(`${monster.name}があらわれた！`);
+    bsHp = 100;
+    updateHpBar(100);
+    bsState = 'battle';
+    runBattleAnim(monster);
+  }
+
+  function runBattleAnim(monster) {
+    const playerEl = document.getElementById('bs-player');
+    const enemyEl = document.getElementById('bs-enemy');
+    if (!playerEl || !enemyEl) return;
+    let step = 0;
+    const steps = [
+      // プレイヤーが近づく
+      () => { playerEl.style.left = '60px'; setMsg(`${monster.name}に攻撃！`); },
+      // 攻撃エフェクト
+      () => { showBattleEffect('⚔️', 120, 50); bsHp -= 40; updateHpBar(bsHp); },
+      () => { showBattleEffect('💥', 100, 40); bsHp -= 35; updateHpBar(bsHp); },
+      // モンスター反撃
+      () => { setMsg(`${monster.name}のこうげき！`); showBattleEffect('🩸', 70, 60); },
+      // 勝利
+      () => {
+        setMsg(`${monster.name}をたおした！`);
+        updateHpBar(100);
+        const enemySvg = document.getElementById('bs-enemy-svg');
+        if (enemySvg) enemySvg.innerHTML = '';
+        showBattleEffect('✨', 130, 50);
+        playerEl.style.left = '20px';
+        bsState = 'idle';
+        scheduleNextEvent();
+      },
+    ];
+    function nextStep() {
+      if (step >= steps.length) return;
+      steps[step]();
+      step++;
+      if (step < steps.length) bsAnimFrame = setTimeout(nextStep, 800);
+    }
+    nextStep();
+  }
+
+  function startTreasureEvent() {
+    bsIsMimic = Math.random() < 0.2; // 20%でミミック
+    const enemySvg = document.getElementById('bs-enemy-svg');
+    if (!enemySvg) return;
+    enemySvg.setAttribute('viewBox','0 0 16 16');
+    drawPixels(enemySvg, TREASURE_NORMAL);
+    setMsg('宝箱を発見！');
+    bsState = 'treasure';
+    const playerEl = document.getElementById('bs-player');
+    if (playerEl) playerEl.style.left = '60px';
+    bsAnimFrame = setTimeout(() => {
+      if (bsIsMimic) {
+        // ミミック！
+        drawPixels(enemySvg, MIMIC);
+        setMsg('ミミックだ！！逃げろ！');
+        showBattleEffect('😱', 100, 40);
+        bsAnimFrame = setTimeout(() => {
+          if (playerEl) playerEl.style.left = '20px';
+          if (enemySvg) enemySvg.innerHTML = '';
+          setMsg('なんとか逃げ切った...');
+          bsAnimFrame = setTimeout(() => { setMsg(''); bsState='idle'; scheduleNextEvent(); }, 1500);
+        }, 1200);
+      } else {
+        // 宝箱オープン！
+        setMsg('宝箱を開けた！');
+        showBattleEffect('🎁', 110, 40);
+        const items = ['EXPブースト','応援チケット','きらきらエフェクト','レアジェム'];
+        const got = items[Math.floor(Math.random()*items.length)];
+        const itemEl = document.getElementById('bs-item-get');
+        if (itemEl) { itemEl.textContent = `${got}ゲット！`; itemEl.style.display='block'; }
+        bsAnimFrame = setTimeout(() => {
+          if (playerEl) playerEl.style.left = '20px';
+          if (enemySvg) enemySvg.innerHTML = '';
+          if (itemEl) itemEl.style.display='none';
+          setMsg('');
+          bsState='idle';
+          scheduleNextEvent();
+        }, 2000);
+      }
+    }, 1000);
+  }
+
+  function setMsg(text) {
+    const el = document.getElementById('bs-msg');
+    if (el) el.textContent = text;
+  }
+
+  function updateHpBar(pct) {
+    const el = document.getElementById('bs-hp-fill');
+    if (!el) return;
+    el.style.width = Math.max(0, pct) + '%';
+    el.style.background = pct > 50 ? 'linear-gradient(90deg,var(--accent),#88ff88)' : pct > 20 ? 'linear-gradient(90deg,var(--secondary),#ffee44)' : 'linear-gradient(90deg,var(--primary),#ff8888)';
+  }
+
+  function showBattleEffect(emoji, x, y) {
+    const el = document.getElementById('bs-effect');
+    if (!el) return;
+    const span = document.createElement('div');
+    span.textContent = emoji;
+    span.style.cssText = `position:absolute;left:${x}px;top:${y}px;font-size:20px;animation:bsEffect 0.8s ease forwards;pointer-events:none;`;
+    el.appendChild(span);
+    setTimeout(() => span.remove(), 800);
+  }
+
   // ===== COUNTDOWN =====
   function formatDeadline(deadline) {
     const d = new Date(deadline);
