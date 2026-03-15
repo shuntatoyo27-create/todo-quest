@@ -627,6 +627,9 @@
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-task-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+    @keyframes setGlow { from { filter:brightness(1); } to { filter:brightness(1.4) drop-shadow(0 0 12px currentColor); } }
+    .set-badge { display:inline-block; font-family:'DotGothic16',monospace; font-size:10px; padding:3px 8px; border-radius:4px; border:2px solid; margin-left:6px; }
+
     @keyframes epicPulse { from { opacity:0.7; transform:scale(0.97); } to { opacity:1; transform:scale(1.03); } }
     @keyframes epicFloat { 0%,100% { transform:translateY(0) rotate(-3deg); } 50% { transform:translateY(-12px) rotate(3deg); } }
     @keyframes epicShine { 0% { background-position:0% 50%; } 100% { background-position:200% 50%; } }
@@ -1005,6 +1008,18 @@
   </nav>
 </div>
 
+<!-- Set Bonus Overlay -->
+<div id="set-bonus-overlay" style="display:none;position:fixed;inset:0;z-index:395;align-items:center;justify-content:center;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);">
+  <div style="text-align:center;padding:40px 32px;max-width:320px;width:90%;border:4px solid #ffdd00;border-radius:var(--radius);background:linear-gradient(135deg,#1a1a0a,#2a2a0a);box-shadow:0 0 60px rgba(255,221,0,0.5);animation:achieveIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);">
+    <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ffdd00;letter-spacing:3px;margin-bottom:12px;text-shadow:0 0 10px #ffdd00;">✦ SET COMPLETE ✦</div>
+    <div id="set-bonus-icon" style="font-size:72px;display:block;margin-bottom:12px;animation:epicFloat 1s ease-in-out infinite;filter:drop-shadow(0 0 16px #ffdd00);"></div>
+    <div id="set-bonus-name" style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ffee44;margin-bottom:8px;line-height:1.8;text-shadow:0 0 8px #ffdd00;"></div>
+    <div id="set-bonus-desc" style="font-family:'DotGothic16',monospace;font-size:12px;color:var(--text-muted);margin-bottom:16px;"></div>
+    <div id="set-bonus-exp" style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffdd00;text-shadow:0 0 10px #ffdd00;margin-bottom:20px;"></div>
+    <button onclick="document.getElementById('set-bonus-overlay').style.display='none'" style="background:linear-gradient(135deg,#ffdd00,#ffaa00);border:4px solid #aa8800;color:#111;font-family:'Press Start 2P',monospace;font-size:11px;padding:14px 28px;border-radius:4px;cursor:pointer;box-shadow:0 0 20px #ffdd00,4px 4px 0 #aa8800;">やった！🎉</button>
+  </div>
+</div>
+
 <!-- Rare Drop Toast -->
 <div id="rare-toast" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:390;text-align:center;animation:achieveIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);">
   <div style="background:linear-gradient(135deg,#1a1a3a,#2a1a4a);border:4px solid #4488ff;border-radius:var(--radius);padding:28px 32px;box-shadow:0 0 40px rgba(68,136,255,0.6),4px 4px 0 rgba(0,0,0,0.5);">
@@ -1210,6 +1225,7 @@
       <button class="avatar-cat-btn" onclick="switchAvatarCat('hat')" id="cat-hat">👒 帽子</button>
       <button class="avatar-cat-btn" onclick="switchAvatarCat('weapon')" id="cat-weapon">⚔️ 武器</button>
       <button class="avatar-cat-btn" onclick="switchAvatarCat('effect')" id="cat-effect">✨ エフェクト</button>
+      <button class="avatar-cat-btn" onclick="switchAvatarCat('sets')" id="cat-sets">🏆 セット</button>
     </div>
     <!-- Items Grid -->
     <div id="avatar-items-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;"></div>
@@ -1419,6 +1435,7 @@
       userData = snap.data();
       if (userData.avatarConfig) currentAvatarConfig = { ...userData.avatarConfig };
       renderHero();
+      setTimeout(() => applySetGlow(checkSetBonus(currentAvatarConfig)), 600);
     }
   }
 
@@ -2297,6 +2314,21 @@
     // コスチューム（body）
     'body_ninja':     { name:'忍者',           cat:'body',   desc:'宝箱ドロップ。素早い忍者スタイル。', rarity:'rare',    icon:'🥷' },
     'body_santa':     { name:'サンタ',         cat:'body',   desc:'宝箱レアドロップ。赤い衣装。',       rarity:'epic',    icon:'🎅' },
+    // ゼウスセット
+    'body_zeus':      { name:'神々の鎧',       cat:'body',   desc:'ゼウスセット。黄金の神鎧。',          rarity:'epic',    icon:'⚡', set:'zeus' },
+    'hat_zeus':       { name:'雷の冠',         cat:'hat',    desc:'ゼウスセット。稲妻が宿る王冠。',      rarity:'epic',    icon:'👑', set:'zeus' },
+    'weapon_zeus':    { name:'雷霆',           cat:'weapon', desc:'ゼウスセット。神の雷撃。',            rarity:'epic',    icon:'⚡', set:'zeus' },
+    'effect_zeus':    { name:'雷神オーラ',     cat:'effect', desc:'ゼウスセット。稲妻が走るオーラ。',   rarity:'epic',    icon:'⚡', set:'zeus' },
+    // 深海セット
+    'body_abyss':     { name:'深海の鎧',       cat:'body',   desc:'深海セット。珊瑚と深海魚の鎧。',     rarity:'epic',    icon:'🌊', set:'abyss' },
+    'hat_abyss':      { name:'珊瑚の冠',       cat:'hat',    desc:'深海セット。珊瑚で編まれた冠。',     rarity:'epic',    icon:'🐚', set:'abyss' },
+    'weapon_abyss':   { name:'トライデント',   cat:'weapon', desc:'深海セット。海神の三叉槍。',          rarity:'epic',    icon:'🔱', set:'abyss' },
+    'effect_abyss':   { name:'深海オーラ',     cat:'effect', desc:'深海セット。神秘の水のオーラ。',     rarity:'epic',    icon:'🌊', set:'abyss' },
+    // 暗黒セット
+    'body_dark':      { name:'闇の鎧',         cat:'body',   desc:'暗黒セット。漆黒の魔鎧。',           rarity:'epic',    icon:'🖤', set:'dark' },
+    'hat_dark':       { name:'死神の仮面',     cat:'hat',    desc:'暗黒セット。魂を喰らう仮面。',       rarity:'epic',    icon:'💀', set:'dark' },
+    'weapon_dark':    { name:'魂喰らい大鎌',   cat:'weapon', desc:'暗黒セット。全てを刈り取る大鎌。',  rarity:'epic',    icon:'💀', set:'dark' },
+    'effect_dark_set':{ name:'暗黒オーラ',     cat:'effect', desc:'暗黒セット。虚無を纏う漆黒のオーラ。',rarity:'epic', icon:'🖤', set:'dark' },
   };
 
   const RARITY_COLOR = { common:'#aaaaaa', uncommon:'#44cc44', rare:'#4488ff', epic:'#cc44ff' };
@@ -2308,7 +2340,125 @@
     'weapon_axe','weapon_lance','weapon_hammer','weapon_wand',
     'effect_ice','effect_thunder','effect_dark','effect_sakura',
     'body_ninja','body_santa',
+    // セットアイテム（エピック）
+    'body_zeus','hat_zeus','weapon_zeus','effect_zeus',
+    'body_abyss','hat_abyss','weapon_abyss','effect_abyss',
+    'body_dark','hat_dark','weapon_dark','effect_dark_set',
   ];
+
+
+  // ===== SET SYSTEM =====
+  const SET_MASTER = {
+    zeus: {
+      name: 'ゼウス神話シリーズ',
+      icon: '⚡',
+      color: '#ffdd00',
+      glowColor: '#ffdd00',
+      desc: '神々の王ゼウスの装備セット。稲妻を纏い戦場を制す。',
+      expBonus: 500,
+      parts: {
+        body:   'body_zeus',
+        hat:    'hat_zeus',
+        weapon: 'weapon_zeus',
+        effect: 'effect_zeus',
+      }
+    },
+    abyss: {
+      name: '深海シリーズ',
+      icon: '🌊',
+      color: '#0088ff',
+      glowColor: '#00aaff',
+      desc: '深海の王の装備セット。海の力を宿した神秘の鎧。',
+      expBonus: 500,
+      parts: {
+        body:   'body_abyss',
+        hat:    'hat_abyss',
+        weapon: 'weapon_abyss',
+        effect: 'effect_abyss',
+      }
+    },
+    dark: {
+      name: '暗黒シリーズ',
+      icon: '🖤',
+      color: '#8800ff',
+      glowColor: '#aa00ff',
+      desc: '闇の覇者の装備セット。全てを喰らう漆黒の力。',
+      expBonus: 500,
+      parts: {
+        body:   'body_dark',
+        hat:    'hat_dark',
+        weapon: 'weapon_dark',
+        effect: 'effect_dark_set',
+      }
+    },
+  };
+
+  function checkSetBonus(config) {
+    for (const [setId, setInfo] of Object.entries(SET_MASTER)) {
+      const parts = setInfo.parts;
+      const allEquipped = Object.values(parts).every(partId => {
+        const cat = Object.keys(parts).find(k => parts[k] === partId);
+        return config[cat] === partId;
+      });
+      if (allEquipped) return setId;
+    }
+    return null;
+  }
+
+  function applySetGlow(setId) {
+    const avatarWrap = document.querySelector('.avatar-wrap');
+    if (!avatarWrap) return;
+    if (!setId) {
+      avatarWrap.style.boxShadow = '';
+      avatarWrap.style.animation = '';
+      return;
+    }
+    const setInfo = SET_MASTER[setId];
+    avatarWrap.style.boxShadow = `0 0 20px ${setInfo.glowColor}, 0 0 40px ${setInfo.glowColor}, 0 0 60px ${setInfo.glowColor}`;
+    avatarWrap.style.borderRadius = '4px';
+    // アバター光るアニメ
+    const avatar = document.getElementById('hero-avatar');
+    if (avatar) {
+      avatar.style.animation = 'setGlow 1.5s ease-in-out infinite alternate';
+      avatar.style.filter = `drop-shadow(0 0 8px ${setInfo.glowColor})`;
+    }
+  }
+
+  async function activateSetBonus(setId) {
+    const setInfo = SET_MASTER[setId];
+    // EXPボーナス
+    await gainExp(setInfo.expBonus, document.getElementById('hero-avatar'));
+    // 演出
+    showSetBonusEffect(setId);
+  }
+
+  function showSetBonusEffect(setId) {
+    const setInfo = SET_MASTER[setId];
+    const overlay = document.getElementById('set-bonus-overlay');
+    document.getElementById('set-bonus-icon').textContent = setInfo.icon;
+    document.getElementById('set-bonus-name').textContent = setInfo.name;
+    document.getElementById('set-bonus-desc').textContent = setInfo.desc;
+    document.getElementById('set-bonus-exp').textContent = `+${setInfo.expBonus} EXP ボーナス！`;
+    overlay.style.borderColor = setInfo.color;
+    overlay.style.boxShadow = `0 0 60px ${setInfo.glowColor}`;
+    overlay.style.display = 'flex';
+    spawnParticles(40, true);
+    playSoundSetBonus(setInfo.color);
+    setTimeout(() => overlay.style.display = 'none', 4000);
+  }
+
+  function playSoundSetBonus(color) {
+    try {
+      const ac = getAudioCtx();
+      const m = [392,494,587,698,784,988,1175,1568];
+      m.forEach((f,i) => {
+        playTone(f, 'square', i*0.08, 0.12, 0.25, ac);
+        playTone(f*0.5, 'triangle', i*0.08, 0.12, 0.1, ac);
+      });
+      playTone(1568, 'sine', 0.8, 0.6, 0.2, ac);
+      playTone(2093, 'sine', 1.0, 0.6, 0.15, ac);
+    } catch(e) {}
+  }
 
   const AVATAR_PARTS = {
     body: [
@@ -2375,10 +2525,45 @@
         {x:5,y:9,c:'#cc2222'},{x:6,y:9,c:'#cc2222'},{x:9,y:9,c:'#cc2222'},{x:10,y:9,c:'#cc2222'},
         {x:5,y:10,c:'#cc2222'},{x:6,y:10,c:'#cc2222'},{x:9,y:10,c:'#cc2222'},{x:10,y:10,c:'#cc2222'},
         {x:5,y:11,c:'#553311'},{x:6,y:11,c:'#553311'},{x:9,y:11,c:'#553311'},{x:10,y:11,c:'#553311'},
+      { id:'body_dark', name:'闇の鎧', unlock:'chest', desc:'暗黒セット。漆黒の魔鎧。', pixels: [
+        // 黒い鎧
+        {x:6,y:2,c:'#ccaaff'},{x:7,y:2,c:'#ccaaff'},{x:8,y:2,c:'#ccaaff'},{x:9,y:2,c:'#ccaaff'},
+        {x:5,y:3,c:'#111'},{x:6,y:3,c:'#333'},{x:7,y:3,c:'#ccaaff'},{x:8,y:3,c:'#ccaaff'},{x:9,y:3,c:'#333'},{x:10,y:3,c:'#111'},
+        {x:5,y:4,c:'#111'},{x:6,y:4,c:'#8800ff'},{x:7,y:4,c:'#333'},{x:8,y:4,c:'#333'},{x:9,y:4,c:'#8800ff'},{x:10,y:4,c:'#111'},
+        {x:5,y:5,c:'#111'},{x:6,y:5,c:'#222'},{x:7,y:5,c:'#333'},{x:8,y:5,c:'#333'},{x:9,y:5,c:'#222'},{x:10,y:5,c:'#111'},
+        {x:5,y:6,c:'#cc00ff'},{x:6,y:6,c:'#cc00ff'},{x:7,y:6,c:'#8800ff'},{x:8,y:6,c:'#8800ff'},{x:9,y:6,c:'#cc00ff'},{x:10,y:6,c:'#cc00ff'},
+        {x:4,y:7,c:'#111'},{x:5,y:7,c:'#222'},{x:6,y:7,c:'#333'},{x:7,y:7,c:'#333'},{x:8,y:7,c:'#333'},{x:9,y:7,c:'#333'},{x:10,y:7,c:'#222'},{x:11,y:7,c:'#111'},
+        {x:4,y:8,c:'#111'},{x:5,y:8,c:'#222'},{x:6,y:8,c:'#333'},{x:7,y:8,c:'#8800ff'},{x:8,y:8,c:'#8800ff'},{x:9,y:8,c:'#333'},{x:10,y:8,c:'#222'},{x:11,y:8,c:'#111'},
+        {x:5,y:9,c:'#222'},{x:6,y:9,c:'#333'},{x:9,y:9,c:'#333'},{x:10,y:9,c:'#222'},
+        {x:5,y:10,c:'#222'},{x:6,y:10,c:'#333'},{x:9,y:10,c:'#333'},{x:10,y:10,c:'#222'},
+        {x:5,y:11,c:'#111'},{x:6,y:11,c:'#111'},{x:9,y:11,c:'#111'},{x:10,y:11,c:'#111'},
+      ]},
+      { id:'body_zeus', name:'神々の鎧', unlock:'chest', desc:'ゼウスセット。黄金の神鎧。', pixels: [
+        {x:6,y:2,c:'#ffcc99'},{x:7,y:2,c:'#ffcc99'},{x:8,y:2,c:'#ffcc99'},{x:9,y:2,c:'#ffcc99'},
+        {x:5,y:3,c:'#ffcc99'},{x:6,y:3,c:'#ffcc99'},{x:7,y:3,c:'#ffcc99'},{x:8,y:3,c:'#ffcc99'},{x:9,y:3,c:'#ffcc99'},{x:10,y:3,c:'#ffcc99'},
+        {x:5,y:4,c:'#ffcc99'},{x:6,y:4,c:'#4444cc'},{x:7,y:4,c:'#ffcc99'},{x:8,y:4,c:'#ffcc99'},{x:9,y:4,c:'#4444cc'},{x:10,y:4,c:'#ffcc99'},
+        {x:5,y:5,c:'#ffcc99'},{x:6,y:5,c:'#ffcc99'},{x:7,y:5,c:'#ffcc99'},{x:8,y:5,c:'#ffcc99'},{x:9,y:5,c:'#ffcc99'},{x:10,y:5,c:'#ffcc99'},
+        {x:5,y:6,c:'#ffdd00'},{x:6,y:6,c:'#ffdd00'},{x:7,y:6,c:'#ffaa00'},{x:8,y:6,c:'#ffaa00'},{x:9,y:6,c:'#ffdd00'},{x:10,y:6,c:'#ffdd00'},
+        {x:4,y:7,c:'#ccaa00'},{x:5,y:7,c:'#ffdd00'},{x:6,y:7,c:'#ffee44'},{x:7,y:7,c:'#ffee44'},{x:8,y:7,c:'#ffee44'},{x:9,y:7,c:'#ffee44'},{x:10,y:7,c:'#ffdd00'},{x:11,y:7,c:'#ccaa00'},
+        {x:4,y:8,c:'#ccaa00'},{x:5,y:8,c:'#ffdd00'},{x:6,y:8,c:'#ffee44'},{x:7,y:8,c:'#ffffff'},{x:8,y:8,c:'#ffffff'},{x:9,y:8,c:'#ffee44'},{x:10,y:8,c:'#ffdd00'},{x:11,y:8,c:'#ccaa00'},
+        {x:5,y:9,c:'#ffdd00'},{x:6,y:9,c:'#ccaa00'},{x:9,y:9,c:'#ccaa00'},{x:10,y:9,c:'#ffdd00'},
+        {x:5,y:10,c:'#ffdd00'},{x:6,y:10,c:'#ccaa00'},{x:9,y:10,c:'#ccaa00'},{x:10,y:10,c:'#ffdd00'},
+        {x:5,y:11,c:'#aa8800'},{x:6,y:11,c:'#aa8800'},{x:9,y:11,c:'#aa8800'},{x:10,y:11,c:'#aa8800'},
+      ]},
+      { id:'body_abyss', name:'深海の鎧', unlock:'chest', desc:'深海セット。珊瑚と深海魚の鎧。', pixels: [
+        {x:6,y:2,c:'#aaeeff'},{x:7,y:2,c:'#aaeeff'},{x:8,y:2,c:'#aaeeff'},{x:9,y:2,c:'#aaeeff'},
+        {x:5,y:3,c:'#0055aa'},{x:6,y:3,c:'#0066cc'},{x:7,y:3,c:'#aaeeff'},{x:8,y:3,c:'#aaeeff'},{x:9,y:3,c:'#0066cc'},{x:10,y:3,c:'#0055aa'},
+        {x:5,y:4,c:'#0055aa'},{x:6,y:4,c:'#00aaff'},{x:7,y:4,c:'#0066cc'},{x:8,y:4,c:'#0066cc'},{x:9,y:4,c:'#00aaff'},{x:10,y:4,c:'#0055aa'},
+        {x:5,y:5,c:'#0066cc'},{x:6,y:5,c:'#0088ff'},{x:7,y:5,c:'#00ccff'},{x:8,y:5,c:'#00ccff'},{x:9,y:5,c:'#0088ff'},{x:10,y:5,c:'#0066cc'},
+        {x:5,y:6,c:'#00aaff'},{x:6,y:6,c:'#ff4488'},{x:7,y:6,c:'#00ccff'},{x:8,y:6,c:'#00ccff'},{x:9,y:6,c:'#ff4488'},{x:10,y:6,c:'#00aaff'},
+        {x:4,y:7,c:'#004488'},{x:5,y:7,c:'#0055aa'},{x:6,y:7,c:'#0088ff'},{x:7,y:7,c:'#00aaff'},{x:8,y:7,c:'#00aaff'},{x:9,y:7,c:'#0088ff'},{x:10,y:7,c:'#0055aa'},{x:11,y:7,c:'#004488'},
+        {x:4,y:8,c:'#004488'},{x:5,y:8,c:'#0055aa'},{x:6,y:8,c:'#0088ff'},{x:7,y:8,c:'#00ffcc'},{x:8,y:8,c:'#00ffcc'},{x:9,y:8,c:'#0088ff'},{x:10,y:8,c:'#0055aa'},{x:11,y:8,c:'#004488'},
+        {x:5,y:9,c:'#004488'},{x:6,y:9,c:'#0055aa'},{x:9,y:9,c:'#0055aa'},{x:10,y:9,c:'#004488'},
+        {x:5,y:10,c:'#003366'},{x:6,y:10,c:'#004488'},{x:9,y:10,c:'#004488'},{x:10,y:10,c:'#003366'},
+        {x:5,y:11,c:'#002244'},{x:6,y:11,c:'#003366'},{x:9,y:11,c:'#003366'},{x:10,y:11,c:'#002244'},
       ]},
     ],
     hat: [
-      { id:'hat_none', name:'なし', unlock:'default', pixels:[] },
       { id:'hat_bandana', name:'バンダナ', unlock:'default', pixels:[
         {x:5,y:2,c:'#ff4444'},{x:6,y:2,c:'#ff4444'},{x:7,y:2,c:'#ff4444'},{x:8,y:2,c:'#ff4444'},{x:9,y:2,c:'#ff4444'},{x:10,y:2,c:'#ff4444'},
         {x:11,y:2,c:'#ff4444'},{x:12,y:3,c:'#ff4444'},{x:12,y:4,c:'#ff4444'},
@@ -2408,6 +2593,24 @@
         {x:5,y:1,c:'#222'},{x:6,y:1,c:'#222'},{x:7,y:1,c:'#222'},{x:8,y:1,c:'#222'},{x:9,y:1,c:'#222'},{x:10,y:1,c:'#222'},
         {x:4,y:2,c:'#222'},{x:5,y:2,c:'#222'},{x:6,y:2,c:'#222'},{x:7,y:2,c:'#222'},{x:8,y:2,c:'#222'},{x:9,y:2,c:'#222'},{x:10,y:2,c:'#222'},{x:11,y:2,c:'#222'},
         {x:4,y:3,c:'#222'},{x:5,y:3,c:'#ff4444'},{x:6,y:3,c:'#ff4444'},{x:7,y:3,c:'#ff4444'},{x:8,y:3,c:'#ff4444'},{x:9,y:3,c:'#ff4444'},{x:10,y:3,c:'#222'},{x:11,y:3,c:'#222'},
+      ]},
+      { id:'hat_zeus', name:'雷の冠', unlock:'chest', desc:'ゼウスセット。稲妻が宿る王冠。', pixels:[
+        {x:5,y:0,c:'#ffdd00'},{x:7,y:0,c:'#ffffff'},{x:9,y:0,c:'#ffdd00'},{x:11,y:0,c:'#ffdd00'},
+        {x:4,y:1,c:'#ffdd00'},{x:5,y:1,c:'#ffee44'},{x:6,y:1,c:'#ffdd00'},{x:7,y:1,c:'#ffdd00'},{x:8,y:1,c:'#ffdd00'},{x:9,y:1,c:'#ffdd00'},{x:10,y:1,c:'#ffdd00'},{x:11,y:1,c:'#ffee44'},{x:12,y:1,c:'#ffdd00'},
+        {x:4,y:2,c:'#ccaa00'},{x:5,y:2,c:'#ffdd00'},{x:6,y:2,c:'#ffdd00'},{x:7,y:2,c:'#ffee44'},{x:8,y:2,c:'#ffee44'},{x:9,y:2,c:'#ffee44'},{x:10,y:2,c:'#ffdd00'},{x:11,y:2,c:'#ffdd00'},{x:12,y:2,c:'#ccaa00'},
+        {x:6,y:1,c:'#ff4400'},{x:8,y:0,c:'#ffaa00'},
+      ]},
+      { id:'hat_abyss', name:'珊瑚の冠', unlock:'chest', desc:'深海セット。珊瑚で編まれた冠。', pixels:[
+        {x:7,y:0,c:'#ff4488'},{x:8,y:0,c:'#ff4488'},
+        {x:5,y:1,c:'#ff6699'},{x:6,y:1,c:'#ff4488'},{x:7,y:1,c:'#ff2266'},{x:8,y:1,c:'#ff2266'},{x:9,y:1,c:'#ff4488'},{x:10,y:1,c:'#ff6699'},
+        {x:4,y:2,c:'#0088ff'},{x:5,y:2,c:'#00aaff'},{x:6,y:2,c:'#00ccff'},{x:7,y:2,c:'#00ccff'},{x:8,y:2,c:'#00ccff'},{x:9,y:2,c:'#00ccff'},{x:10,y:2,c:'#00aaff'},{x:11,y:2,c:'#0088ff'},
+        {x:4,y:3,c:'#0066cc'},{x:5,y:3,c:'#ff4488'},{x:6,y:3,c:'#0088ff'},{x:7,y:3,c:'#0088ff'},{x:8,y:3,c:'#0088ff'},{x:9,y:3,c:'#0088ff'},{x:10,y:3,c:'#ff4488'},{x:11,y:3,c:'#0066cc'},
+      ]},
+      { id:'hat_dark', name:'死神の仮面', unlock:'chest', desc:'暗黒セット。魂を喰らう仮面。', pixels:[
+        {x:5,y:1,c:'#222'},{x:6,y:1,c:'#333'},{x:7,y:1,c:'#222'},{x:8,y:1,c:'#222'},{x:9,y:1,c:'#333'},{x:10,y:1,c:'#222'},
+        {x:4,y:2,c:'#111'},{x:5,y:2,c:'#222'},{x:6,y:2,c:'#8800ff'},{x:7,y:2,c:'#333'},{x:8,y:2,c:'#333'},{x:9,y:2,c:'#8800ff'},{x:10,y:2,c:'#222'},{x:11,y:2,c:'#111'},
+        {x:4,y:3,c:'#111'},{x:5,y:3,c:'#333'},{x:6,y:3,c:'#222'},{x:7,y:3,c:'#cc00ff'},{x:8,y:3,c:'#cc00ff'},{x:9,y:3,c:'#222'},{x:10,y:3,c:'#333'},{x:11,y:3,c:'#111'},
+        {x:5,y:4,c:'#222'},{x:6,y:4,c:'#333'},{x:7,y:4,c:'#444'},{x:8,y:4,c:'#444'},{x:9,y:4,c:'#333'},{x:10,y:4,c:'#222'},
       ]},
       { id:'hat_pirate', name:'海賊帽', unlock:'chest', desc:'宝箱ドロップ。勇敢な海賊の帽子。', pixels:[
         {x:6,y:0,c:'#222'},{x:7,y:0,c:'#222'},{x:8,y:0,c:'#222'},{x:9,y:0,c:'#222'},
@@ -2451,6 +2654,31 @@
         {x:10,y:4,c:'#aaa'},{x:11,y:4,c:'#aaa'},{x:12,y:4,c:'#aaa'},{x:13,y:4,c:'#aaa'},
         {x:12,y:5,c:'#8B4513'},{x:12,y:6,c:'#8B4513'},{x:12,y:7,c:'#8B4513'},{x:12,y:8,c:'#8B4513'},{x:12,y:9,c:'#8B4513'},{x:12,y:10,c:'#8B4513'},{x:12,y:11,c:'#8B4513'},
       ]},
+      { id:'weapon_zeus', name:'雷霆', unlock:'chest', desc:'ゼウスセット。神の雷撃。', pixels:[
+        {x:13,y:2,c:'#ffdd00'},{x:12,y:3,c:'#ffee44'},{x:11,y:4,c:'#ffdd00'},
+        {x:12,y:4,c:'#ffee44'},{x:13,y:3,c:'#ffee44'},
+        {x:11,y:5,c:'#ccaa00'},{x:12,y:5,c:'#ffdd00'},{x:13,y:4,c:'#ffaa00'},
+        {x:11,y:6,c:'#ffdd00'},{x:12,y:6,c:'#ffaa00'},
+        {x:11,y:7,c:'#ccaa00'},{x:12,y:7,c:'#ffdd00'},
+        {x:11,y:8,c:'#ffdd00'},{x:12,y:8,c:'#ccaa00'},
+        {x:11,y:9,c:'#ccaa00'},{x:12,y:9,c:'#ffdd00'},
+        {x:12,y:10,c:'#aa8800'},{x:12,y:11,c:'#aa8800'},
+        {x:10,y:6,c:'#ffff88'},{x:14,y:3,c:'#ffff88'},
+      ]},
+      { id:'weapon_abyss', name:'トライデント', unlock:'chest', desc:'深海セット。海神の三叉槍。', pixels:[
+        {x:10,y:1,c:'#00ccff'},{x:12,y:1,c:'#00ccff'},{x:14,y:1,c:'#00ccff'},
+        {x:10,y:2,c:'#0088ff'},{x:12,y:2,c:'#0088ff'},{x:14,y:2,c:'#0088ff'},
+        {x:11,y:3,c:'#0066cc'},{x:12,y:3,c:'#00aaff'},{x:13,y:3,c:'#0066cc'},
+        {x:12,y:4,c:'#0088ff'},{x:12,y:5,c:'#0066cc'},{x:12,y:6,c:'#0088ff'},{x:12,y:7,c:'#0066cc'},{x:12,y:8,c:'#0088ff'},{x:12,y:9,c:'#0066cc'},{x:12,y:10,c:'#004488'},{x:12,y:11,c:'#003366'},
+        {x:11,y:5,c:'#00ccff'},{x:13,y:5,c:'#00ccff'},
+      ]},
+      { id:'weapon_dark', name:'魂喰らい大鎌', unlock:'chest', desc:'暗黒セット。全てを刈り取る大鎌。', pixels:[
+        {x:14,y:2,c:'#8800ff'},{x:13,y:3,c:'#aa00ff'},{x:14,y:3,c:'#cc00ff'},
+        {x:12,y:4,c:'#8800ff'},{x:13,y:4,c:'#aa00ff'},{x:14,y:4,c:'#8800ff'},
+        {x:11,y:5,c:'#6600cc'},{x:12,y:5,c:'#8800ff'},{x:13,y:5,c:'#6600cc'},
+        {x:12,y:6,c:'#8800ff'},{x:12,y:7,c:'#6600cc'},{x:12,y:8,c:'#8800ff'},{x:12,y:9,c:'#6600cc'},{x:12,y:10,c:'#440088'},{x:12,y:11,c:'#330066'},
+        {x:11,y:3,c:'#330066'},{x:10,y:4,c:'#cc00ff'},{x:10,y:5,c:'#440088'},
+      ]},
       { id:'weapon_wand', name:'光の杖', unlock:'chest', desc:'宝箱エピックドロップ。聖なる光を放つ。', pixels:[
         {x:12,y:1,c:'#ffffff'},{x:11,y:1,c:'#ffff88'},{x:13,y:1,c:'#ffff88'},{x:12,y:0,c:'#ffff88'},
         {x:11,y:2,c:'#ffd700'},{x:13,y:2,c:'#ffd700'},
@@ -2491,6 +2719,27 @@
         {x:14,y:4,c:'#440066'},{x:14,y:5,c:'#660099'},{x:14,y:6,c:'#440066'},{x:14,y:7,c:'#220044'},
         {x:4,y:12,c:'#440066'},{x:5,y:13,c:'#220044'},{x:11,y:13,c:'#220044'},{x:12,y:12,c:'#440066'},
         {x:3,y:3,c:'#660099'},{x:13,y:3,c:'#660099'},
+      ]},
+      { id:'effect_zeus', name:'雷神オーラ', unlock:'chest', desc:'ゼウスセット。稲妻が走るオーラ。', pixels:[
+        {x:1,y:3,c:'#ffdd00'},{x:2,y:4,c:'#ffee44'},{x:1,y:5,c:'#ffdd00'},{x:2,y:6,c:'#ffaa00'},
+        {x:15,y:3,c:'#ffdd00'},{x:14,y:4,c:'#ffee44'},{x:15,y:5,c:'#ffdd00'},{x:14,y:6,c:'#ffaa00'},
+        {x:7,y:13,c:'#ffdd00'},{x:8,y:14,c:'#ffee44'},{x:9,y:13,c:'#ffdd00'},
+        {x:3,y:9,c:'#ffffff'},{x:13,y:9,c:'#ffffff'},
+        {x:4,y:1,c:'#ffff88'},{x:12,y:1,c:'#ffff88'},
+      ]},
+      { id:'effect_abyss', name:'深海オーラ', unlock:'chest', desc:'深海セット。神秘の水のオーラ。', pixels:[
+        {x:1,y:4,c:'#00aaff'},{x:1,y:5,c:'#00ccff'},{x:1,y:6,c:'#0088ff'},{x:2,y:7,c:'#00aaff'},
+        {x:15,y:4,c:'#00aaff'},{x:15,y:5,c:'#00ccff'},{x:15,y:6,c:'#0088ff'},{x:14,y:7,c:'#00aaff'},
+        {x:6,y:14,c:'#00ccff'},{x:7,y:15,c:'#00aaff'},{x:8,y:14,c:'#00ccff'},{x:9,y:15,c:'#00aaff'},{x:10,y:14,c:'#00ccff'},
+        {x:3,y:2,c:'#00ffcc'},{x:13,y:2,c:'#00ffcc'},
+        {x:2,y:10,c:'#ff4488'},{x:14,y:10,c:'#ff4488'},
+      ]},
+      { id:'effect_dark_set', name:'暗黒オーラ', unlock:'chest', desc:'暗黒セット。虚無を纏う漆黒のオーラ。', pixels:[
+        {x:1,y:3,c:'#8800ff'},{x:1,y:4,c:'#6600cc'},{x:2,y:5,c:'#8800ff'},{x:1,y:6,c:'#440088'},
+        {x:15,y:3,c:'#8800ff'},{x:15,y:4,c:'#6600cc'},{x:14,y:5,c:'#8800ff'},{x:15,y:6,c:'#440088'},
+        {x:6,y:14,c:'#8800ff'},{x:8,y:15,c:'#cc00ff'},{x:10,y:14,c:'#8800ff'},
+        {x:3,y:1,c:'#cc00ff'},{x:13,y:1,c:'#cc00ff'},
+        {x:2,y:9,c:'#440088'},{x:14,y:9,c:'#440088'},
       ]},
       { id:'effect_sakura', name:'桜オーラ', unlock:'chest', desc:'宝箱ドロップ。舞い散る桜の花びら。', pixels:[
         {x:2,y:3,c:'#ffaacc'},{x:3,y:4,c:'#ff88bb'},{x:2,y:8,c:'#ffaacc'},
@@ -2571,8 +2820,59 @@
   window.switchAvatarCat = (cat) => {
     currentAvatarCat = cat;
     document.querySelectorAll('.avatar-cat-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`cat-${cat}`).classList.add('active');
-    renderAvatarItemsGrid(cat);
+    document.getElementById(`cat-${cat}`)?.classList.add('active');
+    if (cat === 'sets') {
+      renderSetsList();
+    } else {
+      renderAvatarItemsGrid(cat);
+    }
+  };
+
+  function renderSetsList() {
+    const grid = document.getElementById('avatar-items-grid');
+    const chestItems = userData?.chestItems || [];
+    grid.style.gridTemplateColumns = '1fr';
+    grid.innerHTML = Object.entries(SET_MASTER).map(([setId, setInfo]) => {
+      const parts = setInfo.parts;
+      const owned = Object.values(parts).filter(partId => chestItems.includes(partId) || AVATAR_PARTS.body?.find(p=>p.id===partId && p.unlock==='default'));
+      const total = Object.values(parts).length;
+      const pct = Math.round((owned.length / total) * 100);
+      const isComplete = owned.length === total;
+      const isEquipped = checkSetBonus(tempAvatarConfig) === setId;
+      return `
+        <div style="background:var(--bg);border:3px solid ${setInfo.color};border-radius:var(--radius);padding:14px;box-shadow:0 0 12px ${setInfo.glowColor}44;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span style="font-size:28px;">${setInfo.icon}</span>
+            <div style="flex:1;">
+              <div style="font-family:'DotGothic16',monospace;font-size:13px;color:${setInfo.color};">${setInfo.name}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${setInfo.desc}</div>
+            </div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:4px;height:6px;margin-bottom:8px;">
+            <div style="height:100%;width:${pct}%;background:${setInfo.color};border-radius:4px;transition:width 0.5s;"></div>
+          </div>
+          <div style="font-family:'DotGothic16',monospace;font-size:10px;color:var(--text-muted);margin-bottom:10px;">${owned.length}/${total} パーツ所持 · +${setInfo.expBonus}EXPボーナス</div>
+          ${isComplete ? `
+            <button onclick="equipFullSet('${setId}')" style="width:100%;background:linear-gradient(135deg,${setInfo.color},${setInfo.glowColor});border:3px solid ${setInfo.color}88;color:#111;font-family:'DotGothic16',monospace;font-size:13px;padding:10px;border-radius:4px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.5);">
+              ${isEquipped ? '✅ 装備中' : '⚡ セット装備する'}
+            </button>
+          ` : `
+            <div style="font-family:'DotGothic16',monospace;font-size:10px;color:var(--text-muted);text-align:center;padding:8px;border:2px dashed rgba(255,255,255,0.1);border-radius:4px;">
+              🔒 全パーツを集めると装備できる
+            </div>
+          `}
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.equipFullSet = (setId) => {
+    const setInfo = SET_MASTER[setId];
+    Object.entries(setInfo.parts).forEach(([cat, partId]) => {
+      tempAvatarConfig[cat] = partId;
+    });
+    renderAvatarSVG(tempAvatarConfig, document.getElementById('avatar-preview-svg'));
+    renderSetsList();
   };
 
   function renderAvatarItemsGrid(cat) {
@@ -2606,11 +2906,18 @@
   };
 
   window.saveAvatar = async () => {
+    const prevSet = checkSetBonus(currentAvatarConfig);
     currentAvatarConfig = { ...tempAvatarConfig };
     await updateDoc(doc(db, 'users', currentUser.uid), { avatarConfig: currentAvatarConfig });
     userData.avatarConfig = currentAvatarConfig;
     updateAvatarDisplay();
     closeAvatarEditor();
+    // セットボーナスチェック
+    const newSet = checkSetBonus(currentAvatarConfig);
+    applySetGlow(newSet);
+    if (newSet && newSet !== prevSet) {
+      await activateSetBonus(newSet);
+    }
   };
 
   // ===== SOUND SYSTEM =====
@@ -3101,22 +3408,34 @@
         // 宝箱オープン！アイテムをドロップ
         setMsg('宝箱を開けた！');
         showBattleEffect('🎁', 110, 40);
-        // レアリティ別ドロップテーブル
-        const rarityRoll = Math.random();
-        let targetRarity;
-        if (rarityRoll < 0.50) targetRarity = 'common';
-        else if (rarityRoll < 0.80) targetRarity = 'uncommon';
-        else if (rarityRoll < 0.95) targetRarity = 'rare';
-        else targetRarity = 'epic';
+        // セットアイテムは各0.5%の個別確率でチェック
+        const SET_ITEMS = [
+          'body_zeus','hat_zeus','weapon_zeus','effect_zeus',
+          'body_abyss','hat_abyss','weapon_abyss','effect_abyss',
+          'body_dark','hat_dark','weapon_dark','effect_dark_set',
+        ];
+        let dropId = null;
+        for (const setItemId of SET_ITEMS) {
+          if (Math.random() < 0.005) { dropId = setItemId; break; }
+        }
 
-        // 対象レアリティのアイテムをフィルタ
-        const candidates = CHEST_DROP_TABLE.filter(id => {
-          const info = ITEM_MASTER[id];
-          return info && info.rarity === targetRarity;
-        });
-        // 候補がなければ全体からランダム
-        const pool = candidates.length > 0 ? candidates : CHEST_DROP_TABLE;
-        const dropId = pool[Math.floor(Math.random() * pool.length)];
+        // セットアイテムが出なかった場合は通常レアリティ抽選
+        if (!dropId) {
+          const rarityRoll = Math.random();
+          let targetRarity;
+          if (rarityRoll < 0.50) targetRarity = 'common';
+          else if (rarityRoll < 0.80) targetRarity = 'uncommon';
+          else if (rarityRoll < 0.95) targetRarity = 'rare';
+          else targetRarity = 'epic';
+          // 通常ドロップテーブル（セットアイテム除く）
+          const NORMAL_DROP_TABLE = CHEST_DROP_TABLE.filter(id => !SET_ITEMS.includes(id));
+          const candidates = NORMAL_DROP_TABLE.filter(id => {
+            const info = ITEM_MASTER[id];
+            return info && info.rarity === targetRarity;
+          });
+          const pool = candidates.length > 0 ? candidates : NORMAL_DROP_TABLE;
+          dropId = pool[Math.floor(Math.random() * pool.length)];
+        }
         const dropInfo = ITEM_MASTER[dropId];
         const rarityLabel = dropInfo ? (RARITY_LABEL[dropInfo.rarity] || '') : '';
         const gotName = dropInfo ? dropInfo.icon + dropInfo.name : '???';
