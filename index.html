@@ -3350,14 +3350,14 @@
 
   // ===== BATTLE SCENE =====
   const MONSTERS = {
-    1:  { name:'スライム',    color:'#44cc44', pixels:[
+    1:  { name:'スライム',    color:'#44cc44', exp:1,   rare:false, pixels:[
       {x:5,y:4,c:'#44cc44'},{x:6,y:4,c:'#44cc44'},{x:7,y:4,c:'#44cc44'},{x:8,y:4,c:'#44cc44'},{x:9,y:4,c:'#44cc44'},
       {x:4,y:5,c:'#44cc44'},{x:5,y:5,c:'#44cc44'},{x:6,y:5,c:'#ffffff'},{x:7,y:5,c:'#44cc44'},{x:8,y:5,c:'#ffffff'},{x:9,y:5,c:'#44cc44'},{x:10,y:5,c:'#44cc44'},
       {x:4,y:6,c:'#44cc44'},{x:5,y:6,c:'#44cc44'},{x:6,y:6,c:'#44cc44'},{x:7,y:6,c:'#222'},{x:8,y:6,c:'#44cc44'},{x:9,y:6,c:'#44cc44'},{x:10,y:6,c:'#44cc44'},
       {x:5,y:7,c:'#33aa33'},{x:6,y:7,c:'#33aa33'},{x:7,y:7,c:'#33aa33'},{x:8,y:7,c:'#33aa33'},{x:9,y:7,c:'#33aa33'},
       {x:6,y:8,c:'#33aa33'},{x:7,y:8,c:'#33aa33'},{x:8,y:8,c:'#33aa33'},
     ]},
-    5:  { name:'ゴブリン',    color:'#88cc44', pixels:[
+    5:  { name:'ゴブリン',    color:'#88cc44', exp:2,   rare:false, pixels:[
       {x:6,y:2,c:'#88cc44'},{x:7,y:2,c:'#88cc44'},{x:8,y:2,c:'#88cc44'},
       {x:5,y:3,c:'#88cc44'},{x:6,y:3,c:'#88cc44'},{x:7,y:3,c:'#88cc44'},{x:8,y:3,c:'#88cc44'},{x:9,y:3,c:'#88cc44'},
       {x:5,y:4,c:'#88cc44'},{x:6,y:4,c:'#ff4444'},{x:7,y:4,c:'#88cc44'},{x:8,y:4,c:'#ff4444'},{x:9,y:4,c:'#88cc44'},
@@ -3367,7 +3367,7 @@
       {x:5,y:7,c:'#88cc44'},{x:9,y:7,c:'#88cc44'},
       {x:6,y:8,c:'#553311'},{x:7,y:8,c:'#553311'},{x:8,y:8,c:'#553311'},
     ]},
-    10: { name:'オーク',      color:'#cc6622', pixels:[
+    10: { name:'オーク',      color:'#cc6622', exp:5,   rare:false, pixels:[
       {x:5,y:2,c:'#cc6622'},{x:6,y:2,c:'#cc6622'},{x:7,y:2,c:'#cc6622'},{x:8,y:2,c:'#cc6622'},{x:9,y:2,c:'#cc6622'},
       {x:4,y:3,c:'#cc6622'},{x:5,y:3,c:'#cc6622'},{x:6,y:3,c:'#cc6622'},{x:7,y:3,c:'#cc6622'},{x:8,y:3,c:'#cc6622'},{x:9,y:3,c:'#cc6622'},{x:10,y:3,c:'#cc6622'},
       {x:4,y:4,c:'#cc6622'},{x:5,y:4,c:'#ff4444'},{x:6,y:4,c:'#cc6622'},{x:7,y:4,c:'#cc6622'},{x:8,y:4,c:'#ff4444'},{x:9,y:4,c:'#cc6622'},{x:10,y:4,c:'#cc6622'},
@@ -3377,7 +3377,7 @@
       {x:4,y:7,c:'#cc6622'},{x:5,y:7,c:'#884411'},{x:9,y:7,c:'#884411'},{x:10,y:7,c:'#cc6622'},
       {x:5,y:8,c:'#553311'},{x:6,y:8,c:'#553311'},{x:9,y:8,c:'#553311'},{x:10,y:8,c:'#553311'},
     ]},
-    20: { name:'ドラゴン',    color:'#cc2222', pixels:[
+    20: { name:'ドラゴン',    color:'#cc2222', exp:10,  rare:false, pixels:[
       {x:2,y:3,c:'#cc2222'},{x:3,y:2,c:'#cc2222'},{x:4,y:3,c:'#cc2222'},
       {x:2,y:4,c:'#cc2222'},{x:3,y:3,c:'#cc2222'},{x:4,y:4,c:'#cc2222'},{x:5,y:3,c:'#cc2222'},{x:6,y:3,c:'#cc2222'},
       {x:5,y:4,c:'#cc2222'},{x:6,y:4,c:'#ff4444'},{x:7,y:4,c:'#ff4444'},{x:8,y:4,c:'#cc2222'},
@@ -3388,6 +3388,25 @@
       {x:11,y:5,c:'#ff8800'},{x:12,y:4,c:'#ff8800'},{x:13,y:3,c:'#ffcc00'},
     ]},
   };
+
+  // レアモンスター（今後追加しやすいように配列で管理）
+  const RARE_MONSTERS = [
+    { name:'メタルスライム', color:'#aaddff', exp:50, rarity:0.05, pixels:[
+      {x:5,y:4,c:'#aaddff'},{x:6,y:4,c:'#aaddff'},{x:7,y:4,c:'#aaddff'},{x:8,y:4,c:'#aaddff'},{x:9,y:4,c:'#aaddff'},
+      {x:4,y:5,c:'#aaddff'},{x:5,y:5,c:'#aaddff'},{x:6,y:5,c:'#ffffff'},{x:7,y:5,c:'#aaddff'},{x:8,y:5,c:'#ffffff'},{x:9,y:5,c:'#aaddff'},{x:10,y:5,c:'#aaddff'},
+      {x:4,y:6,c:'#aaddff'},{x:5,y:6,c:'#aaddff'},{x:6,y:6,c:'#aaddff'},{x:7,y:6,c:'#88bbdd'},{x:8,y:6,c:'#aaddff'},{x:9,y:6,c:'#aaddff'},{x:10,y:6,c:'#aaddff'},
+      {x:5,y:7,c:'#88bbdd'},{x:6,y:7,c:'#88bbdd'},{x:7,y:7,c:'#88bbdd'},{x:8,y:7,c:'#88bbdd'},{x:9,y:7,c:'#88bbdd'},
+    ]},
+    { name:'メタルキング', color:'#ffd700', exp:300, rarity:0.01, pixels:[
+      {x:5,y:3,c:'#ffd700'},{x:6,y:3,c:'#ffd700'},{x:7,y:3,c:'#ffd700'},{x:8,y:3,c:'#ffd700'},{x:9,y:3,c:'#ffd700'},
+      {x:4,y:4,c:'#ffd700'},{x:5,y:4,c:'#ffd700'},{x:6,y:4,c:'#ffffff'},{x:7,y:4,c:'#ffd700'},{x:8,y:4,c:'#ffffff'},{x:9,y:4,c:'#ffd700'},{x:10,y:4,c:'#ffd700'},
+      {x:4,y:5,c:'#ffd700'},{x:5,y:5,c:'#ffd700'},{x:6,y:5,c:'#ffd700'},{x:7,y:5,c:'#cc8800'},{x:8,y:5,c:'#ffd700'},{x:9,y:5,c:'#ffd700'},{x:10,y:5,c:'#ffd700'},
+      {x:4,y:6,c:'#cc8800'},{x:5,y:6,c:'#ffd700'},{x:6,y:6,c:'#ffd700'},{x:7,y:6,c:'#ffd700'},{x:8,y:6,c:'#ffd700'},{x:9,y:6,c:'#ffd700'},{x:10,y:6,c:'#cc8800'},
+      {x:5,y:7,c:'#cc8800'},{x:6,y:7,c:'#cc8800'},{x:7,y:7,c:'#cc8800'},{x:8,y:7,c:'#cc8800'},{x:9,y:7,c:'#cc8800'},
+      {x:5,y:2,c:'#ffd700'},{x:7,y:1,c:'#ff4444'},{x:9,y:2,c:'#ffd700'},
+      {x:4,y:2,c:'#ffd700'},{x:10,y:2,c:'#ffd700'},
+    ]},
+  ];
 
   const TREASURE_NORMAL = [
     {x:4,y:5,c:'#8B4513'},{x:5,y:5,c:'#8B4513'},{x:6,y:5,c:'#8B4513'},{x:7,y:5,c:'#8B4513'},{x:8,y:5,c:'#8B4513'},{x:9,y:5,c:'#8B4513'},{x:10,y:5,c:'#8B4513'},
@@ -3464,12 +3483,35 @@
   }
 
   function startBattleEvent() {
-    const monster = getMonsterForLevel(userData?.level || 1);
+    // レアモンスター抽選
+    let monster = null;
+    for (const rare of RARE_MONSTERS) {
+      if (Math.random() < rare.rarity) {
+        monster = rare;
+        break;
+      }
+    }
+    if (!monster) monster = getMonsterForLevel(userData?.level || 1);
+
     const enemySvg = document.getElementById('bs-enemy-svg');
     if (!enemySvg) return;
     enemySvg.setAttribute('viewBox','0 0 16 16');
     drawPixels(enemySvg, monster.pixels);
-    setMsg(`${monster.name}があらわれた！`);
+
+    // レアモンスター演出
+    if (monster.rarity) {
+      const isKing = monster.name === 'メタルキング';
+      setMsg(isKing ? `👑 ${monster.name}があらわれた！！` : `✨ ${monster.name}があらわれた！`);
+      showBattleEffect('⭐', 60, 20);
+      showBattleEffect('✨', 130, 40);
+      showBattleEffect('💫', 100, 60);
+      if (isKing) {
+        showBattleEffect('👑', 90, 10);
+        playSoundRareDrop();
+      }
+    } else {
+      setMsg(`${monster.name}があらわれた！`);
+    }
     bsHp = 100;
     updateHpBar(100);
     bsState = 'battle';
@@ -3481,23 +3523,43 @@
     const enemyEl = document.getElementById('bs-enemy');
     if (!playerEl || !enemyEl) return;
     let step = 0;
+    const expGain = monster.exp || 1;
+    const isRare = !!monster.rarity;
+    const isKing = monster.name === 'メタルキング';
     const steps = [
-      // プレイヤーが近づく
       () => { playerEl.style.left = '60px'; setMsg(`${monster.name}に攻撃！`); },
-      // 攻撃エフェクト
       () => { showBattleEffect('⚔️', 120, 50); bsHp -= 40; updateHpBar(bsHp); },
       () => { showBattleEffect('💥', 100, 40); bsHp -= 35; updateHpBar(bsHp); },
-      // モンスター反撃
       () => { setMsg(`${monster.name}のこうげき！`); showBattleEffect('🩸', 70, 60); },
-      // 勝利
       () => {
-        setMsg(`${monster.name}をたおした！`);
-        updateHpBar(100);
         const enemySvg = document.getElementById('bs-enemy-svg');
         if (enemySvg) enemySvg.innerHTML = '';
-        showBattleEffect('✨', 130, 50);
         playerEl.style.left = '20px';
         bsState = 'idle';
+
+        // EXP獲得＆演出
+        if (currentUser && userData) {
+          gainExp(expGain, document.getElementById('bs-player'));
+        }
+
+        if (isKing) {
+          // メタルキング特別演出
+          setMsg(`👑 ${monster.name}をたおした！ +${expGain}EXP！！`);
+          showBattleEffect('👑', 90, 20);
+          showBattleEffect('💰', 130, 40);
+          showBattleEffect('🌟', 60, 60);
+          spawnParticles(40, true);
+          playSoundEpicDrop();
+        } else if (isRare) {
+          setMsg(`✨ ${monster.name}をたおした！ +${expGain}EXP！`);
+          showBattleEffect('🌟', 130, 50);
+          spawnParticles(20, false);
+          playSoundLevelUp();
+        } else {
+          setMsg(`${monster.name}をたおした！ +${expGain}EXP`);
+          showBattleEffect('✨', 130, 50);
+          updateHpBar(100);
+        }
         scheduleNextEvent();
       },
     ];
@@ -3505,7 +3567,7 @@
       if (step >= steps.length) return;
       steps[step]();
       step++;
-      if (step < steps.length) bsAnimFrame = setTimeout(nextStep, 800);
+      if (step < steps.length) bsAnimFrame = setTimeout(nextStep, isKing ? 500 : isRare ? 600 : 800);
     }
     nextStep();
   }
