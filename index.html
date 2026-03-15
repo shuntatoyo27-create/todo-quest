@@ -2374,10 +2374,24 @@
       }
     },
     {
+      id: 'lovecure_set',
+      name: 'キュアラブリー♡',
+      check: u => u.chestItems && ['body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure'].every(id => u.chestItems.includes(id)),
+      plate: {
+        bg: 'linear-gradient(135deg,#2a0018,#1a000e)',
+        border: '#ff44aa',
+        shadow: '0 0 20px rgba(255,68,170,0.7), 0 0 40px rgba(255,136,204,0.4)',
+        textColor: '#ff88cc',
+        decoration: '💖',
+        fontSize: '10px',
+        shimmer: true,
+      }
+    },
+    {
       id: 'all_sets',
       name: '万物の覇者',
       check: u => {
-        const all = ['body_zeus','hat_zeus','weapon_zeus','effect_zeus','body_abyss','hat_abyss','weapon_abyss','effect_abyss','body_dark','hat_dark','weapon_dark','effect_dark_set'];
+        const all = ['body_zeus','hat_zeus','weapon_zeus','effect_zeus','body_abyss','hat_abyss','weapon_abyss','effect_abyss','body_dark','hat_dark','weapon_dark','effect_dark_set','body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure'];
         return u.chestItems && all.every(id => u.chestItems.includes(id));
       },
       plate: {
@@ -3269,6 +3283,11 @@
     'hat_dark':       { name:'死神の仮面',     cat:'hat',    desc:'暗黒セット。魂を喰らう仮面。',       rarity:'epic',    icon:'💀', set:'dark' },
     'weapon_dark':    { name:'魂喰らい大鎌',   cat:'weapon', desc:'暗黒セット。全てを刈り取る大鎌。',  rarity:'epic',    icon:'💀', set:'dark' },
     'effect_dark_set':{ name:'暗黒オーラ',     cat:'effect', desc:'暗黒セット。虚無を纏う漆黒のオーラ。',rarity:'epic', icon:'🖤', set:'dark' },
+    // らぶきゅるシリーズ♡
+    'body_lovecure':   { name:'らぶきゅる衣装♡', cat:'body',   desc:'らぶきゅるセット♡。キュートなピンクの魔法少女衣装！', rarity:'epic', icon:'💖', set:'lovecure' },
+    'hat_lovecure':    { name:'リボンクラウン♡',  cat:'hat',    desc:'らぶきゅるセット♡。ふわふわのリボン王冠。',           rarity:'epic', icon:'🎀', set:'lovecure' },
+    'weapon_lovecure': { name:'ラブスティック♡',  cat:'weapon', desc:'らぶきゅるセット♡。ハートが飛び出す魔法の杖！',       rarity:'epic', icon:'💝', set:'lovecure' },
+    'effect_lovecure': { name:'ハートオーラ♡',    cat:'effect', desc:'らぶきゅるセット♡。ハートがふわふわ舞うオーラ。',    rarity:'epic', icon:'💕', set:'lovecure' },
   };
 
   const RARITY_COLOR = { common:'#aaaaaa', uncommon:'#44cc44', rare:'#4488ff', epic:'#cc44ff' };
@@ -3284,11 +3303,27 @@
     'body_zeus','hat_zeus','weapon_zeus','effect_zeus',
     'body_abyss','hat_abyss','weapon_abyss','effect_abyss',
     'body_dark','hat_dark','weapon_dark','effect_dark_set',
+    // らぶきゅるシリーズ♡
+    'body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure',
   ];
 
 
   // ===== SET SYSTEM =====
   const SET_MASTER = {
+    lovecure: {
+      name: 'らぶきゅるシリーズ♡',
+      icon: '💖',
+      color: '#ff88cc',
+      glowColor: '#ff44aa',
+      desc: '愛と勇気のキュートな魔法少女セット♡ 敵もメロメロ！',
+      expBonus: 500,
+      parts: {
+        body:   'body_lovecure',
+        hat:    'hat_lovecure',
+        weapon: 'weapon_lovecure',
+        effect: 'effect_lovecure',
+      }
+    },
     zeus: {
       name: 'ゼウス神話シリーズ',
       icon: '⚡',
@@ -3466,6 +3501,25 @@
         {x:5,y:10,c:'#cc2222'},{x:6,y:10,c:'#cc2222'},{x:9,y:10,c:'#cc2222'},{x:10,y:10,c:'#cc2222'},
         {x:5,y:11,c:'#553311'},{x:6,y:11,c:'#553311'},{x:9,y:11,c:'#553311'},{x:10,y:11,c:'#553311'},
       ]},
+      { id:'body_lovecure', name:'らぶきゅる衣装♡', unlock:'chest', desc:'らぶきゅるセット♡。キュートなピンクの魔法少女衣装！', pixels: [
+        // 顔
+        {x:6,y:2,c:'#ffccee'},{x:7,y:2,c:'#ffccee'},{x:8,y:2,c:'#ffccee'},{x:9,y:2,c:'#ffccee'},
+        {x:5,y:3,c:'#ffccee'},{x:6,y:3,c:'#ffccee'},{x:7,y:3,c:'#ffccee'},{x:8,y:3,c:'#ffccee'},{x:9,y:3,c:'#ffccee'},{x:10,y:3,c:'#ffccee'},
+        {x:5,y:4,c:'#ffccee'},{x:6,y:4,c:'#ff44aa'},{x:7,y:4,c:'#ffccee'},{x:8,y:4,c:'#ffccee'},{x:9,y:4,c:'#ff44aa'},{x:10,y:4,c:'#ffccee'},
+        {x:5,y:5,c:'#ffccee'},{x:6,y:5,c:'#ffccee'},{x:7,y:5,c:'#ffccee'},{x:8,y:5,c:'#ffccee'},{x:9,y:5,c:'#ffccee'},{x:10,y:5,c:'#ffccee'},
+        {x:6,y:6,c:'#ff88bb'},{x:7,y:6,c:'#ff44aa'},{x:8,y:6,c:'#ff44aa'},{x:9,y:6,c:'#ff88bb'},
+        // 衣装（ピンクのフリル）
+        {x:5,y:7,c:'#ff66bb'},{x:6,y:7,c:'#ff88cc'},{x:7,y:7,c:'#ffaadd'},{x:8,y:7,c:'#ffaadd'},{x:9,y:7,c:'#ff88cc'},{x:10,y:7,c:'#ff66bb'},
+        {x:4,y:7,c:'#ffccee'},{x:11,y:7,c:'#ffccee'},
+        {x:4,y:8,c:'#ffccee'},{x:5,y:8,c:'#ff66bb'},{x:6,y:8,c:'#ff88cc'},{x:7,y:8,c:'#ffffff'},{x:8,y:8,c:'#ffffff'},{x:9,y:8,c:'#ff88cc'},{x:10,y:8,c:'#ff66bb'},{x:11,y:8,c:'#ffccee'},
+        {x:4,y:9,c:'#ff88cc'},{x:5,y:9,c:'#ffaadd'},{x:6,y:9,c:'#ff66bb'},{x:9,y:9,c:'#ff66bb'},{x:10,y:9,c:'#ffaadd'},{x:11,y:9,c:'#ff88cc'},
+        // スカート
+        {x:4,y:10,c:'#ff44aa'},{x:5,y:10,c:'#ff66bb'},{x:6,y:10,c:'#ff88cc'},{x:9,y:10,c:'#ff88cc'},{x:10,y:10,c:'#ff66bb'},{x:11,y:10,c:'#ff44aa'},
+        // 足
+        {x:6,y:11,c:'#ffccee'},{x:7,y:11,c:'#ffccee'},{x:8,y:11,c:'#ffccee'},{x:9,y:11,c:'#ffccee'},
+        // 星アクセ
+        {x:5,y:7,c:'#ffd700'},{x:10,y:7,c:'#ffd700'},
+      ]},
       { id:'body_dark', name:'闇の鎧', unlock:'chest', desc:'暗黒セット。漆黒の魔鎧。', pixels: [
         // 黒い鎧
         {x:6,y:2,c:'#ccaaff'},{x:7,y:2,c:'#ccaaff'},{x:8,y:2,c:'#ccaaff'},{x:9,y:2,c:'#ccaaff'},
@@ -3519,6 +3573,17 @@
         {x:6,y:1,c:'#333'},{x:7,y:1,c:'#333'},{x:8,y:1,c:'#333'},{x:9,y:1,c:'#333'},
         {x:5,y:2,c:'#333'},{x:6,y:2,c:'#333'},{x:7,y:2,c:'#333'},{x:8,y:2,c:'#333'},{x:9,y:2,c:'#333'},{x:10,y:2,c:'#333'},
         {x:4,y:3,c:'#553300'},{x:5,y:3,c:'#553300'},{x:6,y:3,c:'#553300'},{x:7,y:3,c:'#553300'},{x:8,y:3,c:'#553300'},{x:9,y:3,c:'#553300'},{x:10,y:3,c:'#553300'},{x:11,y:3,c:'#553300'},
+      ]},
+      { id:'hat_lovecure', name:'リボンクラウン♡', unlock:'chest', desc:'らぶきゅるセット♡。ふわふわのリボン王冠。', pixels:[
+        // リボン
+        {x:4,y:1,c:'#ff44aa'},{x:5,y:1,c:'#ff66bb'},{x:6,y:0,c:'#ff44aa'},{x:7,y:1,c:'#ff88cc'},
+        {x:8,y:1,c:'#ff88cc'},{x:9,y:0,c:'#ff44aa'},{x:10,y:1,c:'#ff66bb'},{x:11,y:1,c:'#ff44aa'},
+        {x:7,y:0,c:'#ffffff'},{x:8,y:0,c:'#ffffff'},
+        // 王冠ベース
+        {x:5,y:2,c:'#ff44aa'},{x:6,y:2,c:'#ff66bb'},{x:7,y:2,c:'#ff88cc'},{x:8,y:2,c:'#ff88cc'},{x:9,y:2,c:'#ff66bb'},{x:10,y:2,c:'#ff44aa'},
+        {x:4,y:3,c:'#ff44aa'},{x:5,y:3,c:'#ff66bb'},{x:6,y:3,c:'#ff88cc'},{x:7,y:3,c:'#ffd700'},{x:8,y:3,c:'#ffd700'},{x:9,y:3,c:'#ff88cc'},{x:10,y:3,c:'#ff66bb'},{x:11,y:3,c:'#ff44aa'},
+        // ハートアクセ
+        {x:6,y:2,c:'#ff0088'},{x:9,y:2,c:'#ff0088'},
       ]},
       { id:'hat_helmet', name:'鉄兜', unlock:'chest', desc:'宝箱ドロップ。頑丈な鉄の兜。', pixels:[
         {x:5,y:1,c:'#888'},{x:6,y:1,c:'#888'},{x:7,y:1,c:'#888'},{x:8,y:1,c:'#888'},{x:9,y:1,c:'#888'},{x:10,y:1,c:'#888'},
@@ -3577,6 +3642,20 @@
         {x:12,y:3,c:'#aaaaaa'},{x:12,y:10,c:'#aaaaaa'},
         {x:11,y:4,c:'#aaaaaa'},{x:11,y:9,c:'#aaaaaa'},
         {x:12,y:6,c:'#ffff88'},{x:12,y:7,c:'#ffff88'},
+      ]},
+      { id:'weapon_lovecure', name:'ラブスティック♡', unlock:'chest', desc:'らぶきゅるセット♡。ハートが飛び出す魔法の杖！', pixels:[
+        // ハートトップ
+        {x:11,y:1,c:'#ff44aa'},{x:13,y:1,c:'#ff44aa'},
+        {x:10,y:2,c:'#ff44aa'},{x:11,y:2,c:'#ff88cc'},{x:12,y:2,c:'#ff44aa'},{x:13,y:2,c:'#ff88cc'},{x:14,y:2,c:'#ff44aa'},
+        {x:10,y:3,c:'#ff44aa'},{x:11,y:3,c:'#ff88cc'},{x:12,y:3,c:'#ffffff'},{x:13,y:3,c:'#ff88cc'},{x:14,y:3,c:'#ff44aa'},
+        {x:11,y:4,c:'#ff44aa'},{x:12,y:4,c:'#ff88cc'},{x:13,y:4,c:'#ff44aa'},
+        {x:12,y:5,c:'#ff44aa'},
+        // スター装飾
+        {x:10,y:1,c:'#ffd700'},{x:14,y:1,c:'#ffd700'},
+        // 杖
+        {x:12,y:6,c:'#ff88cc'},{x:12,y:7,c:'#ff66bb'},{x:12,y:8,c:'#ff88cc'},{x:12,y:9,c:'#ff66bb'},{x:12,y:10,c:'#ff88cc'},{x:12,y:11,c:'#ff44aa'},
+        // 星散らし
+        {x:11,y:7,c:'#ffd700'},{x:13,y:9,c:'#ffd700'},{x:11,y:10,c:'#ffaadd'},
       ]},
       { id:'weapon_axe', name:'斧', unlock:'chest', desc:'宝箱ドロップ。重くて強力な斧。', pixels:[
         {x:11,y:3,c:'#aaaaaa'},{x:12,y:2,c:'#aaaaaa'},{x:13,y:3,c:'#aaaaaa'},
@@ -3642,6 +3721,14 @@
         {x:2,y:4,c:'#ff0000'},{x:2,y:5,c:'#ff8800'},{x:2,y:6,c:'#ffff00'},{x:2,y:7,c:'#00ff00'},{x:2,y:8,c:'#0088ff'},
         {x:14,y:4,c:'#ff0000'},{x:14,y:5,c:'#ff8800'},{x:14,y:6,c:'#ffff00'},{x:14,y:7,c:'#00ff00'},{x:14,y:8,c:'#0088ff'},
         {x:4,y:2,c:'#cc00ff'},{x:5,y:1,c:'#cc00ff'},{x:10,y:1,c:'#cc00ff'},{x:11,y:2,c:'#cc00ff'},
+      ]},
+      { id:'effect_lovecure', name:'ハートオーラ♡', unlock:'chest', desc:'らぶきゅるセット♡。ハートがふわふわ舞うオーラ。', pixels:[
+        {x:2,y:3,c:'#ff44aa'},{x:3,y:2,c:'#ff44aa'},{x:2,y:4,c:'#ff88cc'},
+        {x:14,y:3,c:'#ff44aa'},{x:13,y:2,c:'#ff44aa'},{x:14,y:4,c:'#ff88cc'},
+        {x:1,y:6,c:'#ffaadd'},{x:2,y:5,c:'#ff88cc'},{x:15,y:6,c:'#ffaadd'},{x:14,y:5,c:'#ff88cc'},
+        {x:6,y:13,c:'#ff44aa'},{x:7,y:12,c:'#ff44aa'},{x:8,y:13,c:'#ff88cc'},{x:9,y:12,c:'#ff44aa'},{x:10,y:13,c:'#ff44aa'},
+        {x:3,y:9,c:'#ffd700'},{x:13,y:8,c:'#ffd700'},{x:8,y:15,c:'#ff44aa'},
+        {x:4,y:1,c:'#ffaadd'},{x:12,y:1,c:'#ffaadd'},
       ]},
       { id:'effect_ice', name:'氷オーラ', unlock:'chest', desc:'宝箱ドロップ。冷たく輝く氷晶。', pixels:[
         {x:2,y:5,c:'#88eeff'},{x:2,y:6,c:'#aaffff'},{x:2,y:7,c:'#88eeff'},
