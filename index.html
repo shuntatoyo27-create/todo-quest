@@ -958,18 +958,11 @@
 
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="navTo('home')">
-      <span class="nav-icon">🏠</span>ホーム
-    </button>
-    <button class="nav-item" onclick="navTo('quests')">
-      <span class="nav-icon">⚔️</span>クエスト
-    </button>
-    <button class="nav-item" onclick="navTo('group')">
-      <span class="nav-icon">👥</span>グループ
-    </button>
-    <button class="nav-item" onclick="navTo('profile')">
-      <span class="nav-icon">👤</span>プロフィール
-    </button>
+    <button class="nav-item active" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
+    <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
 </div>
 
@@ -991,6 +984,33 @@
     <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
     <button class="nav-item active" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
+  </nav>
+</div>
+
+<!-- ===== RANKING SCREEN ===== -->
+<div class="screen" id="ranking-screen">
+  <div class="top-bar">
+    <span class="app-title">🏆 ランキング</span>
+  </div>
+
+  <!-- タブ -->
+  <div style="display:flex;gap:6px;padding:0 20px 12px;">
+    <button class="board-cat-btn active" id="rank-tab-level" onclick="switchRankTab('level')">⭐ レベル</button>
+    <button class="board-cat-btn" id="rank-tab-items" onclick="switchRankTab('items')">🎒 アイテム</button>
+  </div>
+
+  <!-- ランキングリスト -->
+  <div id="ranking-list" style="padding:0 20px 100px;display:flex;flex-direction:column;gap:8px;">
+    <div class="empty-state"><span>🏆</span><p>読み込み中...</p></div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
+    <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item active" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
 </div>
@@ -1083,6 +1103,7 @@
     <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
     <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
     <button class="nav-item active" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
 </div>
@@ -1115,6 +1136,7 @@
     <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
     <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
     <button class="nav-item active" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
 </div>
@@ -1778,12 +1800,13 @@
       b.classList.toggle('active', map[label] === page);
     });
     // 画面切り替え
-    const screens = { home: 'home-screen', quests: 'quest-screen', group: 'group-screen', profile: 'profile-screen' };
+    const screens = { home: 'home-screen', quests: 'quest-screen', group: 'group-screen', ranking: 'ranking-screen', profile: 'profile-screen' };
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const targetId = screens[page] || 'home-screen';
     document.getElementById(targetId).classList.add('active');
     if (page === 'quests') subscribeToQuests();
     if (page === 'group') subscribeToGroups();
+    if (page === 'ranking') loadRanking();
     if (page === 'profile') renderProfile();
   };
 
@@ -2071,6 +2094,103 @@
     renderProfile();
     playSoundTaskDone();
   };
+
+  // ===== RANKING =====
+  let currentRankTab = 'level';
+
+  window.switchRankTab = (tab) => {
+    currentRankTab = tab;
+    document.querySelectorAll('[id^="rank-tab-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById(`rank-tab-${tab}`)?.classList.add('active');
+    loadRanking();
+  };
+
+  async function loadRanking() {
+    const list = document.getElementById('ranking-list');
+    list.innerHTML = `<div class="empty-state"><span>⏳</span><p>読み込み中...</p></div>`;
+
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      let users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // ソート
+      if (currentRankTab === 'level') {
+        users.sort((a, b) => {
+          if ((b.level||1) !== (a.level||1)) return (b.level||1) - (a.level||1);
+          return (b.exp||0) - (a.exp||0);
+        });
+      } else if (currentRankTab === 'items') {
+        users.sort((a, b) => (b.chestItems||[]).length - (a.chestItems||[]).length);
+      }
+
+      // Top20まで表示
+      users = users.slice(0, 20);
+
+      if (users.length === 0) {
+        list.innerHTML = `<div class="empty-state"><span>🏆</span><p>まだユーザーがいません</p></div>`;
+        return;
+      }
+
+      const rankIcons = ['🥇','🥈','🥉'];
+      list.innerHTML = users.map((u, i) => {
+        const isMe = u.id === currentUser?.uid;
+        const rank = i + 1;
+        const rankIcon = rank <= 3 ? rankIcons[rank-1] : `${rank}`;
+        const title = getEquippedTitle(u);
+        const value = currentRankTab === 'level'
+          ? `Lv.${u.level||1} (${u.exp||0}EXP)`
+          : `${(u.chestItems||[]).length}個`;
+
+        // アバターSVG
+        const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svgEl.setAttribute('viewBox','0 0 16 16');
+        svgEl.setAttribute('width','40');
+        svgEl.setAttribute('height','40');
+        svgEl.style.imageRendering = 'pixelated';
+        renderAvatarSVG(u.avatarConfig || { body:'body_default', hat:'hat_none', weapon:'weapon_none', effect:'effect_none' }, svgEl);
+        const svgStr = svgEl.outerHTML;
+
+        // セットグロー
+        const setId = u.avatarConfig ? checkSetBonus(u.avatarConfig) : null;
+        const glowStyle = setId ? `box-shadow:0 0 10px ${SET_MASTER[setId].glowColor};` : '';
+
+        return `
+          <div style="
+            background:${isMe ? 'linear-gradient(135deg,#1e1b4b,#312e81)' : 'var(--surface)'};
+            border:${rank<=3 ? `4px solid ${['#ffd700','#c0c0c0','#cd7f32'][rank-1]}` : isMe ? '3px solid var(--purple)' : '3px solid var(--surface2)'};
+            border-radius:var(--radius);
+            padding:14px;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            box-shadow:${rank===1 ? '0 0 20px rgba(255,215,0,0.3),4px 4px 0 rgba(0,0,0,0.5)' : '3px 3px 0 rgba(0,0,0,0.4)'};
+          ">
+            <!-- 順位 -->
+            <div style="font-family:'Press Start 2P',monospace;font-size:${rank<=3?'18px':'13px'};min-width:36px;text-align:center;color:${rank===1?'#ffd700':rank===2?'#c0c0c0':rank===3?'#cd7f32':'var(--text-muted)'};">
+              ${rankIcon}
+            </div>
+            <!-- アバター -->
+            <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:4px;border:3px solid rgba(255,255,255,0.2);overflow:hidden;flex-shrink:0;${glowStyle}">
+              ${svgStr}
+            </div>
+            <!-- 情報 -->
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;">
+                <span style="font-family:'DotGothic16',monospace;font-size:13px;">${escHtml(u.nickname||'勇者')}${isMe?'（自分）':''}</span>
+              </div>
+              <div style="margin-bottom:4px;">${makeTitlePlateHTML(title, true)}</div>
+              <div style="font-family:'DotGothic16',monospace;font-size:11px;color:var(--secondary);">${value}</div>
+            </div>
+            <!-- クラス -->
+            <div style="font-size:10px;color:var(--text-muted);font-family:'DotGothic16',monospace;text-align:right;flex-shrink:0;">${getClass(u.level||1)}</div>
+          </div>
+        `;
+      }).join('');
+
+    } catch(e) {
+      list.innerHTML = `<div class="empty-state"><span>❌</span><p>読み込みに失敗しました</p></div>`;
+    }
+  }
 
   // ===== 二つ名システム =====
   const TITLES = [
