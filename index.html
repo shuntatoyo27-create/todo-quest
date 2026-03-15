@@ -1635,6 +1635,10 @@
   let currentUser = null;
   let userData = null;
   let tasksUnsub = null;
+  let currentAvatarConfig = { body: 'body_default', hat: 'hat_none', weapon: 'weapon_none', effect: 'effect_none' };
+  let tempAvatarConfig = { ...currentAvatarConfig };
+  let currentAvatarCat = 'body';
+
 
   // ===== RPG CONFIG =====
   const EXP_PER_TASK = 30;
@@ -2262,44 +2266,41 @@
   // レアリティ枠で抽選 → その中からランダム1種
   // legend: 0.4%  epic_set: 5%  epic: 4.6%  rare: 15%  uncommon: 30%  common: 45%
 
-  const GACHA_SET_ITEMS = [
-    'body_zeus','hat_zeus','weapon_zeus','effect_zeus',
-    'body_abyss','hat_abyss','weapon_abyss','effect_abyss',
-    'body_dark','hat_dark','weapon_dark','effect_dark_set',
-    'body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure',
-  ];
-  const GACHA_NORMAL_ITEMS = CHEST_DROP_TABLE.filter(id => !GACHA_SET_ITEMS.includes(id));
-  // コモン枠（レベル解放アイテム含む）
-  const GACHA_COMMON_ITEMS = ['hat_bandana','weapon_sword','effect_stars'];
-
   function pickRandom(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 
+  function getGachaTables() {
+    const SET = ['body_zeus','hat_zeus','weapon_zeus','effect_zeus','body_abyss','hat_abyss','weapon_abyss','effect_abyss','body_dark','hat_dark','weapon_dark','effect_dark_set','body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure'];
+    const NORMAL = CHEST_DROP_TABLE.filter(id => !SET.includes(id));
+    const COMMON = ['hat_bandana','weapon_sword','effect_stars'];
+    return { SET, NORMAL, COMMON };
+  }
+
   function gachaDraw() {
+    const { SET, NORMAL, COMMON } = getGachaTables();
     const r = Math.random();
-    if (r < 0.004)  return pickRandom(GACHA_LEGEND_TABLE);   // 0.4% レジェンド
-    if (r < 0.054)  return pickRandom(GACHA_SET_ITEMS);       // 5%   エピック(セット)
-    // 残り94.6%を通常レアリティで振り分け
+    if (r < 0.004) return pickRandom(GACHA_LEGEND_TABLE);
+    if (r < 0.054) return pickRandom(SET);
     const r2 = Math.random();
     let rarity;
-    if      (r2 < 0.474) rarity = 'common';    // 45%
-    else if (r2 < 0.790) rarity = 'uncommon';  // 31.6%
-    else if (r2 < 0.941) rarity = 'rare';       // 15.1%
-    else                 rarity = 'epic';        // 5.9%
-    const pool = GACHA_NORMAL_ITEMS.filter(id => ITEM_MASTER[id]?.rarity === rarity);
+    if      (r2 < 0.474) rarity = 'common';
+    else if (r2 < 0.790) rarity = 'uncommon';
+    else if (r2 < 0.941) rarity = 'rare';
+    else                 rarity = 'epic';
+    const pool = NORMAL.filter(id => ITEM_MASTER[id]?.rarity === rarity);
     if (pool.length > 0) return pickRandom(pool);
-    if (rarity === 'common') return pickRandom(GACHA_COMMON_ITEMS);
-    return pickRandom(GACHA_NORMAL_ITEMS);
+    if (rarity === 'common') return pickRandom(COMMON);
+    return pickRandom(NORMAL);
   }
 
   function gachaDrawGuaranteedRare() {
-    // レア以上確定（10連の1枠）
+    const { SET, NORMAL } = getGachaTables();
     const r = Math.random();
-    if (r < 0.008) return pickRandom(GACHA_LEGEND_TABLE);   // 0.8%
-    if (r < 0.108) return pickRandom(GACHA_SET_ITEMS);       // 10%
+    if (r < 0.008) return pickRandom(GACHA_LEGEND_TABLE);
+    if (r < 0.108) return pickRandom(SET);
     const r2 = Math.random();
     const rarity = r2 < 0.75 ? 'rare' : 'epic';
-    const pool = GACHA_NORMAL_ITEMS.filter(id => ITEM_MASTER[id]?.rarity === rarity);
-    return pool.length > 0 ? pickRandom(pool) : pickRandom(GACHA_NORMAL_ITEMS);
+    const pool = NORMAL.filter(id => ITEM_MASTER[id]?.rarity === rarity);
+    return pool.length > 0 ? pickRandom(pool) : pickRandom(NORMAL);
   }
 
   window.doGacha = async (count) => {
@@ -3623,6 +3624,16 @@
     'body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure',
   ];
 
+  // ガチャ用テーブル（CHEST_DROP_TABLE定義後に配置）
+  const GACHA_SET_ITEMS = [
+    'body_zeus','hat_zeus','weapon_zeus','effect_zeus',
+    'body_abyss','hat_abyss','weapon_abyss','effect_abyss',
+    'body_dark','hat_dark','weapon_dark','effect_dark_set',
+    'body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure',
+  ];
+  const GACHA_NORMAL_ITEMS = CHEST_DROP_TABLE.filter(id => !GACHA_SET_ITEMS.includes(id));
+  const GACHA_COMMON_ITEMS = ['hat_bandana','weapon_sword','effect_stars'];
+
 
   // ===== SET SYSTEM =====
   const SET_MASTER = {
@@ -4167,10 +4178,7 @@
     ],
   };
 
-  // 現在の選択状態
-  let currentAvatarConfig = { body: 'body_default', hat: 'hat_none', weapon: 'weapon_none', effect: 'effect_none' };
-  let tempAvatarConfig = { ...currentAvatarConfig };
-  let currentAvatarCat = 'body';
+  // 現在の選択状態（STATE セクションで定義済み）
 
   // アバターをSVGで描画
   function renderAvatarSVG(config, svgEl) {
