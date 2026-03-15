@@ -2271,12 +2271,11 @@
   function getGachaTables() {
     const SET = ['body_zeus','hat_zeus','weapon_zeus','effect_zeus','body_abyss','hat_abyss','weapon_abyss','effect_abyss','body_dark','hat_dark','weapon_dark','effect_dark_set','body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure'];
     const NORMAL = CHEST_DROP_TABLE.filter(id => !SET.includes(id));
-    const COMMON = ['hat_bandana','weapon_sword','effect_stars'];
-    return { SET, NORMAL, COMMON };
+    return { SET, NORMAL };
   }
 
   function gachaDraw() {
-    const { SET, NORMAL, COMMON } = getGachaTables();
+    const { SET, NORMAL } = getGachaTables();
     const r = Math.random();
     if (r < 0.004) return pickRandom(GACHA_LEGEND_TABLE);
     if (r < 0.054) return pickRandom(SET);
@@ -2287,9 +2286,7 @@
     else if (r2 < 0.941) rarity = 'rare';
     else                 rarity = 'epic';
     const pool = NORMAL.filter(id => ITEM_MASTER[id]?.rarity === rarity);
-    if (pool.length > 0) return pickRandom(pool);
-    if (rarity === 'common') return pickRandom(COMMON);
-    return pickRandom(NORMAL);
+    return pool.length > 0 ? pickRandom(pool) : pickRandom(NORMAL);
   }
 
   function gachaDrawGuaranteedRare() {
@@ -3550,6 +3547,12 @@
   const ITEM_MASTER = {
     // 帽子
     'hat_bandana':    { name:'バンダナ',       cat:'hat',    desc:'赤いバンダナ。基本装備。',              rarity:'common',  icon:'🎀' },
+    'hat_feather':    { name:'羽根帽子',       cat:'hat',    desc:'軽やかな羽根飾りの帽子。',              rarity:'common',  icon:'🪶' },
+    'hat_hood':       { name:'フード',         cat:'hat',    desc:'シンプルなフード。',                    rarity:'common',  icon:'🧢' },
+    'weapon_dagger':  { name:'ダガー',         cat:'weapon', desc:'素早く刺せる短剣。',                    rarity:'common',  icon:'🗡️' },
+    'weapon_club':    { name:'こん棒',         cat:'weapon', desc:'原始的だが力強い武器。',                rarity:'common',  icon:'🏑' },
+    'effect_wind':    { name:'風オーラ',       cat:'effect', desc:'さわやかな風のオーラ。',                rarity:'common',  icon:'💨' },
+    'effect_bubble':  { name:'泡オーラ',       cat:'effect', desc:'ぷかぷか浮かぶ泡のオーラ。',           rarity:'common',  icon:'🫧' },
     'hat_crown':      { name:'王冠',           cat:'hat',    desc:'Lv10で解放。威厳ある金の王冠。',       rarity:'rare',    icon:'👑' },
     'hat_witch':      { name:'魔女帽',         cat:'hat',    desc:'Lv5で解放。神秘的な三角帽子。',        rarity:'uncommon',icon:'🎩' },
     'hat_helmet':     { name:'鉄兜',           cat:'hat',    desc:'宝箱ドロップ。頑丈な鉄の兜。',         rarity:'uncommon',icon:'⛑️' },
@@ -3612,6 +3615,9 @@
   ];
 
   const CHEST_DROP_TABLE = [
+    // コモン（NORMAL枠に追加）
+    'hat_bandana','hat_feather','hat_hood','weapon_sword','weapon_dagger','weapon_club','effect_stars','effect_wind','effect_bubble',
+    // アンコモン〜エピック
     'hat_helmet','hat_halo','hat_ninja','hat_pirate',
     'weapon_axe','weapon_lance','weapon_hammer','weapon_wand',
     'effect_ice','effect_thunder','effect_dark','effect_sakura',
@@ -3919,6 +3925,17 @@
       ]},
     ],
     hat: [
+      { id:'hat_feather', name:'羽根帽子', unlock:'chest', desc:'軽やかな羽根飾りの帽子。', pixels:[
+        {x:8,y:0,c:'#88ddff'},{x:9,y:1,c:'#66bbee'},{x:10,y:2,c:'#44aadd'},
+        {x:7,y:1,c:'#aaeeff'},{x:8,y:2,c:'#88ccee'},{x:9,y:3,c:'#66aacc'},
+        {x:5,y:2,c:'#cc8833'},{x:6,y:2,c:'#cc8833'},{x:7,y:2,c:'#aa7722'},{x:8,y:3,c:'#cc8833'},
+        {x:4,y:3,c:'#cc8833'},{x:5,y:3,c:'#bb7722'},{x:6,y:3,c:'#cc8833'},{x:7,y:3,c:'#cc8833'},{x:8,y:3,c:'#bb7722'},{x:9,y:3,c:'#cc8833'},{x:10,y:3,c:'#cc8833'},{x:11,y:3,c:'#cc8833'},
+      ]},
+      { id:'hat_hood', name:'フード', unlock:'chest', desc:'シンプルなフード。', pixels:[
+        {x:5,y:1,c:'#557799'},{x:6,y:1,c:'#557799'},{x:7,y:1,c:'#557799'},{x:8,y:1,c:'#557799'},{x:9,y:1,c:'#557799'},{x:10,y:1,c:'#557799'},
+        {x:4,y:2,c:'#557799'},{x:5,y:2,c:'#6688aa'},{x:6,y:2,c:'#6688aa'},{x:7,y:2,c:'#6688aa'},{x:8,y:2,c:'#6688aa'},{x:9,y:2,c:'#6688aa'},{x:10,y:2,c:'#6688aa'},{x:11,y:2,c:'#557799'},
+        {x:4,y:3,c:'#446688'},{x:5,y:3,c:'#557799'},{x:10,y:3,c:'#557799'},{x:11,y:3,c:'#446688'},
+      ]},
       { id:'hat_bandana', name:'バンダナ', unlock:'default', pixels:[
         {x:5,y:2,c:'#ff4444'},{x:6,y:2,c:'#ff4444'},{x:7,y:2,c:'#ff4444'},{x:8,y:2,c:'#ff4444'},{x:9,y:2,c:'#ff4444'},{x:10,y:2,c:'#ff4444'},
         {x:11,y:2,c:'#ff4444'},{x:12,y:3,c:'#ff4444'},{x:12,y:4,c:'#ff4444'},
@@ -3998,6 +4015,17 @@
     ],
     weapon: [
       { id:'weapon_none', name:'なし', unlock:'default', pixels:[] },
+      { id:'weapon_dagger', name:'ダガー', unlock:'chest', desc:'素早く刺せる短剣。', pixels:[
+        {x:12,y:5,c:'#cccccc'},{x:12,y:6,c:'#cccccc'},{x:12,y:7,c:'#aaaaaa'},{x:12,y:8,c:'#aaaaaa'},
+        {x:11,y:8,c:'#888'},{x:13,y:8,c:'#888'},
+        {x:12,y:9,c:'#553311'},{x:12,y:10,c:'#553311'},
+        {x:13,y:5,c:'#eee'},
+      ]},
+      { id:'weapon_club', name:'こん棒', unlock:'chest', desc:'原始的だが力強い武器。', pixels:[
+        {x:11,y:3,c:'#884422'},{x:12,y:3,c:'#884422'},{x:13,y:3,c:'#884422'},
+        {x:11,y:4,c:'#aa5533'},{x:12,y:4,c:'#aa5533'},{x:13,y:4,c:'#aa5533'},
+        {x:12,y:5,c:'#884422'},{x:12,y:6,c:'#773311'},{x:12,y:7,c:'#884422'},{x:12,y:8,c:'#773311'},{x:12,y:9,c:'#884422'},{x:12,y:10,c:'#553311'},{x:12,y:11,c:'#553311'},
+      ]},
       { id:'weapon_sword', name:'剣', unlock:'default', pixels:[
         {x:12,y:5,c:'#aaaaaa'},{x:12,y:6,c:'#aaaaaa'},{x:12,y:7,c:'#aaaaaa'},{x:12,y:8,c:'#aaaaaa'},
         {x:11,y:9,c:'#888888'},{x:12,y:9,c:'#888888'},{x:13,y:9,c:'#888888'},
