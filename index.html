@@ -37,21 +37,9 @@
       min-height: 100vh;
       overflow-x: hidden;
       image-rendering: pixelated;
-      /* セーフエリア分だけコンテンツをずらす */
       padding-top: env(safe-area-inset-top);
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
-    }
-
-    /* 上部のみ黒フレーム（ノッチ・Dynamic Islandエリア） */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      background: #000;
-      height: env(safe-area-inset-top);
-      z-index: 9999;
-      pointer-events: none;
     }
 
     /* ドット絵風ボーダー */
