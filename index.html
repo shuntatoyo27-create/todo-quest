@@ -943,12 +943,14 @@
   <!-- Bulletin Board -->
   <div class="section-header" style="margin-top:24px;">
     <span class="section-title">📋 掲示板</span>
+    <button onclick="openAdminPost()" style="background:linear-gradient(135deg,#ff6600,#ff8800);border:3px solid #cc4400;color:white;font-family:'DotGothic16',monospace;font-size:10px;padding:5px 8px;border-radius:4px;cursor:pointer;box-shadow:2px 2px 0 #cc4400;">📢 運営</button>
     <button class="add-btn" onclick="openAddPost()">+</button>
   </div>
 
   <!-- Category Filter -->
   <div style="display:flex;gap:6px;padding:0 20px 12px;overflow-x:auto;">
     <button class="board-cat-btn active" onclick="filterPosts('all')" id="bcat-all">すべて</button>
+    <button class="board-cat-btn" onclick="filterPosts('announce')" id="bcat-announce" style="border-color:#ff8800;color:#ff8800;">📢 お知らせ</button>
     <button class="board-cat-btn" onclick="filterPosts('request')" id="bcat-request">💡 要望</button>
     <button class="board-cat-btn" onclick="filterPosts('bug')" id="bcat-bug">🐛 バグ</button>
     <button class="board-cat-btn" onclick="filterPosts('comment')" id="bcat-comment">💬 感想</button>
@@ -1367,6 +1369,30 @@
     <h3 style="font-family:'Press Start 2P',monospace;font-size:12px;margin-bottom:16px;">🎒 アイテムバッグ</h3>
     <div id="item-list-content" style="display:flex;flex-direction:column;gap:10px;"></div>
     <button class="btn-secondary" onclick="closeItemList()" style="margin-top:16px;width:100%;">閉じる</button>
+  </div>
+</div>
+
+<!-- Admin Post Modal -->
+<div class="modal-overlay" id="admin-post-modal">
+  <div class="modal">
+    <h3 style="font-family:'DotGothic16',monospace;font-size:14px;margin-bottom:16px;">📢 開発チームからのお知らせ</h3>
+    <div class="form-group">
+      <label>管理者パスワード</label>
+      <input type="password" id="admin-pass-input" placeholder="パスワードを入力" />
+    </div>
+    <div class="form-group">
+      <label>タイトル</label>
+      <input type="text" id="admin-title-input" placeholder="お知らせのタイトル" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label>本文</label>
+      <textarea id="admin-body-input" placeholder="お知らせの内容" rows="4" style="width:100%;background:var(--surface2);border:3px solid var(--surface2);border-radius:var(--radius);color:var(--text);padding:10px;font-family:'DotGothic16',monospace;font-size:12px;resize:none;"></textarea>
+    </div>
+    <div id="admin-error" style="color:var(--primary);font-size:11px;font-family:'DotGothic16',monospace;margin-bottom:8px;"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeAdminPost()">キャンセル</button>
+      <button class="btn-add" onclick="submitAdminPost()">📢 投稿する</button>
+    </div>
   </div>
 </div>
 
@@ -3091,11 +3117,51 @@
     playSoundTaskDone();
   };
 
+  // ===== 管理者投稿 =====
+  const ADMIN_PASSWORD = '590510'; // 管理者パスワード
+
+  window.openAdminPost = () => {
+    document.getElementById('admin-pass-input').value = '';
+    document.getElementById('admin-title-input').value = '';
+    document.getElementById('admin-body-input').value = '';
+    document.getElementById('admin-error').textContent = '';
+    document.getElementById('admin-post-modal').classList.add('open');
+    setTimeout(() => document.getElementById('admin-pass-input').focus(), 100);
+  };
+
+  window.closeAdminPost = () => {
+    document.getElementById('admin-post-modal').classList.remove('open');
+  };
+
+  window.submitAdminPost = async () => {
+    const pass = document.getElementById('admin-pass-input').value;
+    const title = document.getElementById('admin-title-input').value.trim();
+    const body = document.getElementById('admin-body-input').value.trim();
+    const errEl = document.getElementById('admin-error');
+
+    if (pass !== ADMIN_PASSWORD) {
+      errEl.textContent = '❌ パスワードが違います';
+      return;
+    }
+    if (!title) { errEl.textContent = 'タイトルを入力してください'; return; }
+
+    await addDoc(collection(db, 'boardPosts'), {
+      userId: 'admin',
+      authorName: '開発チーム',
+      category: 'announce',
+      title, body,
+      likes: [],
+      createdAt: serverTimestamp(),
+    });
+    closeAdminPost();
+    playSoundTaskDone();
+  };
+
   // ===== BULLETIN BOARD =====
   let boardUnsub = null;
   let currentPostCat = 'request';
   let currentBoardFilter = 'all';
-  const CAT_LABELS = { request:'💡 機能要望', bug:'🐛 バグ報告', comment:'💬 感想' };
+  const CAT_LABELS = { announce:'📢 お知らせ', request:'💡 機能要望', bug:'🐛 バグ報告', comment:'💬 感想' };
   const CAT_CLASSES = { request:'request', bug:'bug', comment:'comment' };
 
   function subscribeToBoard() {
@@ -3119,13 +3185,14 @@
       const isLiked = (p.likes || []).includes(currentUser.uid);
       const isOwner = p.userId === currentUser.uid;
       return `
-        <div class="post-card">
+        <div class="post-card" style="${p.category==='announce' ? 'border:3px solid #ff8800;background:linear-gradient(135deg,rgba(255,136,0,0.08),var(--surface));box-shadow:0 0 12px rgba(255,136,0,0.2),3px 3px 0 rgba(0,0,0,0.4);' : ''}">
           <div class="post-header">
             <span class="post-cat-badge ${CAT_CLASSES[p.category]}">${CAT_LABELS[p.category]}</span>
-            <span style="font-size:11px;color:var(--text-muted);font-family:'DotGothic16',monospace;">${escHtml(p.authorName)}</span>
-            ${isOwner ? `<button class="delete-post-btn" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
+            <span style="font-size:11px;color:${p.category==='announce'?'#ff8800':'var(--text-muted)'};font-family:'DotGothic16',monospace;">${p.category==='announce'?'🛡️ 開発チーム':escHtml(p.authorName)}</span>
+            ${p.category==='announce' ? '<span style="font-size:9px;background:#ff8800;color:white;padding:1px 5px;border-radius:3px;font-family:DotGothic16,monospace;">公式</span>' : ''}
+            ${isOwner && p.category!=='announce' ? `<button class="delete-post-btn" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
           </div>
-          <div class="post-title">${escHtml(p.title)}</div>
+          <div class="post-title" style="${p.category==='announce'?'color:#ff8800;':''}">${escHtml(p.title)}</div>
           <div class="post-body">${escHtml(p.body)}</div>
           <div class="post-footer">
             <span class="post-meta">${p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString('ja-JP') : ''}</span>
