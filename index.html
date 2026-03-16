@@ -652,6 +652,8 @@
     .quest-task-deadline { font-size: 11px; color: var(--text-muted); }
     .quest-task-delete { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; }
     .quest-task-delete:hover { color: var(--primary); }
+    .quest-task-edit { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 2px 4px; transition: color 0.2s; }
+    .quest-task-edit:hover { color: var(--blue); }
     .add-sub-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed var(--surface2); color: var(--text-muted); border-radius: var(--radius-sm); padding: 10px 14px; font-family: "Nunito",sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
     .add-sub-btn:hover { border-color: var(--accent); color: var(--accent); }
     .add-task-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 2px dashed rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 8px; padding: 8px 12px; font-family: "Nunito",sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
@@ -1564,6 +1566,25 @@
   </div>
 </div>
 
+<!-- Edit Quest Modal（共通） -->
+<div class="modal-overlay" id="edit-quest-modal">
+  <div class="modal">
+    <h3 id="edit-quest-modal-title">✏️ 編集</h3>
+    <div class="form-group">
+      <label>名前</label>
+      <input type="text" id="edit-quest-title-input" placeholder="名前を入力" />
+    </div>
+    <div class="form-group" id="edit-quest-deadline-group">
+      <label>期限（任意）</label>
+      <input type="date" id="edit-quest-deadline-input" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeEditQuestModal()">キャンセル</button>
+      <button class="btn-add" onclick="saveEditQuest()">保存する ✨</button>
+    </div>
+  </div>
+</div>
+
 <!-- Add Task Modal -->
 <div class="modal-overlay" id="add-task-modal">
   <div class="modal">
@@ -2085,6 +2106,7 @@
               <div class="quest-task-title ${t.isComplete ? 'done' : ''}">${escHtml(t.title)}</div>
               ${t.deadline ? `<div class="quest-task-deadline">📅 ${t.deadline}</div>` : ''}
             </div>
+            <button class="quest-task-edit" onclick="openEditQuestTask('${t.id}','${escHtml(t.title)}','${t.deadline||''}')">✏️</button>
             <button class="quest-task-delete" onclick="deleteQuestTask('${t.id}')">🗑️</button>
           </div>
         `).join('');
@@ -2097,6 +2119,7 @@
                 ${sq.deadline ? `<div class="sub-quest-deadline">📅 ${sq.deadline}</div>` : ''}
               </div>
               <span class="chevron" id="sq-chevron-${sq.id}">›</span>
+              <button class="sub-quest-delete" onclick="event.stopPropagation();openEditSubQuest('${sq.id}','${escHtml(sq.title)}','${sq.deadline||''}')">✏️</button>
               <button class="sub-quest-delete" onclick="event.stopPropagation();deleteSubQuest('${sq.id}')">🗑️</button>
             </div>
             <div class="quest-tasks-wrap" id="sq-tasks-${sq.id}">
@@ -2118,6 +2141,7 @@
             <div class="main-quest-stats">${doneTasks}/${totalTasks} タスク完了 · ${pct}%</div>
           </div>
           <span class="chevron" id="mq-chevron-${mq.id}">›</span>
+          <button class="main-quest-delete" onclick="event.stopPropagation();openEditMainQuest('${mq.id}','${escHtml(mq.title)}')">✏️</button>
           <button class="main-quest-delete" onclick="event.stopPropagation();deleteMainQuest('${mq.id}')">🗑️</button>
         </div>
         <div class="main-quest-progress">
@@ -2321,6 +2345,44 @@
   window.deleteQuestTask = async (id) => {
     if (!confirm('タスクを削除しますか？')) return;
     await deleteDoc(doc(db, 'questTasks', id));
+    subscribeToQuests();
+  };
+
+  // ===== EDIT QUEST =====
+  let _editQuestType = null; // 'main' | 'sub' | 'task'
+  let _editQuestId = null;
+
+  function openEditQuestModal(type, id, title, deadline, showDeadline) {
+    _editQuestType = type;
+    _editQuestId = id;
+    const labels = { main: '🏰 メインクエスト編集', sub: '⚔️ サブクエスト編集', task: '📜 タスク編集' };
+    document.getElementById('edit-quest-modal-title').textContent = labels[type];
+    document.getElementById('edit-quest-title-input').value = title;
+    document.getElementById('edit-quest-deadline-input').value = deadline || '';
+    document.getElementById('edit-quest-deadline-group').style.display = showDeadline ? 'block' : 'none';
+    document.getElementById('edit-quest-modal').classList.add('open');
+    setTimeout(() => document.getElementById('edit-quest-title-input').focus(), 100);
+  }
+
+  window.openEditMainQuest = (id, title) => openEditQuestModal('main', id, title, '', false);
+  window.openEditSubQuest = (id, title, deadline) => openEditQuestModal('sub', id, title, deadline, true);
+  window.openEditQuestTask = (id, title, deadline) => openEditQuestModal('task', id, title, deadline, true);
+
+  window.closeEditQuestModal = () => {
+    document.getElementById('edit-quest-modal').classList.remove('open');
+    _editQuestType = null;
+    _editQuestId = null;
+  };
+
+  window.saveEditQuest = async () => {
+    const title = document.getElementById('edit-quest-title-input').value.trim();
+    const deadline = document.getElementById('edit-quest-deadline-input').value || null;
+    if (!title) return;
+    const colMap = { main: 'mainQuests', sub: 'subQuests', task: 'questTasks' };
+    const updateData = { title };
+    if (_editQuestType !== 'main') updateData.deadline = deadline;
+    await updateDoc(doc(db, colMap[_editQuestType], _editQuestId), updateData);
+    closeEditQuestModal();
     subscribeToQuests();
   };
 
