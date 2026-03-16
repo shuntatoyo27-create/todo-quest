@@ -880,20 +880,20 @@
   </div>
 
   <!-- Battle Scene -->
-  <div id="battle-scene" style="margin:0 20px 16px;background:linear-gradient(180deg,#0a1628 0%,#1a2a1a 60%,#2a1a0a 100%);border:4px solid var(--surface2);border-radius:var(--radius);height:140px;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.6);">
+  <div id="battle-scene" style="margin:0 20px 16px;background:linear-gradient(180deg,#0a1628 0%,#1a2a1a 60%,#2a1a0a 100%);border:4px solid var(--surface2);border-radius:var(--radius);height:200px;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.6);">
     <!-- 背景の星 -->
     <div id="bs-stars" style="position:absolute;inset:0;"></div>
     <!-- 地面 -->
-    <div style="position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(180deg,#3a2a0a,#2a1a05);border-top:3px solid #554422;"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(180deg,#3a2a0a,#2a1a05);border-top:3px solid #554422;"></div>
     <!-- イベントメッセージ -->
-    <div id="bs-msg" style="position:absolute;top:6px;left:0;right:0;text-align:center;font-family:'DotGothic16',monospace;font-size:10px;color:var(--secondary);z-index:10;text-shadow:0 0 8px rgba(255,217,61,0.8);"></div>
+    <div id="bs-msg" style="position:absolute;top:8px;left:0;right:0;text-align:center;font-family:'DotGothic16',monospace;font-size:11px;color:var(--secondary);z-index:10;text-shadow:0 0 8px rgba(255,217,61,0.8);"></div>
     <!-- プレイヤー -->
-    <div id="bs-player" style="position:absolute;bottom:24px;left:20px;image-rendering:pixelated;transition:left 0.3s;">
-      <svg id="bs-player-svg" width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;"></svg>
+    <div id="bs-player" style="position:absolute;bottom:32px;left:20px;image-rendering:pixelated;transition:left 0.3s;">
+      <svg id="bs-player-svg" width="64" height="64" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;"></svg>
     </div>
     <!-- モンスター/宝箱 -->
-    <div id="bs-enemy" style="position:absolute;bottom:24px;right:20px;image-rendering:pixelated;">
-      <svg id="bs-enemy-svg" width="32" height="32" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;"></svg>
+    <div id="bs-enemy" style="position:absolute;bottom:32px;right:20px;image-rendering:pixelated;">
+      <svg id="bs-enemy-svg" width="64" height="64" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;"></svg>
     </div>
     <!-- エフェクト -->
     <div id="bs-effect" style="position:absolute;inset:0;pointer-events:none;z-index:5;"></div>
@@ -5112,11 +5112,11 @@
     if (monster.rarity) {
       const isKing = monster.name === 'メタルキング';
       setMsg(isKing ? `👑 ${monster.name}があらわれた！！` : `✨ ${monster.name}があらわれた！`);
-      showBattleEffect('⭐', 60, 20);
-      showBattleEffect('✨', 130, 40);
-      showBattleEffect('💫', 100, 60);
+      showBattleEffect('⭐', 80, 30);
+      showBattleEffect('✨', 160, 60);
+      showBattleEffect('💫', 120, 80);
       if (isKing) {
-        showBattleEffect('👑', 90, 10);
+        showBattleEffect('👑', 110, 20);
         playSoundRareDrop();
       }
     } else {
@@ -5137,10 +5137,10 @@
     const isRare = !!monster.rarity;
     const isKing = monster.name === 'メタルキング';
     const steps = [
-      () => { playerEl.style.left = '60px'; setMsg(`${monster.name}に攻撃！`); },
-      () => { showBattleEffect('⚔️', 120, 50); bsHp -= 40; updateHpBar(bsHp); },
-      () => { showBattleEffect('💥', 100, 40); bsHp -= 35; updateHpBar(bsHp); },
-      () => { setMsg(`${monster.name}のこうげき！`); showBattleEffect('🩸', 70, 60); },
+      () => { playerEl.style.left = '100px'; setMsg(`${monster.name}に攻撃！`); },
+      () => { showBattleEffect('⚔️', 160, 70); bsHp -= 40; updateHpBar(bsHp); },
+      () => { showBattleEffect('💥', 140, 55); bsHp -= 35; updateHpBar(bsHp); },
+      () => { setMsg(`${monster.name}のこうげき！`); showBattleEffect('🩸', 90, 80); },
       () => {
         const enemySvg = document.getElementById('bs-enemy-svg');
         if (enemySvg) enemySvg.innerHTML = '';
@@ -5155,9 +5155,9 @@
         if (isKing) {
           // メタルキング特別演出
           setMsg(`👑 ${monster.name}をたおした！ +${expGain}EXP！！`);
-          showBattleEffect('👑', 90, 20);
-          showBattleEffect('💰', 130, 40);
-          showBattleEffect('🌟', 60, 60);
+          showBattleEffect('👑', 110, 30);
+          showBattleEffect('💰', 160, 55);
+          showBattleEffect('🌟', 80, 75);
           spawnParticles(40, true);
           playSoundEpicDrop();
           // メタルキング撃破カウント
@@ -5169,7 +5169,7 @@
           }
         } else if (isRare) {
           setMsg(`✨ ${monster.name}をたおした！ +${expGain}EXP！`);
-          showBattleEffect('🌟', 130, 50);
+          showBattleEffect('🌟', 160, 65);
           spawnParticles(20, false);
           playSoundLevelUp();
         } else {
