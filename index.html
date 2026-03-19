@@ -2999,30 +2999,136 @@
 
   // ===== 二つ名システム =====
   const TITLES = [
+    // ===== 最初から持っている =====
     {
       id: 'beginner',
       name: '始まりの旅人',
       check: u => true,
       plate: {
         bg: 'linear-gradient(135deg,#3a2a1a,#2a1a0a)',
-        border: '#8B6544',
-        shadow: 'none',
-        textColor: '#cc9966',
-        decoration: '',
-        fontSize: '10px',
+        border: '#8B6544', shadow: 'none',
+        textColor: '#cc9966', decoration: '',
+      }
+    },
+
+    // ===== レベル系（10段階） =====
+    {
+      id: 'level10',
+      name: '駆け出し冒険者',
+      check: u => (u.level||1) >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a2a1a,#0a1a0a)',
+        border: '#44aa44', shadow: '0 0 6px rgba(68,170,68,0.3)',
+        textColor: '#66cc66', decoration: '⚔️',
       }
     },
     {
+      id: 'level20',
+      name: '冒険者',
+      check: u => (u.level||1) >= 20,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a1a2a,#0a0a2a)',
+        border: '#4488ff', shadow: '0 0 8px rgba(68,136,255,0.4)',
+        textColor: '#88aaff', decoration: '🛡️',
+      }
+    },
+    {
+      id: 'level30',
+      name: '熟練冒険者',
+      check: u => (u.level||1) >= 30,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a0a2a,#0a0018)',
+        border: '#aa44ff', shadow: '0 0 10px rgba(170,68,255,0.4)',
+        textColor: '#cc88ff', decoration: '🔮',
+      }
+    },
+    {
+      id: 'level40',
+      name: '勇士',
+      check: u => (u.level||1) >= 40,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a1a00,#1a0e00)',
+        border: '#ff8800', shadow: '0 0 12px rgba(255,136,0,0.5)',
+        textColor: '#ffaa44', decoration: '🔥',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'level50',
+      name: '勇者',
+      check: u => (u.level||1) >= 50,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a2a00,#1a1800)',
+        border: '#ffd700', shadow: '0 0 16px rgba(255,215,0,0.6), 0 0 32px rgba(255,215,0,0.3)',
+        textColor: '#ffd700', decoration: '👑',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'level60',
+      name: '剣聖',
+      check: u => (u.level||1) >= 60,
+      plate: {
+        bg: 'linear-gradient(135deg,#002a2a,#001a1a)',
+        border: '#00ccff', shadow: '0 0 16px rgba(0,204,255,0.6), 0 0 32px rgba(0,204,255,0.3)',
+        textColor: '#00eeff', decoration: '⚡',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'level70',
+      name: '英雄',
+      check: u => (u.level||1) >= 70,
+      plate: {
+        bg: 'linear-gradient(135deg,#2a0020,#1a0015)',
+        border: '#ff44aa', shadow: '0 0 18px rgba(255,68,170,0.7), 0 0 36px rgba(255,68,170,0.4)',
+        textColor: '#ff88cc', decoration: '🌟',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'level80',
+      name: '覇者',
+      check: u => (u.level||1) >= 80,
+      plate: {
+        bg: 'linear-gradient(135deg,#0a001a,#050010)',
+        border: '#cc44ff', shadow: '0 0 20px rgba(204,68,255,0.8), 0 0 40px rgba(204,68,255,0.4)',
+        textColor: '#dd88ff', decoration: '💎',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'level90',
+      name: '魔王討伐者',
+      check: u => (u.level||1) >= 90,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a0000,#2a0500)',
+        border: '#ff2200', shadow: '0 0 22px rgba(255,34,0,0.9), 0 0 44px rgba(255,68,0,0.5)',
+        textColor: '#ffaa44', decoration: '🐉',
+        shimmer: true,
+      }
+    },
+    {
+      id: 'level100',
+      name: '伝説の勇者',
+      check: u => (u.level||1) >= 100,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a0a2a,#0a0015)',
+        border: 'transparent', shadow: '0 0 24px rgba(199,125,255,0.8), 0 0 48px rgba(255,215,0,0.4)',
+        textColor: '#ffffff', decoration: '✦',
+        shimmer: true, rainbow: true,
+      }
+    },
+
+    // ===== タスク達成系 =====
+    {
       id: 'task10',
-      name: '駆け出し冒険者',
+      name: '一歩踏み出した者',
       check: u => (u.totalCompleted||0) >= 10,
       plate: {
         bg: 'linear-gradient(135deg,#1a2a1a,#0a1a0a)',
-        border: '#44aa44',
-        shadow: '0 0 6px rgba(68,170,68,0.3)',
-        textColor: '#66cc66',
-        decoration: '⚔️',
-        fontSize: '10px',
+        border: '#44aa44', shadow: '0 0 6px rgba(68,170,68,0.3)',
+        textColor: '#88cc88', decoration: '🌱',
       }
     },
     {
@@ -3031,11 +3137,8 @@
       check: u => (u.totalCompleted||0) >= 50,
       plate: {
         bg: 'linear-gradient(135deg,#1a1a2a,#0a0a2a)',
-        border: '#4488ff',
-        shadow: '0 0 8px rgba(68,136,255,0.4)',
-        textColor: '#88aaff',
-        decoration: '🛡️',
-        fontSize: '10px',
+        border: '#4488ff', shadow: '0 0 8px rgba(68,136,255,0.4)',
+        textColor: '#88aaff', decoration: '🛡️',
       }
     },
     {
@@ -3044,39 +3147,32 @@
       check: u => (u.totalCompleted||0) >= 100,
       plate: {
         bg: 'linear-gradient(135deg,#2a2a0a,#1a1a00)',
-        border: '#ffd700',
-        shadow: '0 0 12px rgba(255,215,0,0.5)',
-        textColor: '#ffd700',
-        decoration: '👑',
-        fontSize: '10px',
+        border: '#ffd700', shadow: '0 0 12px rgba(255,215,0,0.5)',
+        textColor: '#ffd700', decoration: '👑',
         shimmer: true,
       }
     },
     {
-      id: 'level10',
-      name: '勇者の証',
-      check: u => (u.level||1) >= 10,
+      id: 'task500',
+      name: '千の試練を越えた者',
+      check: u => (u.totalCompleted||0) >= 500,
       plate: {
-        bg: 'linear-gradient(135deg,#2a2a2a,#1a1a1a)',
-        border: '#aaaaaa',
-        shadow: '0 0 8px rgba(200,200,200,0.4)',
-        textColor: '#dddddd',
-        decoration: '⚔️',
-        fontSize: '10px',
+        bg: 'linear-gradient(135deg,#1a0a00,#2a1500)',
+        border: '#ff8800', shadow: '0 0 16px rgba(255,136,0,0.7), 0 0 32px rgba(255,136,0,0.4)',
+        textColor: '#ffcc44', decoration: '🔥',
+        shimmer: true,
       }
     },
+
+    // ===== 連続ログイン系 =====
     {
-      id: 'level20',
-      name: '伝説の覇者',
-      check: u => (u.level||1) >= 20,
+      id: 'streak7',
+      name: '一週間の誓い',
+      check: u => (u.loginStreak||0) >= 7,
       plate: {
-        bg: 'linear-gradient(135deg,#2a1a00,#1a0800)',
-        border: '#ff8800',
-        shadow: '0 0 16px rgba(255,136,0,0.6), 0 0 32px rgba(255,136,0,0.3)',
-        textColor: '#ffcc44',
-        decoration: '🌟',
-        fontSize: '10px',
-        shimmer: true,
+        bg: 'linear-gradient(135deg,#1a1a2a,#0a0a1a)',
+        border: '#8888ff', shadow: '0 0 8px rgba(136,136,255,0.4)',
+        textColor: '#aaaaff', decoration: '📅',
       }
     },
     {
@@ -3085,40 +3181,33 @@
       check: u => (u.loginStreak||0) >= 30,
       plate: {
         bg: 'linear-gradient(135deg,#1a1a2a,#0a0a1a)',
-        border: '#8888ff',
-        shadow: '0 0 10px rgba(136,136,255,0.4)',
-        textColor: '#aaaaff',
-        decoration: '💎',
-        fontSize: '10px',
-      }
-    },
-    {
-      id: 'dragon_slayer',
-      name: 'ドラゴンスレイヤー',
-      check: u => (u.level||1) >= 20,
-      plate: {
-        bg: 'linear-gradient(135deg,#2a0000,#1a0000)',
-        border: '#ff4400',
-        shadow: '0 0 14px rgba(255,68,0,0.6), 0 0 28px rgba(255,68,0,0.3)',
-        textColor: '#ff8844',
-        decoration: '🐉',
-        fontSize: '10px',
+        border: '#8888ff', shadow: '0 0 10px rgba(136,136,255,0.5)',
+        textColor: '#aaaaff', decoration: '💎',
         shimmer: true,
       }
     },
+    {
+      id: 'streak100',
+      name: '不屈の冒険者',
+      check: u => (u.loginStreak||0) >= 100,
+      plate: {
+        bg: 'linear-gradient(135deg,#0a1a2a,#00081a)',
+        border: '#00aaff', shadow: '0 0 16px rgba(0,170,255,0.7), 0 0 32px rgba(0,170,255,0.4)',
+        textColor: '#44ccff', decoration: '🌊',
+        shimmer: true,
+      }
+    },
+
+    // ===== 特殊実績系 =====
     {
       id: 'metal_hunter',
       name: 'フルメタルボディ',
       check: u => (u.metalKingCount||0) >= 10,
       plate: {
         bg: 'linear-gradient(135deg,#2a2a2a,#111)',
-        border: '#aaddff',
-        shadow: '0 0 16px rgba(170,221,255,0.6), 0 0 32px rgba(170,221,255,0.3)',
-        textColor: '#aaddff',
-        decoration: '👑',
-        fontSize: '10px',
-        shimmer: true,
-        metallic: true,
+        border: '#aaddff', shadow: '0 0 16px rgba(170,221,255,0.6), 0 0 32px rgba(170,221,255,0.3)',
+        textColor: '#aaddff', decoration: '👑',
+        shimmer: true, metallic: true,
       }
     },
     {
@@ -3127,26 +3216,31 @@
       check: u => (u.chestItems||[]).length >= 10,
       plate: {
         bg: 'linear-gradient(135deg,#1a2a0a,#0a1a00)',
-        border: '#44cc88',
-        shadow: '0 0 8px rgba(68,204,136,0.4)',
-        textColor: '#66ffaa',
-        decoration: '🎁',
-        fontSize: '10px',
+        border: '#44cc88', shadow: '0 0 8px rgba(68,204,136,0.4)',
+        textColor: '#66ffaa', decoration: '🎁',
       }
     },
+    {
+      id: 'sabori_catcher',
+      name: 'さぼり監察官',
+      check: u => (u.reactionsSent||0) >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a1a1a,#0a0a0a)',
+        border: '#ff6b6b', shadow: '0 0 8px rgba(255,107,107,0.4)',
+        textColor: '#ff9999', decoration: '👮',
+      }
+    },
+
+    // ===== セット装備系 =====
     {
       id: 'zeus_set',
       name: '雷神の申し子',
       check: u => u.chestItems && ['body_zeus','hat_zeus','weapon_zeus','effect_zeus'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#2a2a00,#1a1800)',
-        border: '#ffdd00',
-        shadow: '0 0 20px rgba(255,221,0,0.7), 0 0 40px rgba(255,221,0,0.4)',
-        textColor: '#ffee44',
-        decoration: '⚡',
-        fontSize: '10px',
-        shimmer: true,
-        lightning: true,
+        border: '#ffdd00', shadow: '0 0 20px rgba(255,221,0,0.7), 0 0 40px rgba(255,221,0,0.4)',
+        textColor: '#ffee44', decoration: '⚡',
+        shimmer: true, lightning: true,
       }
     },
     {
@@ -3155,11 +3249,8 @@
       check: u => u.chestItems && ['body_abyss','hat_abyss','weapon_abyss','effect_abyss'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#001a2a,#000a1a)',
-        border: '#00aaff',
-        shadow: '0 0 20px rgba(0,170,255,0.7), 0 0 40px rgba(0,170,255,0.4)',
-        textColor: '#00ccff',
-        decoration: '🌊',
-        fontSize: '10px',
+        border: '#00aaff', shadow: '0 0 20px rgba(0,170,255,0.7), 0 0 40px rgba(0,170,255,0.4)',
+        textColor: '#00ccff', decoration: '🌊',
         shimmer: true,
       }
     },
@@ -3169,13 +3260,9 @@
       check: u => u.chestItems && ['body_dark','hat_dark','weapon_dark','effect_dark_set'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#0a0010,#050008)',
-        border: '#8800ff',
-        shadow: '0 0 20px rgba(136,0,255,0.7), 0 0 40px rgba(136,0,255,0.4)',
-        textColor: '#cc44ff',
-        decoration: '🖤',
-        fontSize: '10px',
-        shimmer: true,
-        dark: true,
+        border: '#8800ff', shadow: '0 0 20px rgba(136,0,255,0.7), 0 0 40px rgba(136,0,255,0.4)',
+        textColor: '#cc44ff', decoration: '🖤',
+        shimmer: true, dark: true,
       }
     },
     {
@@ -3184,11 +3271,8 @@
       check: u => u.chestItems && ['body_bushin','hat_bushin','weapon_bushin','effect_bushin'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#1a0000,#2a0500)',
-        border: '#ff2200',
-        shadow: '0 0 24px rgba(255,34,0,0.9), 0 0 48px rgba(255,68,0,0.5)',
-        textColor: '#ffaa44',
-        decoration: '💪',
-        fontSize: '10px',
+        border: '#ff2200', shadow: '0 0 24px rgba(255,34,0,0.9), 0 0 48px rgba(255,68,0,0.5)',
+        textColor: '#ffaa44', decoration: '💪',
         shimmer: true,
       }
     },
@@ -3198,11 +3282,8 @@
       check: u => u.chestItems && ['body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#2a0018,#1a000e)',
-        border: '#ff44aa',
-        shadow: '0 0 20px rgba(255,68,170,0.7), 0 0 40px rgba(255,136,204,0.4)',
-        textColor: '#ff88cc',
-        decoration: '💖',
-        fontSize: '10px',
+        border: '#ff44aa', shadow: '0 0 20px rgba(255,68,170,0.7), 0 0 40px rgba(255,136,204,0.4)',
+        textColor: '#ff88cc', decoration: '💖',
         shimmer: true,
       }
     },
@@ -3215,30 +3296,12 @@
       },
       plate: {
         bg: 'linear-gradient(135deg,#1a0a2a,#0a0015)',
-        border: 'transparent',
-        shadow: '0 0 24px rgba(199,125,255,0.8), 0 0 48px rgba(255,215,0,0.4)',
-        textColor: '#ffffff',
-        decoration: '✦',
-        fontSize: '10px',
-        shimmer: true,
-        rainbow: true,
-      }
-    },
-    {
-      id: 'sabori_catcher',
-      name: 'さぼり監察官',
-      check: u => (u.reactionsSent||0) >= 10,
-      plate: {
-        bg: 'linear-gradient(135deg,#1a1a1a,#0a0a0a)',
-        border: '#ff6b6b',
-        shadow: '0 0 8px rgba(255,107,107,0.4)',
-        textColor: '#ff9999',
-        decoration: '👮',
-        fontSize: '10px',
+        border: 'transparent', shadow: '0 0 24px rgba(199,125,255,0.8), 0 0 48px rgba(255,215,0,0.4)',
+        textColor: '#ffffff', decoration: '✦',
+        shimmer: true, rainbow: true,
       }
     },
   ];
-
   // プレートHTML生成
   function makeTitlePlateHTML(title, small = false) {
     const p = title.plate;
