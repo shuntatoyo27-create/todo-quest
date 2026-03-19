@@ -754,7 +754,72 @@
     .avatar-item-btn .item-name { font-family: 'DotGothic16', monospace; font-size: 9px; color: var(--text-muted); text-align: center; }
     .avatar-item-btn .lock-icon { position: absolute; top: 4px; right: 4px; font-size: 10px; }
 
-    /* Achievement Overlay */
+    /* ===== CALENDAR ===== */
+    .cal-dow {
+      text-align: center;
+      font-family: 'DotGothic16', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 4px 0;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 4px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+      min-height: 44px;
+      position: relative;
+    }
+    .cal-day:hover { border-color: var(--blue); background: rgba(77,150,255,0.08); }
+    .cal-day.today { background: rgba(255,107,107,0.12); border-color: var(--primary); }
+    .cal-day.selected { background: rgba(77,150,255,0.2); border-color: var(--blue); box-shadow: 0 0 8px rgba(77,150,255,0.3); }
+    .cal-day.other-month { opacity: 0.3; }
+    .cal-day-num {
+      font-family: 'DotGothic16', monospace;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .cal-day.today .cal-day-num { color: var(--primary); font-size: 13px; }
+    .cal-day.sun .cal-day-num { color: var(--primary); }
+    .cal-day.sat .cal-day-num { color: var(--purple); }
+    .cal-dots {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 3px;
+      max-width: 100%;
+    }
+    .cal-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+    .cal-dot.done { background: var(--accent); }
+    .cal-dot.pending { background: var(--secondary); }
+    .cal-dot.overdue { background: var(--primary); }
+
+    .cal-task-item {
+      background: var(--surface);
+      border: 3px solid var(--surface2);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.1s;
+    }
+    .cal-task-item.done { opacity: 0.5; }
+    .cal-task-item.done .cal-task-title { text-decoration: line-through; }
+    .cal-task-item.overdue { border-color: var(--primary); }
+
+    /* ===== ACHIEVEMENT OVERLAY ===== */
     .achievement-overlay {
       display: none;
       position: fixed;
@@ -986,6 +1051,7 @@
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="navTo('calendar')"><span class="nav-icon">📅</span>カレンダー</button>
     <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('gacha')"><span class="nav-icon">🎰</span>ガチャ</button>
@@ -1010,6 +1076,7 @@
 
   <nav class="bottom-nav">
     <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="navTo('calendar')"><span class="nav-icon">📅</span>カレンダー</button>
     <button class="nav-item active" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('gacha')"><span class="nav-icon">🎰</span>ガチャ</button>
@@ -1138,6 +1205,7 @@
     <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
     <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('calendar')"><span class="nav-icon">📅</span>カレンダー</button>
     <button class="nav-item active" onclick="navTo('gacha')"><span class="nav-icon">🎰</span>ガチャ</button>
     <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
@@ -1174,6 +1242,7 @@
     <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
     <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('calendar')"><span class="nav-icon">📅</span>カレンダー</button>
     <button class="nav-item active" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
@@ -1269,11 +1338,64 @@
     <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('gacha')"><span class="nav-icon">🎰</span>ガチャ</button>
     <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
+    <button class="nav-item" onclick="navTo('calendar')"><span class="nav-icon">📅</span>カレンダー</button>
     <button class="nav-item active" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
   </nav>
 </div>
 
 <!-- Edit Nickname Modal -->
+
+<!-- ===== CALENDAR SCREEN ===== -->
+<div class="screen" id="calendar-screen">
+  <div class="top-bar">
+    <span class="app-title">📅 カレンダー</span>
+    <button class="add-btn" onclick="openAddTaskFromCalendar()" style="width:auto;padding:8px 14px;border-radius:var(--radius);font-size:13px;font-family:'DotGothic16',monospace;">＋ 追加</button>
+  </div>
+
+  <!-- カレンダーヘッダー -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px 12px;">
+    <button onclick="calendarPrevMonth()" style="background:var(--surface2);border:3px solid var(--surface2);color:var(--text);font-size:18px;width:40px;height:40px;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
+    <span id="cal-month-label" style="font-family:'DotGothic16',monospace;font-size:15px;color:var(--secondary);"></span>
+    <button onclick="calendarNextMonth()" style="background:var(--surface2);border:3px solid var(--surface2);color:var(--text);font-size:18px;width:40px;height:40px;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
+  </div>
+
+  <!-- 曜日ラベル -->
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 20px;margin-bottom:4px;">
+    <div class="cal-dow">日</div>
+    <div class="cal-dow">月</div>
+    <div class="cal-dow">火</div>
+    <div class="cal-dow">水</div>
+    <div class="cal-dow">木</div>
+    <div class="cal-dow">金</div>
+    <div class="cal-dow" style="color:var(--purple);">土</div>
+  </div>
+
+  <!-- カレンダーグリッド -->
+  <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 20px;gap:3px;"></div>
+
+  <!-- 選択日のクエスト一覧 -->
+  <div id="cal-tasks-panel" style="margin:16px 20px 0;display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span id="cal-selected-label" style="font-family:'DotGothic16',monospace;font-size:13px;color:var(--secondary);"></span>
+      <button onclick="openAddTaskFromCalendar()" style="background:var(--primary);border:3px solid #cc4444;color:white;font-family:'DotGothic16',monospace;font-size:11px;padding:6px 10px;border-radius:var(--radius);cursor:pointer;box-shadow:2px 2px 0 #cc4444;">＋ 追加</button>
+    </div>
+    <div id="cal-tasks-list" style="display:flex;flex-direction:column;gap:8px;padding-bottom:100px;"></div>
+  </div>
+
+  <div id="cal-empty" style="padding:32px 20px;text-align:center;color:var(--text-muted);font-family:'DotGothic16',monospace;font-size:13px;display:none;">
+    📅 日付をタップしてクエストを確認
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item active" onclick="navTo('calendar')"><span class="nav-icon">📅</span>カレンダー</button>
+    <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
+    <button class="nav-item" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
+    <button class="nav-item" onclick="navTo('gacha')"><span class="nav-icon">🎰</span>ガチャ</button>
+    <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
+  </nav>
+</div>
 <div class="modal-overlay" id="edit-nickname-modal">
   <div class="modal">
     <h3 style="font-family:'DotGothic16',monospace;font-size:15px;margin-bottom:16px;">✏️ ニックネーム変更</h3>
@@ -1299,7 +1421,9 @@
   </div>
   <nav class="bottom-nav">
     <button class="nav-item" onclick="navTo('home')"><span class="nav-icon">🏠</span>ホーム</button>
+    <button class="nav-item" onclick="navTo('calendar')"><span class="nav-icon">📅</span>カレンダー</button>
     <button class="nav-item" onclick="navTo('quests')"><span class="nav-icon">⚔️</span>クエスト</button>
+    <button class="nav-item active" onclick="navTo('group')"><span class="nav-icon">👥</span>グループ</button>
     <button class="nav-item" onclick="navTo('gacha')"><span class="nav-icon">🎰</span>ガチャ</button>
     <button class="nav-item" onclick="navTo('ranking')"><span class="nav-icon">🏆</span>ランク</button>
     <button class="nav-item" onclick="navTo('profile')"><span class="nav-icon">👤</span>プロフィール</button>
@@ -2053,14 +2177,12 @@
   // ===== NAV =====
   let questsUnsub = null;
   window.navTo = (page) => {
-    // 全ナビボタンのactiveを更新
     document.querySelectorAll('.nav-item').forEach(b => {
       const label = b.textContent.trim();
-      const map = { 'ホーム': 'home', 'クエスト': 'quests', 'グループ': 'group', 'プロフィール': 'profile' };
+      const map = { 'ホーム': 'home', 'クエスト': 'quests', 'グループ': 'group', 'プロフィール': 'profile', 'カレンダー': 'calendar' };
       b.classList.toggle('active', map[label] === page);
     });
-    // 画面切り替え
-    const screens = { home: 'home-screen', quests: 'quest-screen', group: 'group-screen', gacha: 'gacha-screen', ranking: 'ranking-screen', profile: 'profile-screen' };
+    const screens = { home: 'home-screen', quests: 'quest-screen', group: 'group-screen', gacha: 'gacha-screen', ranking: 'ranking-screen', profile: 'profile-screen', calendar: 'calendar-screen' };
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const targetId = screens[page] || 'home-screen';
     document.getElementById(targetId).classList.add('active');
@@ -2069,6 +2191,7 @@
     if (page === 'gacha') updateGachaTicketDisplay();
     if (page === 'ranking') loadRanking();
     if (page === 'profile') renderProfile();
+    if (page === 'calendar') initCalendar();
   };
 
   // ===== QUEST STATE =====
@@ -5367,6 +5490,220 @@
     };
     return map[code] || 'エラーが発生しました。もう一度試してください';
   }
+  // ===== CALENDAR =====
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth(); // 0-indexed
+  let calSelectedDate = null; // 'YYYY-MM-DD'
+  let calTasksCache = []; // 全タスクのキャッシュ
+
+  async function initCalendar() {
+    // タスクを全件取得してキャッシュ
+    const snap = await getDocs(query(
+      collection(db, 'tasks'),
+      where('userId', '==', currentUser.uid)
+    ));
+    calTasksCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCalendar();
+    // 今日を選択状態にする
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    selectCalendarDay(todayStr);
+  }
+
+  function renderCalendar() {
+    const label = document.getElementById('cal-month-label');
+    label.textContent = `${calYear}年 ${calMonth + 1}月`;
+
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=日
+    const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+    // タスクを日付ごとにまとめる
+    const tasksByDate = {};
+    calTasksCache.forEach(t => {
+      if (!t.deadline) return;
+      const d = t.deadline.split('T')[0];
+      if (!tasksByDate[d]) tasksByDate[d] = [];
+      tasksByDate[d].push(t);
+    });
+
+    // 前月の空白セル
+    for (let i = 0; i < firstDay; i++) {
+      const prev = new Date(calYear, calMonth, -firstDay + i + 1);
+      const el = document.createElement('div');
+      el.className = 'cal-day other-month';
+      el.innerHTML = `<span class="cal-day-num">${prev.getDate()}</span>`;
+      grid.appendChild(el);
+    }
+
+    // 当月セル
+    for (let d = 1; d <= lastDate; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dow = new Date(calYear, calMonth, d).getDay();
+      const isToday = dateStr === todayStr;
+      const isSelected = dateStr === calSelectedDate;
+      const tasks = tasksByDate[dateStr] || [];
+
+      // ドット生成
+      const dots = tasks.slice(0, 5).map(t => {
+        const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
+        let cls = 'pending';
+        if (t.isComplete) cls = 'done';
+        else if (ms < 0) cls = 'overdue';
+        return `<div class="cal-dot ${cls}"></div>`;
+      }).join('');
+
+      const el = document.createElement('div');
+      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}`;
+      el.innerHTML = `
+        <span class="cal-day-num">${d}</span>
+        ${tasks.length > 0 ? `<div class="cal-dots">${dots}</div>` : ''}
+      `;
+      el.onclick = () => selectCalendarDay(dateStr);
+      grid.appendChild(el);
+    }
+
+    // 次月の空白セル（6行になるよう埋める）
+    const totalCells = firstDay + lastDate;
+    const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let i = 1; i <= remaining; i++) {
+      const el = document.createElement('div');
+      el.className = 'cal-day other-month';
+      el.innerHTML = `<span class="cal-day-num">${i}</span>`;
+      grid.appendChild(el);
+    }
+  }
+
+  function selectCalendarDay(dateStr) {
+    calSelectedDate = dateStr;
+    renderCalendar();
+
+    const panel = document.getElementById('cal-tasks-panel');
+    const emptyMsg = document.getElementById('cal-empty');
+    const list = document.getElementById('cal-tasks-list');
+    const label = document.getElementById('cal-selected-label');
+
+    // ラベル
+    const [y, m, d] = dateStr.split('-');
+    const dow = ['日','月','火','水','木','金','土'][new Date(+y, +m-1, +d).getDay()];
+    label.textContent = `${y}年${+m}月${+d}日（${dow}）`;
+
+    // 当日のタスク
+    const tasks = calTasksCache.filter(t => {
+      if (!t.deadline) return false;
+      return t.deadline.split('T')[0] === dateStr;
+    });
+
+    panel.style.display = 'block';
+    emptyMsg.style.display = 'none';
+
+    if (tasks.length === 0) {
+      list.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-family:'DotGothic16',monospace;font-size:12px;padding:20px 0;">この日のクエストはありません</div>`;
+      return;
+    }
+
+    list.innerHTML = tasks.map(t => {
+      const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
+      const isOverdue = !t.isComplete && ms < 0;
+      const borderColor = t.isComplete ? 'var(--accent)' : isOverdue ? 'var(--primary)' : 'var(--surface2)';
+      const timeStr = t.deadline && t.deadline.includes('T') ? t.deadline.split('T')[1].slice(0,5) : '';
+      return `
+        <div class="cal-task-item ${t.isComplete ? 'done' : ''} ${isOverdue ? 'overdue' : ''}" style="border-color:${borderColor};">
+          <button class="task-check ${t.isComplete ? 'checked' : ''}" onclick="calToggleTask('${t.id}',${t.isComplete},'${dateStr}')" style="flex-shrink:0;">
+            ${t.isComplete ? '✓' : ''}
+          </button>
+          <div style="flex:1;">
+            <div class="cal-task-title" style="font-family:'DotGothic16',monospace;font-size:13px;${t.isComplete ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escHtml(t.title)}</div>
+            ${timeStr ? `<div style="font-size:10px;color:${isOverdue?'var(--primary)':'var(--text-muted)'};margin-top:2px;">🕐 ${timeStr}</div>` : ''}
+          </div>
+          <button onclick="openEditTask('${t.id}','${escHtml(t.title)}','${t.deadline||''}')" style="background:transparent;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:4px;">✏️</button>
+          <button onclick="calDeleteTask('${t.id}','${dateStr}')" style="background:transparent;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:4px;">🗑️</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.calToggleTask = async (taskId, isDone, dateStr) => {
+    if (isDone) return;
+    const taskEl = document.querySelector(`[onclick*="${taskId}"]`);
+    await updateDoc(doc(db, 'tasks', taskId), { isComplete: true, completedAt: serverTimestamp() });
+    playSoundTaskDone();
+    await gainExp(EXP_PER_TASK, taskEl || document.body);
+    await updateDoc(doc(db, 'users', currentUser.uid), { totalCompleted: (userData.totalCompleted || 0) + 1 });
+    userData.totalCompleted = (userData.totalCompleted || 0) + 1;
+    await addGachaTickets(1, 'タスク完了');
+    renderHero();
+    // キャッシュ更新
+    const idx = calTasksCache.findIndex(t => t.id === taskId);
+    if (idx !== -1) calTasksCache[idx].isComplete = true;
+    renderCalendar();
+    selectCalendarDay(dateStr);
+    const taskSnap = await getDoc(doc(db, 'tasks', taskId));
+    if (taskSnap.exists()) showAchievement('task', taskSnap.data().title);
+  };
+
+  window.calDeleteTask = async (taskId, dateStr) => {
+    if (!confirm('このクエストを削除しますか？')) return;
+    await deleteDoc(doc(db, 'tasks', taskId));
+    calTasksCache = calTasksCache.filter(t => t.id !== taskId);
+    renderCalendar();
+    selectCalendarDay(dateStr);
+  };
+
+  window.calendarPrevMonth = () => {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    calSelectedDate = null;
+    document.getElementById('cal-tasks-panel').style.display = 'none';
+    renderCalendar();
+  };
+  window.calendarNextMonth = () => {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    calSelectedDate = null;
+    document.getElementById('cal-tasks-panel').style.display = 'none';
+    renderCalendar();
+  };
+
+  // カレンダーからクエスト追加（選択中の日付をセット）
+  window.openAddTaskFromCalendar = () => {
+    document.getElementById('add-task-modal').classList.add('open');
+    if (calSelectedDate) {
+      document.getElementById('task-deadline-date').value = calSelectedDate;
+    }
+    document.getElementById('task-title-input').focus();
+  };
+
+  // タスク追加後にカレンダーのキャッシュを更新（既存のaddTaskを上書き）
+  const _origAddTask = window.addTask;
+  window.addTask = async () => {
+    const title = document.getElementById('task-title-input').value.trim();
+    const date = document.getElementById('task-deadline-date').value;
+    const time = document.getElementById('task-deadline-time').value;
+    if (!title) return;
+    let deadline = null;
+    if (date) deadline = time ? `${date}T${time}` : `${date}T23:59`;
+    const ref = await addDoc(collection(db, 'tasks'), {
+      userId: currentUser.uid,
+      title,
+      deadline: deadline || null,
+      isComplete: false,
+      createdAt: serverTimestamp()
+    });
+    // カレンダーキャッシュに追加
+    calTasksCache.push({ id: ref.id, title, deadline, isComplete: false });
+    // カレンダー画面が開いていたら再描画
+    if (document.getElementById('calendar-screen').classList.contains('active')) {
+      renderCalendar();
+      if (calSelectedDate) selectCalendarDay(calSelectedDate);
+    }
+    closeAddTask();
+  };
+
   function escHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
