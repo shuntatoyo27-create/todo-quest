@@ -1127,6 +1127,7 @@
         <div>🔥 毎日ログイン → +3枚</div>
         <div>🏆 7日連続ログイン → +5枚</div>
         <div>✅ タスク1個完了ごと → +1枚</div>
+        <div>⬆️ レベルアップ → +2枚</div>
         <div>👑 メタルキング討伐 → +2枚</div>
         <div>🏰 メインクエスト完了 → +10枚</div>
       </div>
@@ -1997,6 +1998,7 @@
     renderHero();
     if (leveled) showLevelUp(level);
     if (leveled) playSoundLevelUp();
+    if (leveled) await addGachaTickets(2, 'レベルアップ');
   }
 
   function showExpPopup(text, sourceEl) {
