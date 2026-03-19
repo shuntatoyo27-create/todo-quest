@@ -477,6 +477,32 @@
     .empty-state span { font-size: 48px; display: block; margin-bottom: 12px; }
     .empty-state p { font-size: 14px; }
 
+    /* ===== COLOR SWATCH ===== */
+    .color-swatch {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      flex-shrink: 0;
+      outline: none;
+    }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.selected {
+      border-color: #fff;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+      transform: scale(1.2);
+    }
+    .color-swatch-none {
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
     /* Bottom Nav */
     .bottom-nav {
       position: fixed;
@@ -763,18 +789,18 @@
       padding: 4px 0;
     }
     .cal-day {
-      aspect-ratio: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       justify-content: flex-start;
-      padding-top: 4px;
+      padding: 3px 2px 2px;
       border-radius: var(--radius);
       cursor: pointer;
       border: 2px solid transparent;
       transition: all 0.15s;
-      min-height: 44px;
+      min-height: 56px;
       position: relative;
+      overflow: hidden;
     }
     .cal-day:hover { border-color: var(--blue); background: rgba(77,150,255,0.08); }
     .cal-day.today { background: rgba(255,107,107,0.12); border-color: var(--primary); }
@@ -784,26 +810,43 @@
       font-family: 'DotGothic16', monospace;
       font-size: 12px;
       line-height: 1;
+      text-align: center;
+      margin-bottom: 2px;
+      flex-shrink: 0;
     }
     .cal-day.today .cal-day-num { color: var(--primary); font-size: 13px; }
     .cal-day.sun .cal-day-num { color: var(--primary); }
     .cal-day.sat .cal-day-num { color: var(--purple); }
-    .cal-dots {
-      display: flex;
-      gap: 2px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 3px;
-      max-width: 100%;
+
+    /* バッジスタイル */
+    .cal-badge {
+      display: block;
+      border-radius: 3px;
+      padding: 1px 3px;
+      font-family: 'DotGothic16', monospace;
+      font-size: 9px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 1px;
+      line-height: 1.5;
+      flex-shrink: 0;
     }
-    .cal-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
+    .cal-badge.done {
+      opacity: 0.5;
+      text-decoration: line-through;
     }
-    .cal-dot.done { background: var(--accent); }
-    .cal-dot.pending { background: var(--secondary); }
-    .cal-dot.overdue { background: var(--primary); }
+    .cal-badge-more {
+      font-family: 'DotGothic16', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      padding-left: 2px;
+    }
+
+    /* 旧ドットは非表示に（念のため残す） */
+    .cal-dots { display: none; }
+    .cal-dot { display: none; }
 
     .cal-task-item {
       background: var(--surface);
@@ -1714,6 +1757,10 @@
       <input type="date" id="task-deadline-date" />
       <input type="time" id="task-deadline-time" style="margin-top:8px;width:100%;padding:14px 16px;background:var(--surface2);border:2px solid transparent;border-radius:4px;color:var(--text);font-family:'DotGothic16',monospace;font-size:15px;outline:none;" />
     </div>
+    <div class="form-group">
+      <label>カラー（任意）</label>
+      <div id="add-task-color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
+    </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeAddTask()">キャンセル</button>
       <button class="btn-add" onclick="addTask()">追加する ✨</button>
@@ -1831,6 +1878,32 @@
   let currentAvatarConfig = { body: 'body_default', hat: 'hat_none', weapon: 'weapon_none', effect: 'effect_none' };
   let tempAvatarConfig = { ...currentAvatarConfig };
   let currentAvatarCat = 'body';
+
+  // ===== TASK COLORS =====
+  const TASK_COLORS = [
+    { id: 'red',    hex: '#e53935' },
+    { id: 'orange', hex: '#fb8c00' },
+    { id: 'green',  hex: '#43a047' },
+    { id: 'blue',   hex: '#1e88e5' },
+    { id: 'purple', hex: '#8e24aa' },
+    { id: 'gray',   hex: '#546e7a' },
+  ];
+  let selectedAddTaskColor = null; // 追加モーダル用の選択中カラー
+
+  function renderColorPicker(containerId, currentColorId, onPickFnName) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const noColor = !currentColorId;
+    el.innerHTML = TASK_COLORS.map(c => `
+      <button class="color-swatch ${currentColorId === c.id ? 'selected' : ''}"
+        style="background:${c.hex};"
+        onclick="${onPickFnName}('${c.id}')">
+      </button>
+    `).join('') + `
+      <button class="color-swatch color-swatch-none ${noColor ? 'selected' : ''}"
+        onclick="${onPickFnName}(null)">✕</button>
+    `;
+  }
 
 
   // ===== RPG CONFIG =====
@@ -2145,6 +2218,8 @@
 
   // ===== ADD TASK MODAL =====
   window.openAddTask = () => {
+    selectedAddTaskColor = null;
+    renderColorPicker('add-task-color-picker', null, 'pickAddTaskColor');
     document.getElementById('add-task-modal').classList.add('open');
     document.getElementById('task-title-input').focus();
   };
@@ -2153,6 +2228,11 @@
     document.getElementById('task-title-input').value = '';
     document.getElementById('task-deadline-date').value = '';
     document.getElementById('task-deadline-time').value = '';
+    selectedAddTaskColor = null;
+  };
+  window.pickAddTaskColor = (colorId) => {
+    selectedAddTaskColor = colorId;
+    renderColorPicker('add-task-color-picker', colorId, 'pickAddTaskColor');
   };
   window.addTask = async () => {
     const title = document.getElementById('task-title-input').value.trim();
@@ -2168,6 +2248,7 @@
       userId: currentUser.uid,
       title,
       deadline: deadline || null,
+      color: selectedAddTaskColor || null,
       isComplete: false,
       createdAt: serverTimestamp()
     });
@@ -5548,20 +5629,31 @@
       const isSelected = dateStr === calSelectedDate;
       const tasks = tasksByDate[dateStr] || [];
 
-      // ドット生成
-      const dots = tasks.slice(0, 5).map(t => {
-        const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
-        let cls = 'pending';
-        if (t.isComplete) cls = 'done';
-        else if (ms < 0) cls = 'overdue';
-        return `<div class="cal-dot ${cls}"></div>`;
+      // バッジ生成（最大3件表示、超えたら +N）
+      const MAX_BADGES = 3;
+      const badgesHtml = tasks.slice(0, MAX_BADGES).map(t => {
+        const colorInfo = TASK_COLORS.find(c => c.id === t.color);
+        // 色指定なし → 期限切れなら赤、完了なら緑、通常はグレー
+        let bg;
+        if (colorInfo) {
+          bg = colorInfo.hex;
+        } else {
+          const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
+          if (t.isComplete) bg = '#43a047';
+          else if (ms < 0) bg = '#e53935';
+          else bg = '#546e7a';
+        }
+        return `<span class="cal-badge ${t.isComplete ? 'done' : ''}" style="background:${bg};">${escHtml(t.title)}</span>`;
       }).join('');
+      const moreHtml = tasks.length > MAX_BADGES
+        ? `<span class="cal-badge-more">+${tasks.length - MAX_BADGES}</span>`
+        : '';
 
       const el = document.createElement('div');
       el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}`;
       el.innerHTML = `
         <span class="cal-day-num">${d}</span>
-        ${tasks.length > 0 ? `<div class="cal-dots">${dots}</div>` : ''}
+        ${badgesHtml}${moreHtml}
       `;
       el.onclick = () => selectCalendarDay(dateStr);
       grid.appendChild(el);
