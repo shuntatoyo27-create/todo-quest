@@ -1820,6 +1820,31 @@
   <p id="levelup-text">Lv.2 になった！</p>
 </div>
 
+<!-- Milestone Level Up Overlay -->
+<div id="milestone-overlay" style="
+  display:none;
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.92);
+  backdrop-filter:blur(12px);
+  align-items:center;justify-content:center;flex-direction:column;
+  text-align:center;
+">
+  <div id="milestone-rays" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
+  <div style="position:relative;z-index:2;padding:32px 24px;max-width:320px;width:90%;">
+    <div id="milestone-label" style="font-family:'Press Start 2P',monospace;font-size:10px;letter-spacing:4px;margin-bottom:16px;"></div>
+    <div id="milestone-emoji" style="font-size:96px;display:block;margin-bottom:12px;animation:epicFloat 1s ease-in-out infinite;"></div>
+    <div id="milestone-level" style="font-family:'Press Start 2P',monospace;font-size:22px;margin-bottom:8px;line-height:1.8;"></div>
+    <div id="milestone-class" style="font-family:'DotGothic16',monospace;font-size:16px;margin-bottom:24px;"></div>
+    <button onclick="closeMilestone()" style="
+      background:linear-gradient(135deg,var(--secondary),#ffaa00);
+      border:4px solid #aa8800;color:#111;
+      font-family:'Press Start 2P',monospace;font-size:11px;
+      padding:14px 28px;border-radius:4px;cursor:pointer;
+      box-shadow:0 0 20px var(--secondary),4px 4px 0 #aa8800;
+    ">最高だ！🎊</button>
+  </div>
+</div>
+
 <!-- Login Bonus Modal -->
 <div class="bonus-modal" id="bonus-modal">
   <div class="bonus-card">
@@ -1914,12 +1939,26 @@
 
   // ===== RPG CONFIG =====
   const EXP_PER_TASK = 30;
-  const expToLevel = lv => lv * 100;
+  const MAX_LEVEL = 100;
+
+  // 緩やかに増加するEXPカーブ（Lv1→100、Lv50→800、Lv100→2000）
+  const expToLevel = lv => {
+    if (lv >= MAX_LEVEL) return Infinity; // Lv100は上限
+    return Math.floor(100 + (lv - 1) * 19.2);
+  };
+
+  // 10段階クラス（10レベルごと）
   const getClass = lv => {
-    if (lv < 5) return '見習い冒険者';
-    if (lv < 10) return '冒険者';
-    if (lv < 20) return '熟練冒険者';
-    if (lv < 30) return '勇者';
+    if (lv < 10)  return '見習い冒険者';
+    if (lv < 20)  return '駆け出し冒険者';
+    if (lv < 30)  return '冒険者';
+    if (lv < 40)  return '熟練冒険者';
+    if (lv < 50)  return '勇士';
+    if (lv < 60)  return '勇者';
+    if (lv < 70)  return '剣聖';
+    if (lv < 80)  return '英雄';
+    if (lv < 90)  return '覇者';
+    if (lv < 100) return '魔王討伐者';
     return '伝説の勇者';
   };
   const getAvatar = lv => {
@@ -2193,17 +2232,24 @@
 
   async function gainExp(amount, sourceEl) {
     if (!userData) return;
+    // Lv100上限チェック
+    if ((userData.level || 1) >= MAX_LEVEL) {
+      showExpPopup('MAX LEVEL ⭐', sourceEl);
+      return;
+    }
     const boostActive = userData.items?.includes('EXPブースト');
     const actual = boostActive ? Math.floor(amount * 1.5) : amount;
     showExpPopup(`+${actual} EXP ⭐`, sourceEl);
     let exp = (userData.exp || 0) + actual;
     let level = userData.level || 1;
     let leveled = false;
-    while (exp >= expToLevel(level)) {
+    while (level < MAX_LEVEL && exp >= expToLevel(level)) {
       exp -= expToLevel(level);
       level++;
       leveled = true;
     }
+    // Lv100到達時はEXPを0に固定
+    if (level >= MAX_LEVEL) { level = MAX_LEVEL; exp = 0; }
     userData.exp = exp;
     userData.level = level;
     await updateDoc(doc(db, 'users', currentUser.uid), { exp, level });
@@ -2212,6 +2258,89 @@
     if (leveled) playSoundLevelUp();
     if (leveled) await addGachaTickets(2, 'レベルアップ');
   }
+
+  // マイルストーンレベル判定
+  const MILESTONE_LEVELS = new Set([10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
+
+  const MILESTONE_CONFIG = {
+    10:  { emoji: '⚔️',  color: '#4d96ff', label: '★ LEVEL UP ★',       shadow: '#4d96ff' },
+    20:  { emoji: '🛡️',  color: '#6bcb77', label: '★ LEVEL UP ★',       shadow: '#6bcb77' },
+    30:  { emoji: '🏹',  color: '#c77dff', label: '✦ MILESTONE ✦',      shadow: '#c77dff' },
+    40:  { emoji: '🔥',  color: '#fb8c00', label: '✦ MILESTONE ✦',      shadow: '#fb8c00' },
+    50:  { emoji: '👑',  color: '#ffd700', label: '✦✦ MILESTONE ✦✦',    shadow: '#ffd700' },
+    60:  { emoji: '🌟',  color: '#ff6b6b', label: '✦✦ MILESTONE ✦✦',    shadow: '#ff6b6b' },
+    70:  { emoji: '💎',  color: '#00ccff', label: '✦✦✦ MILESTONE ✦✦✦', shadow: '#00ccff' },
+    80:  { emoji: '🐉',  color: '#cc44ff', label: '✦✦✦ MILESTONE ✦✦✦', shadow: '#cc44ff' },
+    90:  { emoji: '🌈',  color: '#ff44aa', label: '★★ LEGENDARY ★★',   shadow: '#ff44aa' },
+    100: { emoji: '🏆',  color: '#ffd700', label: '★★★ MAX LEVEL ★★★', shadow: '#ffd700' },
+  };
+
+  function showLevelUp(level) {
+    if (MILESTONE_LEVELS.has(level)) {
+      showMilestoneLevelUp(level);
+    } else {
+      const toast = document.getElementById('levelup-toast');
+      document.getElementById('levelup-text').textContent = `Lv.${level} ${getClass(level)} になった！`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+  }
+
+  function showMilestoneLevelUp(level) {
+    const cfg = MILESTONE_CONFIG[level];
+    const overlay = document.getElementById('milestone-overlay');
+
+    // ラベル・絵文字・テキスト設定
+    const labelEl = document.getElementById('milestone-label');
+    labelEl.textContent = cfg.label;
+    labelEl.style.color = cfg.color;
+    labelEl.style.textShadow = `0 0 20px ${cfg.shadow}`;
+
+    document.getElementById('milestone-emoji').textContent = cfg.emoji;
+    document.getElementById('milestone-emoji').style.filter = `drop-shadow(0 0 20px ${cfg.shadow})`;
+
+    const levelEl = document.getElementById('milestone-level');
+    levelEl.textContent = `Lv. ${level}`;
+    levelEl.style.color = cfg.color;
+    levelEl.style.textShadow = `0 0 16px ${cfg.shadow}`;
+
+    const classEl = document.getElementById('milestone-class');
+    classEl.textContent = getClass(level);
+    classEl.style.color = cfg.color;
+
+    // 光線エフェクト
+    const rays = document.getElementById('milestone-rays');
+    rays.innerHTML = '';
+    for (let i = 0; i < 16; i++) {
+      const ray = document.createElement('div');
+      ray.style.cssText = `
+        position:absolute;left:50%;top:50%;
+        width:3px;height:70vh;
+        background:linear-gradient(to bottom,${cfg.color},transparent);
+        transform-origin:top center;
+        transform:rotate(${(i/16)*360}deg);
+        animation:epicRay 2s ease-out ${i*0.06}s infinite;
+        opacity:0;
+      `;
+      rays.appendChild(ray);
+    }
+
+    overlay.style.display = 'flex';
+    spawnParticles(level === 100 ? 80 : level >= 50 ? 50 : 30, level >= 50);
+
+    // Lv100は特別なサウンド
+    if (level === 100) {
+      playSoundLegendDrop();
+    } else if (level >= 50) {
+      playSoundEpicDrop();
+    } else {
+      playSoundQuestClear(true);
+    }
+  }
+
+  window.closeMilestone = () => {
+    document.getElementById('milestone-overlay').style.display = 'none';
+  };
 
   function showExpPopup(text, sourceEl) {
     const popup = document.createElement('div');
@@ -2222,13 +2351,6 @@
     popup.style.top = (rect.top + window.scrollY) + 'px';
     document.body.appendChild(popup);
     setTimeout(() => popup.remove(), 1200);
-  }
-
-  function showLevelUp(level) {
-    const toast = document.getElementById('levelup-toast');
-    document.getElementById('levelup-text').textContent = `Lv.${level} ${getClass(level)} になった！`;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2800);
   }
 
   // ===== ADD TASK MODAL =====
