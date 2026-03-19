@@ -477,32 +477,6 @@
     .empty-state span { font-size: 48px; display: block; margin-bottom: 12px; }
     .empty-state p { font-size: 14px; }
 
-    /* ===== COLOR SWATCH ===== */
-    .color-swatch {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      border: 3px solid transparent;
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.1s;
-      flex-shrink: 0;
-      outline: none;
-    }
-    .color-swatch:hover { transform: scale(1.15); }
-    .color-swatch.selected {
-      border-color: #fff;
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
-      transform: scale(1.2);
-    }
-    .color-swatch-none {
-      background: var(--surface2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
     /* Bottom Nav */
     .bottom-nav {
       position: fixed;
@@ -789,65 +763,47 @@
       padding: 4px 0;
     }
     .cal-day {
+      aspect-ratio: 1;
       display: flex;
       flex-direction: column;
-      align-items: stretch;
+      align-items: center;
       justify-content: flex-start;
-      padding: 3px 2px 2px;
+      padding-top: 4px;
       border-radius: var(--radius);
       cursor: pointer;
       border: 2px solid transparent;
       transition: all 0.15s;
-      min-height: 56px;
+      min-height: 44px;
       position: relative;
-      overflow: hidden;
     }
     .cal-day:hover { border-color: var(--blue); background: rgba(77,150,255,0.08); }
-    .cal-day.today { background: rgba(107,203,119,0.15); border-color: var(--accent); }
+    .cal-day.today { background: rgba(255,107,107,0.12); border-color: var(--primary); }
     .cal-day.selected { background: rgba(77,150,255,0.2); border-color: var(--blue); box-shadow: 0 0 8px rgba(77,150,255,0.3); }
     .cal-day.other-month { opacity: 0.3; }
     .cal-day-num {
       font-family: 'DotGothic16', monospace;
       font-size: 12px;
       line-height: 1;
-      text-align: center;
-      margin-bottom: 2px;
-      flex-shrink: 0;
     }
-    .cal-day.today .cal-day-num { color: var(--accent); font-size: 13px; font-weight: bold; }
+    .cal-day.today .cal-day-num { color: var(--primary); font-size: 13px; }
     .cal-day.sun .cal-day-num { color: var(--primary); }
     .cal-day.sat .cal-day-num { color: var(--purple); }
-    .cal-day.holiday .cal-day-num { color: var(--primary); }
-
-    /* バッジスタイル */
-    .cal-badge {
-      display: block;
-      border-radius: 3px;
-      padding: 1px 3px;
-      font-family: 'DotGothic16', monospace;
-      font-size: 9px;
-      color: #fff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 1px;
-      line-height: 1.5;
-      flex-shrink: 0;
+    .cal-dots {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 3px;
+      max-width: 100%;
     }
-    .cal-badge.done {
-      opacity: 0.5;
-      text-decoration: line-through;
+    .cal-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
     }
-    .cal-badge-more {
-      font-family: 'DotGothic16', monospace;
-      font-size: 9px;
-      color: var(--text-muted);
-      padding-left: 2px;
-    }
-
-    /* 旧ドットは非表示に（念のため残す） */
-    .cal-dots { display: none; }
-    .cal-dot { display: none; }
+    .cal-dot.done { background: var(--accent); }
+    .cal-dot.pending { background: var(--secondary); }
+    .cal-dot.overdue { background: var(--primary); }
 
     .cal-task-item {
       background: var(--surface);
@@ -1738,10 +1694,6 @@
       <label>期限（任意）</label>
       <input type="date" id="edit-quest-deadline-input" />
     </div>
-    <div class="form-group" id="edit-quest-color-group" style="display:none;">
-      <label>カラー（任意）</label>
-      <div id="edit-task-color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
-    </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeEditQuestModal()">キャンセル</button>
       <button class="btn-add" onclick="saveEditQuest()">保存する ✨</button>
@@ -1761,10 +1713,6 @@
       <label>期限日時（任意）</label>
       <input type="date" id="task-deadline-date" />
       <input type="time" id="task-deadline-time" style="margin-top:8px;width:100%;padding:14px 16px;background:var(--surface2);border:2px solid transparent;border-radius:4px;color:var(--text);font-family:'DotGothic16',monospace;font-size:15px;outline:none;" />
-    </div>
-    <div class="form-group">
-      <label>カラー（任意）</label>
-      <div id="add-task-color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
     </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeAddTask()">キャンセル</button>
@@ -1818,31 +1766,6 @@
   <span class="big-emoji">🎉</span>
   <h2>レベルアップ！</h2>
   <p id="levelup-text">Lv.2 になった！</p>
-</div>
-
-<!-- Milestone Level Up Overlay -->
-<div id="milestone-overlay" style="
-  display:none;
-  position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,0.92);
-  backdrop-filter:blur(12px);
-  align-items:center;justify-content:center;flex-direction:column;
-  text-align:center;
-">
-  <div id="milestone-rays" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
-  <div style="position:relative;z-index:2;padding:32px 24px;max-width:320px;width:90%;">
-    <div id="milestone-label" style="font-family:'Press Start 2P',monospace;font-size:10px;letter-spacing:4px;margin-bottom:16px;"></div>
-    <div id="milestone-emoji" style="font-size:96px;display:block;margin-bottom:12px;animation:epicFloat 1s ease-in-out infinite;"></div>
-    <div id="milestone-level" style="font-family:'Press Start 2P',monospace;font-size:22px;margin-bottom:8px;line-height:1.8;"></div>
-    <div id="milestone-class" style="font-family:'DotGothic16',monospace;font-size:16px;margin-bottom:24px;"></div>
-    <button onclick="closeMilestone()" style="
-      background:linear-gradient(135deg,var(--secondary),#ffaa00);
-      border:4px solid #aa8800;color:#111;
-      font-family:'Press Start 2P',monospace;font-size:11px;
-      padding:14px 28px;border-radius:4px;cursor:pointer;
-      box-shadow:0 0 20px var(--secondary),4px 4px 0 #aa8800;
-    ">最高だ！🎊</button>
-  </div>
 </div>
 
 <!-- Login Bonus Modal -->
@@ -1909,56 +1832,15 @@
   let tempAvatarConfig = { ...currentAvatarConfig };
   let currentAvatarCat = 'body';
 
-  // ===== TASK COLORS =====
-  const TASK_COLORS = [
-    { id: 'red',    hex: '#e53935' },
-    { id: 'orange', hex: '#fb8c00' },
-    { id: 'green',  hex: '#43a047' },
-    { id: 'blue',   hex: '#1e88e5' },
-    { id: 'purple', hex: '#8e24aa' },
-    { id: 'gray',   hex: '#546e7a' },
-  ];
-  let selectedAddTaskColor = null; // 追加モーダル用の選択中カラー
-  let selectedEditTaskColor = null; // 編集モーダル用の選択中カラー
-
-  function renderColorPicker(containerId, currentColorId, onPickFnName) {
-    const el = document.getElementById(containerId);
-    if (!el) return;
-    const noColor = !currentColorId;
-    el.innerHTML = TASK_COLORS.map(c => `
-      <button class="color-swatch ${currentColorId === c.id ? 'selected' : ''}"
-        style="background:${c.hex};"
-        onclick="${onPickFnName}('${c.id}')">
-      </button>
-    `).join('') + `
-      <button class="color-swatch color-swatch-none ${noColor ? 'selected' : ''}"
-        onclick="${onPickFnName}(null)">✕</button>
-    `;
-  }
-
 
   // ===== RPG CONFIG =====
   const EXP_PER_TASK = 30;
-  const MAX_LEVEL = 100;
-
-  // 緩やかに増加するEXPカーブ（Lv1→100、Lv50→800、Lv100→2000）
-  const expToLevel = lv => {
-    if (lv >= MAX_LEVEL) return Infinity; // Lv100は上限
-    return Math.floor(100 + (lv - 1) * 19.2);
-  };
-
-  // 10段階クラス（10レベルごと）
+  const expToLevel = lv => lv * 100;
   const getClass = lv => {
-    if (lv < 10)  return '見習い冒険者';
-    if (lv < 20)  return '駆け出し冒険者';
-    if (lv < 30)  return '冒険者';
-    if (lv < 40)  return '熟練冒険者';
-    if (lv < 50)  return '勇士';
-    if (lv < 60)  return '勇者';
-    if (lv < 70)  return '剣聖';
-    if (lv < 80)  return '英雄';
-    if (lv < 90)  return '覇者';
-    if (lv < 100) return '魔王討伐者';
+    if (lv < 5) return '見習い冒険者';
+    if (lv < 10) return '冒険者';
+    if (lv < 20) return '熟練冒険者';
+    if (lv < 30) return '勇者';
     return '伝説の勇者';
   };
   const getAvatar = lv => {
@@ -2169,13 +2051,8 @@
       list.innerHTML = `<div class="empty-state"><span>🗺️</span><p>まだクエストがありません<br>+ボタンで追加しよう！</p></div>`;
       return;
     }
-    list.innerHTML = sorted.map(t => {
-      const colorInfo = TASK_COLORS.find(c => c.id === t.color);
-      const colorStyle = colorInfo
-        ? `border-left: 5px solid ${colorInfo.hex};`
-        : '';
-      return `
-      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''} style="${colorStyle}">
+    list.innerHTML = sorted.map(t => `
+      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''}>
         <button class="task-check ${t.isComplete ? 'checked' : ''}" onclick="toggleTask('${t.id}', ${t.isComplete})">
           ${t.isComplete ? '✓' : ''}
         </button>
@@ -2190,7 +2067,7 @@
         <button class="task-edit-btn" onclick="openEditTask('${t.id}','${escHtml(t.title)}','${t.deadline||''}')">✏️</button>
         <button class="task-delete" onclick="deleteTask('${t.id}')">🗑️</button>
       </div>
-    `}).join('');
+    `).join('');
   }
 
   window.deleteTask = async (taskId) => {
@@ -2204,13 +2081,9 @@
     _editQuestId = id;
     document.getElementById('edit-quest-modal-title').textContent = '✏️ クエスト編集';
     document.getElementById('edit-quest-title-input').value = title;
+    // deadline は "YYYY-MM-DDTHH:mm" 形式なので日付部分だけ取り出す
     document.getElementById('edit-quest-deadline-input').value = deadline ? deadline.split('T')[0] : '';
     document.getElementById('edit-quest-deadline-group').style.display = 'block';
-    // カラーピッカーを表示・現在の色をセット
-    const cachedTask = cachedTasks.find(t => t.id === id);
-    selectedEditTaskColor = cachedTask?.color || null;
-    document.getElementById('edit-quest-color-group').style.display = 'block';
-    renderColorPicker('edit-task-color-picker', selectedEditTaskColor, 'pickEditTaskColor');
     document.getElementById('edit-quest-modal').classList.add('open');
     setTimeout(() => document.getElementById('edit-quest-title-input').focus(), 100);
   };
@@ -2232,24 +2105,17 @@
 
   async function gainExp(amount, sourceEl) {
     if (!userData) return;
-    // Lv100上限チェック
-    if ((userData.level || 1) >= MAX_LEVEL) {
-      showExpPopup('MAX LEVEL ⭐', sourceEl);
-      return;
-    }
     const boostActive = userData.items?.includes('EXPブースト');
     const actual = boostActive ? Math.floor(amount * 1.5) : amount;
     showExpPopup(`+${actual} EXP ⭐`, sourceEl);
     let exp = (userData.exp || 0) + actual;
     let level = userData.level || 1;
     let leveled = false;
-    while (level < MAX_LEVEL && exp >= expToLevel(level)) {
+    while (exp >= expToLevel(level)) {
       exp -= expToLevel(level);
       level++;
       leveled = true;
     }
-    // Lv100到達時はEXPを0に固定
-    if (level >= MAX_LEVEL) { level = MAX_LEVEL; exp = 0; }
     userData.exp = exp;
     userData.level = level;
     await updateDoc(doc(db, 'users', currentUser.uid), { exp, level });
@@ -2258,89 +2124,6 @@
     if (leveled) playSoundLevelUp();
     if (leveled) await addGachaTickets(2, 'レベルアップ');
   }
-
-  // マイルストーンレベル判定
-  const MILESTONE_LEVELS = new Set([10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
-
-  const MILESTONE_CONFIG = {
-    10:  { emoji: '⚔️',  color: '#4d96ff', label: '★ LEVEL UP ★',       shadow: '#4d96ff' },
-    20:  { emoji: '🛡️',  color: '#6bcb77', label: '★ LEVEL UP ★',       shadow: '#6bcb77' },
-    30:  { emoji: '🏹',  color: '#c77dff', label: '✦ MILESTONE ✦',      shadow: '#c77dff' },
-    40:  { emoji: '🔥',  color: '#fb8c00', label: '✦ MILESTONE ✦',      shadow: '#fb8c00' },
-    50:  { emoji: '👑',  color: '#ffd700', label: '✦✦ MILESTONE ✦✦',    shadow: '#ffd700' },
-    60:  { emoji: '🌟',  color: '#ff6b6b', label: '✦✦ MILESTONE ✦✦',    shadow: '#ff6b6b' },
-    70:  { emoji: '💎',  color: '#00ccff', label: '✦✦✦ MILESTONE ✦✦✦', shadow: '#00ccff' },
-    80:  { emoji: '🐉',  color: '#cc44ff', label: '✦✦✦ MILESTONE ✦✦✦', shadow: '#cc44ff' },
-    90:  { emoji: '🌈',  color: '#ff44aa', label: '★★ LEGENDARY ★★',   shadow: '#ff44aa' },
-    100: { emoji: '🏆',  color: '#ffd700', label: '★★★ MAX LEVEL ★★★', shadow: '#ffd700' },
-  };
-
-  function showLevelUp(level) {
-    if (MILESTONE_LEVELS.has(level)) {
-      showMilestoneLevelUp(level);
-    } else {
-      const toast = document.getElementById('levelup-toast');
-      document.getElementById('levelup-text').textContent = `Lv.${level} ${getClass(level)} になった！`;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2800);
-    }
-  }
-
-  function showMilestoneLevelUp(level) {
-    const cfg = MILESTONE_CONFIG[level];
-    const overlay = document.getElementById('milestone-overlay');
-
-    // ラベル・絵文字・テキスト設定
-    const labelEl = document.getElementById('milestone-label');
-    labelEl.textContent = cfg.label;
-    labelEl.style.color = cfg.color;
-    labelEl.style.textShadow = `0 0 20px ${cfg.shadow}`;
-
-    document.getElementById('milestone-emoji').textContent = cfg.emoji;
-    document.getElementById('milestone-emoji').style.filter = `drop-shadow(0 0 20px ${cfg.shadow})`;
-
-    const levelEl = document.getElementById('milestone-level');
-    levelEl.textContent = `Lv. ${level}`;
-    levelEl.style.color = cfg.color;
-    levelEl.style.textShadow = `0 0 16px ${cfg.shadow}`;
-
-    const classEl = document.getElementById('milestone-class');
-    classEl.textContent = getClass(level);
-    classEl.style.color = cfg.color;
-
-    // 光線エフェクト
-    const rays = document.getElementById('milestone-rays');
-    rays.innerHTML = '';
-    for (let i = 0; i < 16; i++) {
-      const ray = document.createElement('div');
-      ray.style.cssText = `
-        position:absolute;left:50%;top:50%;
-        width:3px;height:70vh;
-        background:linear-gradient(to bottom,${cfg.color},transparent);
-        transform-origin:top center;
-        transform:rotate(${(i/16)*360}deg);
-        animation:epicRay 2s ease-out ${i*0.06}s infinite;
-        opacity:0;
-      `;
-      rays.appendChild(ray);
-    }
-
-    overlay.style.display = 'flex';
-    spawnParticles(level === 100 ? 80 : level >= 50 ? 50 : 30, level >= 50);
-
-    // Lv100は特別なサウンド
-    if (level === 100) {
-      playSoundLegendDrop();
-    } else if (level >= 50) {
-      playSoundEpicDrop();
-    } else {
-      playSoundQuestClear(true);
-    }
-  }
-
-  window.closeMilestone = () => {
-    document.getElementById('milestone-overlay').style.display = 'none';
-  };
 
   function showExpPopup(text, sourceEl) {
     const popup = document.createElement('div');
@@ -2353,10 +2136,15 @@
     setTimeout(() => popup.remove(), 1200);
   }
 
+  function showLevelUp(level) {
+    const toast = document.getElementById('levelup-toast');
+    document.getElementById('levelup-text').textContent = `Lv.${level} ${getClass(level)} になった！`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
   // ===== ADD TASK MODAL =====
   window.openAddTask = () => {
-    selectedAddTaskColor = null;
-    renderColorPicker('add-task-color-picker', null, 'pickAddTaskColor');
     document.getElementById('add-task-modal').classList.add('open');
     document.getElementById('task-title-input').focus();
   };
@@ -2365,15 +2153,6 @@
     document.getElementById('task-title-input').value = '';
     document.getElementById('task-deadline-date').value = '';
     document.getElementById('task-deadline-time').value = '';
-    selectedAddTaskColor = null;
-  };
-  window.pickAddTaskColor = (colorId) => {
-    selectedAddTaskColor = colorId;
-    renderColorPicker('add-task-color-picker', colorId, 'pickAddTaskColor');
-  };
-  window.pickEditTaskColor = (colorId) => {
-    selectedEditTaskColor = colorId;
-    renderColorPicker('edit-task-color-picker', colorId, 'pickEditTaskColor');
   };
   window.addTask = async () => {
     const title = document.getElementById('task-title-input').value.trim();
@@ -2389,7 +2168,6 @@
       userId: currentUser.uid,
       title,
       deadline: deadline || null,
-      color: selectedAddTaskColor || null,
       isComplete: false,
       createdAt: serverTimestamp()
     });
@@ -2710,8 +2488,6 @@
     document.getElementById('edit-quest-title-input').value = title;
     document.getElementById('edit-quest-deadline-input').value = deadline || '';
     document.getElementById('edit-quest-deadline-group').style.display = showDeadline ? 'block' : 'none';
-    // クエスト系はカラー非表示
-    document.getElementById('edit-quest-color-group').style.display = 'none';
     document.getElementById('edit-quest-modal').classList.add('open');
     setTimeout(() => document.getElementById('edit-quest-title-input').focus(), 100);
   }
@@ -2733,8 +2509,9 @@
 
     if (_editQuestType === 'todayTask') {
       // 今日のクエストはdeadlineが datetime 形式なので時刻は元のものを維持
-      const updateData = { title, color: selectedEditTaskColor || null };
+      const updateData = { title };
       if (deadlineDate) {
+        // 既存の時刻部分を保持（なければ 00:00 にする）
         const cachedTask = cachedTasks.find(t => t.id === _editQuestId);
         const existingTime = cachedTask?.deadline ? cachedTask.deadline.split('T')[1] || '00:00' : '00:00';
         updateData.deadline = `${deadlineDate}T${existingTime}`;
@@ -2999,136 +2776,30 @@
 
   // ===== 二つ名システム =====
   const TITLES = [
-    // ===== 最初から持っている =====
     {
       id: 'beginner',
       name: '始まりの旅人',
       check: u => true,
       plate: {
         bg: 'linear-gradient(135deg,#3a2a1a,#2a1a0a)',
-        border: '#8B6544', shadow: 'none',
-        textColor: '#cc9966', decoration: '',
+        border: '#8B6544',
+        shadow: 'none',
+        textColor: '#cc9966',
+        decoration: '',
+        fontSize: '10px',
       }
     },
-
-    // ===== レベル系（10段階） =====
-    {
-      id: 'level10',
-      name: '駆け出し冒険者',
-      check: u => (u.level||1) >= 10,
-      plate: {
-        bg: 'linear-gradient(135deg,#1a2a1a,#0a1a0a)',
-        border: '#44aa44', shadow: '0 0 6px rgba(68,170,68,0.3)',
-        textColor: '#66cc66', decoration: '⚔️',
-      }
-    },
-    {
-      id: 'level20',
-      name: '冒険者',
-      check: u => (u.level||1) >= 20,
-      plate: {
-        bg: 'linear-gradient(135deg,#1a1a2a,#0a0a2a)',
-        border: '#4488ff', shadow: '0 0 8px rgba(68,136,255,0.4)',
-        textColor: '#88aaff', decoration: '🛡️',
-      }
-    },
-    {
-      id: 'level30',
-      name: '熟練冒険者',
-      check: u => (u.level||1) >= 30,
-      plate: {
-        bg: 'linear-gradient(135deg,#1a0a2a,#0a0018)',
-        border: '#aa44ff', shadow: '0 0 10px rgba(170,68,255,0.4)',
-        textColor: '#cc88ff', decoration: '🔮',
-      }
-    },
-    {
-      id: 'level40',
-      name: '勇士',
-      check: u => (u.level||1) >= 40,
-      plate: {
-        bg: 'linear-gradient(135deg,#2a1a00,#1a0e00)',
-        border: '#ff8800', shadow: '0 0 12px rgba(255,136,0,0.5)',
-        textColor: '#ffaa44', decoration: '🔥',
-        shimmer: true,
-      }
-    },
-    {
-      id: 'level50',
-      name: '勇者',
-      check: u => (u.level||1) >= 50,
-      plate: {
-        bg: 'linear-gradient(135deg,#2a2a00,#1a1800)',
-        border: '#ffd700', shadow: '0 0 16px rgba(255,215,0,0.6), 0 0 32px rgba(255,215,0,0.3)',
-        textColor: '#ffd700', decoration: '👑',
-        shimmer: true,
-      }
-    },
-    {
-      id: 'level60',
-      name: '剣聖',
-      check: u => (u.level||1) >= 60,
-      plate: {
-        bg: 'linear-gradient(135deg,#002a2a,#001a1a)',
-        border: '#00ccff', shadow: '0 0 16px rgba(0,204,255,0.6), 0 0 32px rgba(0,204,255,0.3)',
-        textColor: '#00eeff', decoration: '⚡',
-        shimmer: true,
-      }
-    },
-    {
-      id: 'level70',
-      name: '英雄',
-      check: u => (u.level||1) >= 70,
-      plate: {
-        bg: 'linear-gradient(135deg,#2a0020,#1a0015)',
-        border: '#ff44aa', shadow: '0 0 18px rgba(255,68,170,0.7), 0 0 36px rgba(255,68,170,0.4)',
-        textColor: '#ff88cc', decoration: '🌟',
-        shimmer: true,
-      }
-    },
-    {
-      id: 'level80',
-      name: '覇者',
-      check: u => (u.level||1) >= 80,
-      plate: {
-        bg: 'linear-gradient(135deg,#0a001a,#050010)',
-        border: '#cc44ff', shadow: '0 0 20px rgba(204,68,255,0.8), 0 0 40px rgba(204,68,255,0.4)',
-        textColor: '#dd88ff', decoration: '💎',
-        shimmer: true,
-      }
-    },
-    {
-      id: 'level90',
-      name: '魔王討伐者',
-      check: u => (u.level||1) >= 90,
-      plate: {
-        bg: 'linear-gradient(135deg,#1a0000,#2a0500)',
-        border: '#ff2200', shadow: '0 0 22px rgba(255,34,0,0.9), 0 0 44px rgba(255,68,0,0.5)',
-        textColor: '#ffaa44', decoration: '🐉',
-        shimmer: true,
-      }
-    },
-    {
-      id: 'level100',
-      name: '伝説の勇者',
-      check: u => (u.level||1) >= 100,
-      plate: {
-        bg: 'linear-gradient(135deg,#1a0a2a,#0a0015)',
-        border: 'transparent', shadow: '0 0 24px rgba(199,125,255,0.8), 0 0 48px rgba(255,215,0,0.4)',
-        textColor: '#ffffff', decoration: '✦',
-        shimmer: true, rainbow: true,
-      }
-    },
-
-    // ===== タスク達成系 =====
     {
       id: 'task10',
-      name: '一歩踏み出した者',
+      name: '駆け出し冒険者',
       check: u => (u.totalCompleted||0) >= 10,
       plate: {
         bg: 'linear-gradient(135deg,#1a2a1a,#0a1a0a)',
-        border: '#44aa44', shadow: '0 0 6px rgba(68,170,68,0.3)',
-        textColor: '#88cc88', decoration: '🌱',
+        border: '#44aa44',
+        shadow: '0 0 6px rgba(68,170,68,0.3)',
+        textColor: '#66cc66',
+        decoration: '⚔️',
+        fontSize: '10px',
       }
     },
     {
@@ -3137,8 +2808,11 @@
       check: u => (u.totalCompleted||0) >= 50,
       plate: {
         bg: 'linear-gradient(135deg,#1a1a2a,#0a0a2a)',
-        border: '#4488ff', shadow: '0 0 8px rgba(68,136,255,0.4)',
-        textColor: '#88aaff', decoration: '🛡️',
+        border: '#4488ff',
+        shadow: '0 0 8px rgba(68,136,255,0.4)',
+        textColor: '#88aaff',
+        decoration: '🛡️',
+        fontSize: '10px',
       }
     },
     {
@@ -3147,32 +2821,39 @@
       check: u => (u.totalCompleted||0) >= 100,
       plate: {
         bg: 'linear-gradient(135deg,#2a2a0a,#1a1a00)',
-        border: '#ffd700', shadow: '0 0 12px rgba(255,215,0,0.5)',
-        textColor: '#ffd700', decoration: '👑',
+        border: '#ffd700',
+        shadow: '0 0 12px rgba(255,215,0,0.5)',
+        textColor: '#ffd700',
+        decoration: '👑',
+        fontSize: '10px',
         shimmer: true,
       }
     },
     {
-      id: 'task500',
-      name: '千の試練を越えた者',
-      check: u => (u.totalCompleted||0) >= 500,
+      id: 'level10',
+      name: '勇者の証',
+      check: u => (u.level||1) >= 10,
       plate: {
-        bg: 'linear-gradient(135deg,#1a0a00,#2a1500)',
-        border: '#ff8800', shadow: '0 0 16px rgba(255,136,0,0.7), 0 0 32px rgba(255,136,0,0.4)',
-        textColor: '#ffcc44', decoration: '🔥',
-        shimmer: true,
+        bg: 'linear-gradient(135deg,#2a2a2a,#1a1a1a)',
+        border: '#aaaaaa',
+        shadow: '0 0 8px rgba(200,200,200,0.4)',
+        textColor: '#dddddd',
+        decoration: '⚔️',
+        fontSize: '10px',
       }
     },
-
-    // ===== 連続ログイン系 =====
     {
-      id: 'streak7',
-      name: '一週間の誓い',
-      check: u => (u.loginStreak||0) >= 7,
+      id: 'level20',
+      name: '伝説の覇者',
+      check: u => (u.level||1) >= 20,
       plate: {
-        bg: 'linear-gradient(135deg,#1a1a2a,#0a0a1a)',
-        border: '#8888ff', shadow: '0 0 8px rgba(136,136,255,0.4)',
-        textColor: '#aaaaff', decoration: '📅',
+        bg: 'linear-gradient(135deg,#2a1a00,#1a0800)',
+        border: '#ff8800',
+        shadow: '0 0 16px rgba(255,136,0,0.6), 0 0 32px rgba(255,136,0,0.3)',
+        textColor: '#ffcc44',
+        decoration: '🌟',
+        fontSize: '10px',
+        shimmer: true,
       }
     },
     {
@@ -3181,33 +2862,40 @@
       check: u => (u.loginStreak||0) >= 30,
       plate: {
         bg: 'linear-gradient(135deg,#1a1a2a,#0a0a1a)',
-        border: '#8888ff', shadow: '0 0 10px rgba(136,136,255,0.5)',
-        textColor: '#aaaaff', decoration: '💎',
-        shimmer: true,
+        border: '#8888ff',
+        shadow: '0 0 10px rgba(136,136,255,0.4)',
+        textColor: '#aaaaff',
+        decoration: '💎',
+        fontSize: '10px',
       }
     },
     {
-      id: 'streak100',
-      name: '不屈の冒険者',
-      check: u => (u.loginStreak||0) >= 100,
+      id: 'dragon_slayer',
+      name: 'ドラゴンスレイヤー',
+      check: u => (u.level||1) >= 20,
       plate: {
-        bg: 'linear-gradient(135deg,#0a1a2a,#00081a)',
-        border: '#00aaff', shadow: '0 0 16px rgba(0,170,255,0.7), 0 0 32px rgba(0,170,255,0.4)',
-        textColor: '#44ccff', decoration: '🌊',
+        bg: 'linear-gradient(135deg,#2a0000,#1a0000)',
+        border: '#ff4400',
+        shadow: '0 0 14px rgba(255,68,0,0.6), 0 0 28px rgba(255,68,0,0.3)',
+        textColor: '#ff8844',
+        decoration: '🐉',
+        fontSize: '10px',
         shimmer: true,
       }
     },
-
-    // ===== 特殊実績系 =====
     {
       id: 'metal_hunter',
       name: 'フルメタルボディ',
       check: u => (u.metalKingCount||0) >= 10,
       plate: {
         bg: 'linear-gradient(135deg,#2a2a2a,#111)',
-        border: '#aaddff', shadow: '0 0 16px rgba(170,221,255,0.6), 0 0 32px rgba(170,221,255,0.3)',
-        textColor: '#aaddff', decoration: '👑',
-        shimmer: true, metallic: true,
+        border: '#aaddff',
+        shadow: '0 0 16px rgba(170,221,255,0.6), 0 0 32px rgba(170,221,255,0.3)',
+        textColor: '#aaddff',
+        decoration: '👑',
+        fontSize: '10px',
+        shimmer: true,
+        metallic: true,
       }
     },
     {
@@ -3216,31 +2904,26 @@
       check: u => (u.chestItems||[]).length >= 10,
       plate: {
         bg: 'linear-gradient(135deg,#1a2a0a,#0a1a00)',
-        border: '#44cc88', shadow: '0 0 8px rgba(68,204,136,0.4)',
-        textColor: '#66ffaa', decoration: '🎁',
+        border: '#44cc88',
+        shadow: '0 0 8px rgba(68,204,136,0.4)',
+        textColor: '#66ffaa',
+        decoration: '🎁',
+        fontSize: '10px',
       }
     },
-    {
-      id: 'sabori_catcher',
-      name: 'さぼり監察官',
-      check: u => (u.reactionsSent||0) >= 10,
-      plate: {
-        bg: 'linear-gradient(135deg,#1a1a1a,#0a0a0a)',
-        border: '#ff6b6b', shadow: '0 0 8px rgba(255,107,107,0.4)',
-        textColor: '#ff9999', decoration: '👮',
-      }
-    },
-
-    // ===== セット装備系 =====
     {
       id: 'zeus_set',
       name: '雷神の申し子',
       check: u => u.chestItems && ['body_zeus','hat_zeus','weapon_zeus','effect_zeus'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#2a2a00,#1a1800)',
-        border: '#ffdd00', shadow: '0 0 20px rgba(255,221,0,0.7), 0 0 40px rgba(255,221,0,0.4)',
-        textColor: '#ffee44', decoration: '⚡',
-        shimmer: true, lightning: true,
+        border: '#ffdd00',
+        shadow: '0 0 20px rgba(255,221,0,0.7), 0 0 40px rgba(255,221,0,0.4)',
+        textColor: '#ffee44',
+        decoration: '⚡',
+        fontSize: '10px',
+        shimmer: true,
+        lightning: true,
       }
     },
     {
@@ -3249,8 +2932,11 @@
       check: u => u.chestItems && ['body_abyss','hat_abyss','weapon_abyss','effect_abyss'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#001a2a,#000a1a)',
-        border: '#00aaff', shadow: '0 0 20px rgba(0,170,255,0.7), 0 0 40px rgba(0,170,255,0.4)',
-        textColor: '#00ccff', decoration: '🌊',
+        border: '#00aaff',
+        shadow: '0 0 20px rgba(0,170,255,0.7), 0 0 40px rgba(0,170,255,0.4)',
+        textColor: '#00ccff',
+        decoration: '🌊',
+        fontSize: '10px',
         shimmer: true,
       }
     },
@@ -3260,9 +2946,13 @@
       check: u => u.chestItems && ['body_dark','hat_dark','weapon_dark','effect_dark_set'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#0a0010,#050008)',
-        border: '#8800ff', shadow: '0 0 20px rgba(136,0,255,0.7), 0 0 40px rgba(136,0,255,0.4)',
-        textColor: '#cc44ff', decoration: '🖤',
-        shimmer: true, dark: true,
+        border: '#8800ff',
+        shadow: '0 0 20px rgba(136,0,255,0.7), 0 0 40px rgba(136,0,255,0.4)',
+        textColor: '#cc44ff',
+        decoration: '🖤',
+        fontSize: '10px',
+        shimmer: true,
+        dark: true,
       }
     },
     {
@@ -3271,8 +2961,11 @@
       check: u => u.chestItems && ['body_bushin','hat_bushin','weapon_bushin','effect_bushin'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#1a0000,#2a0500)',
-        border: '#ff2200', shadow: '0 0 24px rgba(255,34,0,0.9), 0 0 48px rgba(255,68,0,0.5)',
-        textColor: '#ffaa44', decoration: '💪',
+        border: '#ff2200',
+        shadow: '0 0 24px rgba(255,34,0,0.9), 0 0 48px rgba(255,68,0,0.5)',
+        textColor: '#ffaa44',
+        decoration: '💪',
+        fontSize: '10px',
         shimmer: true,
       }
     },
@@ -3282,8 +2975,11 @@
       check: u => u.chestItems && ['body_lovecure','hat_lovecure','weapon_lovecure','effect_lovecure'].every(id => u.chestItems.includes(id)),
       plate: {
         bg: 'linear-gradient(135deg,#2a0018,#1a000e)',
-        border: '#ff44aa', shadow: '0 0 20px rgba(255,68,170,0.7), 0 0 40px rgba(255,136,204,0.4)',
-        textColor: '#ff88cc', decoration: '💖',
+        border: '#ff44aa',
+        shadow: '0 0 20px rgba(255,68,170,0.7), 0 0 40px rgba(255,136,204,0.4)',
+        textColor: '#ff88cc',
+        decoration: '💖',
+        fontSize: '10px',
         shimmer: true,
       }
     },
@@ -3296,12 +2992,30 @@
       },
       plate: {
         bg: 'linear-gradient(135deg,#1a0a2a,#0a0015)',
-        border: 'transparent', shadow: '0 0 24px rgba(199,125,255,0.8), 0 0 48px rgba(255,215,0,0.4)',
-        textColor: '#ffffff', decoration: '✦',
-        shimmer: true, rainbow: true,
+        border: 'transparent',
+        shadow: '0 0 24px rgba(199,125,255,0.8), 0 0 48px rgba(255,215,0,0.4)',
+        textColor: '#ffffff',
+        decoration: '✦',
+        fontSize: '10px',
+        shimmer: true,
+        rainbow: true,
+      }
+    },
+    {
+      id: 'sabori_catcher',
+      name: 'さぼり監察官',
+      check: u => (u.reactionsSent||0) >= 10,
+      plate: {
+        bg: 'linear-gradient(135deg,#1a1a1a,#0a0a0a)',
+        border: '#ff6b6b',
+        shadow: '0 0 8px rgba(255,107,107,0.4)',
+        textColor: '#ff9999',
+        decoration: '👮',
+        fontSize: '10px',
       }
     },
   ];
+
   // プレートHTML生成
   function makeTitlePlateHTML(title, small = false) {
     const p = title.plate;
@@ -5353,15 +5067,24 @@
 
   // ===== BATTLE SCENE =====
   const MONSTERS = {
-    1:  { name:'スライム',    color:'#44cc44', exp:1,   rare:false, pixels:[
+    1:  { name:'スライム',    color:'#44cc44', exp:2,   minLv:1,  weight:10, pixels:[
       {x:5,y:4,c:'#44cc44'},{x:6,y:4,c:'#44cc44'},{x:7,y:4,c:'#55dd55'},{x:8,y:4,c:'#55dd55'},{x:9,y:4,c:'#44cc44'},
       {x:4,y:5,c:'#44cc44'},{x:5,y:5,c:'#55dd55'},{x:6,y:5,c:'#aaffaa'},{x:7,y:5,c:'#ffffff'},{x:8,y:5,c:'#ffffff'},{x:9,y:5,c:'#55dd55'},{x:10,y:5,c:'#44cc44'},
       {x:4,y:6,c:'#44cc44'},{x:5,y:6,c:'#55dd55'},{x:6,y:6,c:'#55dd55'},{x:7,y:6,c:'#aaffaa'},{x:8,y:6,c:'#55dd55'},{x:9,y:6,c:'#55dd55'},{x:10,y:6,c:'#44cc44'},
       {x:4,y:7,c:'#44cc44'},{x:5,y:7,c:'#55dd55'},{x:6,y:7,c:'#44cc44'},{x:7,y:7,c:'#222'},{x:8,y:7,c:'#44cc44'},{x:9,y:7,c:'#55dd55'},{x:10,y:7,c:'#44cc44'},
       {x:5,y:8,c:'#33aa33'},{x:6,y:8,c:'#33aa33'},{x:7,y:8,c:'#33aa33'},{x:8,y:8,c:'#33aa33'},{x:9,y:8,c:'#33aa33'},
-      {x:6,y:9,c:'#33aa33'},{x:7,y:9,c:'#33aa33'},{x:8,y:9,c:'#33aa33'},
     ]},
-    5:  { name:'ゴブリン',    color:'#88cc44', exp:2,   rare:false, pixels:[
+    2:  { name:'コウモリ',    color:'#886699', exp:3,   minLv:1,  weight:8, pixels:[
+      {x:1,y:4,c:'#553366'},{x:2,y:3,c:'#664477'},{x:3,y:4,c:'#553366'},
+      {x:1,y:5,c:'#553366'},{x:2,y:4,c:'#664477'},{x:3,y:5,c:'#553366'},
+      {x:13,y:4,c:'#553366'},{x:14,y:3,c:'#664477'},{x:15,y:4,c:'#553366'},
+      {x:13,y:5,c:'#553366'},{x:14,y:4,c:'#664477'},{x:15,y:5,c:'#553366'},
+      {x:5,y:4,c:'#886699'},{x:6,y:4,c:'#886699'},{x:7,y:4,c:'#886699'},{x:8,y:4,c:'#886699'},{x:9,y:4,c:'#886699'},{x:10,y:4,c:'#886699'},
+      {x:5,y:5,c:'#886699'},{x:6,y:5,c:'#ff4444'},{x:7,y:5,c:'#886699'},{x:8,y:5,c:'#886699'},{x:9,y:5,c:'#ff4444'},{x:10,y:5,c:'#886699'},
+      {x:5,y:6,c:'#664477'},{x:6,y:6,c:'#664477'},{x:7,y:6,c:'#ccaadd'},{x:8,y:6,c:'#664477'},{x:9,y:6,c:'#664477'},{x:10,y:6,c:'#664477'},
+      {x:6,y:7,c:'#553366'},{x:7,y:7,c:'#553366'},{x:8,y:7,c:'#553366'},{x:9,y:7,c:'#553366'},
+    ]},
+    5:  { name:'ゴブリン',    color:'#88cc44', exp:6,   minLv:5,  weight:10, pixels:[
       {x:7,y:2,c:'#88cc44'},{x:8,y:2,c:'#88cc44'},
       {x:5,y:3,c:'#88cc44'},{x:6,y:3,c:'#88cc44'},{x:7,y:3,c:'#99dd55'},{x:8,y:3,c:'#99dd55'},{x:9,y:3,c:'#88cc44'},{x:10,y:3,c:'#88cc44'},
       {x:4,y:4,c:'#88cc44'},{x:5,y:4,c:'#99dd55'},{x:6,y:4,c:'#ff4444'},{x:7,y:4,c:'#99dd55'},{x:8,y:4,c:'#ff4444'},{x:9,y:4,c:'#99dd55'},{x:10,y:4,c:'#88cc44'},{x:11,y:4,c:'#88cc44'},
@@ -5370,7 +5093,16 @@
       {x:4,y:7,c:'#88cc44'},{x:5,y:7,c:'#555'},{x:6,y:7,c:'#666'},{x:7,y:7,c:'#666'},{x:8,y:7,c:'#666'},{x:9,y:7,c:'#555'},{x:10,y:7,c:'#88cc44'},{x:11,y:7,c:'#88cc44'},
       {x:5,y:8,c:'#553311'},{x:6,y:8,c:'#553311'},{x:9,y:8,c:'#553311'},{x:10,y:8,c:'#553311'},
     ]},
-    10: { name:'オーク',      color:'#cc6622', exp:5,   rare:false, pixels:[
+    6:  { name:'河童',        color:'#22bbaa', exp:7,   minLv:5,  weight:8, pixels:[
+      {x:5,y:1,c:'#22bbaa'},{x:6,y:1,c:'#22bbaa'},{x:7,y:1,c:'#aaddcc'},{x:8,y:1,c:'#aaddcc'},{x:9,y:1,c:'#22bbaa'},{x:10,y:1,c:'#22bbaa'},
+      {x:5,y:2,c:'#aaddcc'},{x:6,y:2,c:'#ffffff'},{x:7,y:2,c:'#aaddcc'},{x:8,y:2,c:'#ffffff'},{x:9,y:2,c:'#aaddcc'},
+      {x:4,y:3,c:'#22bbaa'},{x:5,y:3,c:'#33ccbb'},{x:6,y:3,c:'#44ddcc'},{x:7,y:3,c:'#44ddcc'},{x:8,y:3,c:'#44ddcc'},{x:9,y:3,c:'#33ccbb'},{x:10,y:3,c:'#22bbaa'},
+      {x:4,y:4,c:'#22bbaa'},{x:5,y:4,c:'#33ccbb'},{x:6,y:4,c:'#111'},{x:7,y:4,c:'#33ccbb'},{x:8,y:4,c:'#33ccbb'},{x:9,y:4,c:'#111'},{x:10,y:4,c:'#33ccbb'},
+      {x:5,y:5,c:'#33ccbb'},{x:6,y:5,c:'#33ccbb'},{x:7,y:5,c:'#ffaa44'},{x:8,y:5,c:'#33ccbb'},{x:9,y:5,c:'#33ccbb'},
+      {x:4,y:6,c:'#116655'},{x:5,y:6,c:'#227766'},{x:6,y:6,c:'#338877'},{x:7,y:6,c:'#338877'},{x:8,y:6,c:'#338877'},{x:9,y:6,c:'#227766'},{x:10,y:6,c:'#116655'},
+      {x:5,y:7,c:'#22bbaa'},{x:6,y:7,c:'#22bbaa'},{x:9,y:7,c:'#22bbaa'},{x:10,y:7,c:'#22bbaa'},
+    ]},
+    10: { name:'オーク',      color:'#cc6622', exp:14,  minLv:10, weight:10, pixels:[
       {x:4,y:2,c:'#cc6622'},{x:5,y:2,c:'#cc6622'},{x:6,y:2,c:'#cc6622'},{x:7,y:2,c:'#cc6622'},{x:8,y:2,c:'#cc6622'},{x:9,y:2,c:'#cc6622'},{x:10,y:2,c:'#cc6622'},{x:11,y:2,c:'#cc6622'},
       {x:3,y:3,c:'#cc6622'},{x:4,y:3,c:'#dd7733'},{x:5,y:3,c:'#dd7733'},{x:6,y:3,c:'#dd7733'},{x:7,y:3,c:'#dd7733'},{x:8,y:3,c:'#dd7733'},{x:9,y:3,c:'#dd7733'},{x:10,y:3,c:'#dd7733'},{x:11,y:3,c:'#dd7733'},{x:12,y:3,c:'#cc6622'},
       {x:3,y:4,c:'#cc6622'},{x:4,y:4,c:'#dd7733'},{x:5,y:4,c:'#ff5555'},{x:6,y:4,c:'#dd7733'},{x:7,y:4,c:'#dd7733'},{x:8,y:4,c:'#dd7733'},{x:9,y:4,c:'#dd7733'},{x:10,y:4,c:'#ff5555'},{x:11,y:4,c:'#dd7733'},{x:12,y:4,c:'#cc6622'},
@@ -5380,28 +5112,137 @@
       {x:4,y:8,c:'#cc6622'},{x:5,y:8,c:'#884411'},{x:10,y:8,c:'#884411'},{x:11,y:8,c:'#cc6622'},
       {x:4,y:9,c:'#553311'},{x:5,y:9,c:'#553311'},{x:10,y:9,c:'#553311'},{x:11,y:9,c:'#553311'},
     ]},
-    20: { name:'ドラゴン',    color:'#cc2222', exp:10,  rare:false, pixels:[
-      // 翼
+    11: { name:'忍者',        color:'#334466', exp:14,  minLv:10, weight:8, pixels:[
+      {x:5,y:2,c:'#222233'},{x:6,y:2,c:'#222233'},{x:7,y:2,c:'#222233'},{x:8,y:2,c:'#222233'},{x:9,y:2,c:'#222233'},{x:10,y:2,c:'#222233'},
+      {x:4,y:3,c:'#222233'},{x:5,y:3,c:'#334466'},{x:6,y:3,c:'#334466'},{x:7,y:3,c:'#ff4444'},{x:8,y:3,c:'#ff4444'},{x:9,y:3,c:'#334466'},{x:10,y:3,c:'#334466'},{x:11,y:3,c:'#222233'},
+      {x:4,y:4,c:'#222233'},{x:5,y:4,c:'#334466'},{x:6,y:4,c:'#334466'},{x:7,y:4,c:'#334466'},{x:8,y:4,c:'#334466'},{x:9,y:4,c:'#334466'},{x:10,y:4,c:'#334466'},{x:11,y:4,c:'#222233'},
+      {x:4,y:5,c:'#222233'},{x:5,y:5,c:'#334466'},{x:6,y:5,c:'#334466'},{x:7,y:5,c:'#334466'},{x:8,y:5,c:'#334466'},{x:9,y:5,c:'#334466'},{x:10,y:5,c:'#334466'},{x:11,y:5,c:'#222233'},
+      {x:4,y:6,c:'#222233'},{x:5,y:6,c:'#222233'},{x:6,y:6,c:'#334466'},{x:7,y:6,c:'#334466'},{x:8,y:6,c:'#334466'},{x:9,y:6,c:'#334466'},{x:10,y:6,c:'#222233'},{x:11,y:6,c:'#222233'},
+      {x:2,y:5,c:'#aaaaaa'},{x:3,y:5,c:'#cccccc'},{x:2,y:6,c:'#aaaaaa'},
+      {x:13,y:4,c:'#aaaaaa'},{x:14,y:5,c:'#cccccc'},{x:13,y:5,c:'#aaaaaa'},
+      {x:5,y:7,c:'#222233'},{x:6,y:7,c:'#222233'},{x:9,y:7,c:'#222233'},{x:10,y:7,c:'#222233'},
+    ]},
+    20: { name:'ドラゴン',    color:'#cc2222', exp:28,  minLv:20, weight:10, pixels:[
       {x:1,y:3,c:'#aa1111'},{x:2,y:2,c:'#cc2222'},{x:3,y:3,c:'#aa1111'},
       {x:1,y:4,c:'#aa1111'},{x:2,y:3,c:'#cc2222'},{x:3,y:4,c:'#bb1111'},
-      // 頭
       {x:4,y:3,c:'#cc2222'},{x:5,y:3,c:'#cc2222'},{x:6,y:3,c:'#cc2222'},
       {x:4,y:4,c:'#cc2222'},{x:5,y:4,c:'#dd3333'},{x:6,y:4,c:'#ff5555'},{x:7,y:4,c:'#ff5555'},{x:8,y:4,c:'#dd3333'},{x:9,y:4,c:'#cc2222'},
       {x:4,y:5,c:'#cc2222'},{x:5,y:5,c:'#dd3333'},{x:6,y:5,c:'#dd3333'},{x:7,y:5,c:'#ff8800'},{x:8,y:5,c:'#dd3333'},{x:9,y:5,c:'#dd3333'},{x:10,y:5,c:'#cc2222'},
       {x:5,y:6,c:'#cc2222'},{x:6,y:6,c:'#ffffff'},{x:7,y:6,c:'#884411'},{x:8,y:6,c:'#884411'},{x:9,y:6,c:'#ffffff'},{x:10,y:6,c:'#cc2222'},
-      // 炎
       {x:10,y:4,c:'#ff8800'},{x:11,y:3,c:'#ffcc00'},{x:12,y:4,c:'#ff6600'},{x:11,y:5,c:'#ff4400'},
-      // 体
       {x:5,y:7,c:'#bb2222'},{x:6,y:7,c:'#cc2222'},{x:7,y:7,c:'#cc2222'},{x:8,y:7,c:'#cc2222'},{x:9,y:7,c:'#bb2222'},
-      // 足
       {x:5,y:8,c:'#884411'},{x:6,y:8,c:'#884411'},{x:8,y:8,c:'#884411'},{x:9,y:8,c:'#884411'},
       {x:4,y:9,c:'#553311'},{x:5,y:9,c:'#553311'},{x:6,y:9,c:'#553311'},{x:8,y:9,c:'#553311'},{x:9,y:9,c:'#553311'},{x:10,y:9,c:'#553311'},
+    ]},
+    21: { name:'天狗',        color:'#cc3333', exp:28,  minLv:20, weight:8, pixels:[
+      {x:7,y:1,c:'#cc3333'},{x:8,y:2,c:'#cc3333'},{x:9,y:3,c:'#cc3333'},
+      {x:5,y:3,c:'#ffccaa'},{x:6,y:3,c:'#ffccaa'},{x:7,y:3,c:'#ffccaa'},{x:8,y:3,c:'#ffccaa'},
+      {x:4,y:4,c:'#ffccaa'},{x:5,y:4,c:'#111'},{x:6,y:4,c:'#ffccaa'},{x:7,y:4,c:'#ffccaa'},{x:8,y:4,c:'#111'},{x:9,y:4,c:'#ffccaa'},
+      {x:4,y:5,c:'#ffccaa'},{x:5,y:5,c:'#ffccaa'},{x:6,y:5,c:'#ffccaa'},{x:7,y:5,c:'#ffccaa'},{x:8,y:5,c:'#ffccaa'},{x:9,y:5,c:'#ffccaa'},
+      {x:5,y:0,c:'#111122'},{x:6,y:0,c:'#111122'},{x:7,y:0,c:'#111122'},{x:8,y:0,c:'#111122'},
+      {x:4,y:1,c:'#111122'},{x:5,y:1,c:'#222233'},{x:6,y:1,c:'#222233'},{x:7,y:1,c:'#222233'},{x:8,y:1,c:'#222233'},{x:9,y:1,c:'#111122'},
+      {x:1,y:5,c:'#222222'},{x:2,y:4,c:'#333333'},{x:3,y:5,c:'#222222'},
+      {x:12,y:5,c:'#222222'},{x:13,y:4,c:'#333333'},{x:14,y:5,c:'#222222'},
+      {x:4,y:6,c:'#eeeeff'},{x:5,y:6,c:'#eeeeff'},{x:6,y:6,c:'#eeeeff'},{x:7,y:6,c:'#eeeeff'},{x:8,y:6,c:'#eeeeff'},{x:9,y:6,c:'#eeeeff'},{x:10,y:6,c:'#eeeeff'},
+      {x:4,y:7,c:'#ccccee'},{x:5,y:7,c:'#ccccee'},{x:6,y:7,c:'#cc2222'},{x:7,y:7,c:'#cc2222'},{x:8,y:7,c:'#cc2222'},{x:9,y:7,c:'#ccccee'},{x:10,y:7,c:'#ccccee'},
+      {x:5,y:8,c:'#ccccee'},{x:6,y:8,c:'#ccccee'},{x:9,y:8,c:'#ccccee'},{x:10,y:8,c:'#ccccee'},
+    ]},
+    30: { name:'鬼',          color:'#cc4422', exp:44,  minLv:30, weight:10, pixels:[
+      {x:6,y:0,c:'#cc4422'},{x:7,y:0,c:'#cc4422'},{x:9,y:0,c:'#cc4422'},{x:10,y:0,c:'#cc4422'},
+      {x:6,y:1,c:'#dd5533'},{x:7,y:1,c:'#dd5533'},{x:9,y:1,c:'#dd5533'},{x:10,y:1,c:'#dd5533'},
+      {x:4,y:2,c:'#cc4422'},{x:5,y:2,c:'#dd5533'},{x:6,y:2,c:'#dd5533'},{x:7,y:2,c:'#dd5533'},{x:8,y:2,c:'#dd5533'},{x:9,y:2,c:'#dd5533'},{x:10,y:2,c:'#dd5533'},{x:11,y:2,c:'#cc4422'},
+      {x:4,y:3,c:'#cc4422'},{x:5,y:3,c:'#dd5533'},{x:6,y:3,c:'#ffaa00'},{x:7,y:3,c:'#dd5533'},{x:8,y:3,c:'#dd5533'},{x:9,y:3,c:'#ffaa00'},{x:10,y:3,c:'#dd5533'},{x:11,y:3,c:'#cc4422'},
+      {x:4,y:4,c:'#cc4422'},{x:5,y:4,c:'#dd5533'},{x:6,y:4,c:'#dd5533'},{x:7,y:4,c:'#ffffff'},{x:8,y:4,c:'#ffffff'},{x:9,y:4,c:'#dd5533'},{x:10,y:4,c:'#dd5533'},{x:11,y:4,c:'#cc4422'},
+      {x:2,y:3,c:'#884422'},{x:2,y:4,c:'#884422'},{x:2,y:5,c:'#884422'},{x:2,y:6,c:'#884422'},{x:2,y:7,c:'#664411'},
+      {x:1,y:2,c:'#aa5533'},{x:1,y:3,c:'#aa5533'},{x:3,y:2,c:'#aa5533'},{x:3,y:3,c:'#aa5533'},
+      {x:3,y:5,c:'#cc4422'},{x:4,y:5,c:'#cc4422'},{x:5,y:5,c:'#dd5533'},{x:6,y:5,c:'#dd5533'},{x:7,y:5,c:'#dd5533'},{x:8,y:5,c:'#dd5533'},{x:9,y:5,c:'#dd5533'},{x:10,y:5,c:'#cc4422'},{x:11,y:5,c:'#cc4422'},{x:12,y:5,c:'#cc4422'},
+      {x:5,y:7,c:'#cc4422'},{x:6,y:7,c:'#cc4422'},{x:9,y:7,c:'#cc4422'},{x:10,y:7,c:'#cc4422'},
+      {x:5,y:8,c:'#884411'},{x:6,y:8,c:'#884411'},{x:9,y:8,c:'#884411'},{x:10,y:8,c:'#884411'},
+    ]},
+    31: { name:'ゾンビ騎士',  color:'#669966', exp:44,  minLv:30, weight:8, pixels:[
+      {x:5,y:1,c:'#446644'},{x:6,y:1,c:'#557755'},{x:7,y:1,c:'#557755'},{x:8,y:1,c:'#557755'},{x:9,y:1,c:'#557755'},{x:10,y:1,c:'#446644'},
+      {x:4,y:2,c:'#446644'},{x:5,y:2,c:'#557755'},{x:6,y:2,c:'#667766'},{x:7,y:2,c:'#667766'},{x:8,y:2,c:'#667766'},{x:9,y:2,c:'#557755'},{x:10,y:2,c:'#446644'},{x:11,y:2,c:'#446644'},
+      {x:4,y:3,c:'#557755'},{x:5,y:3,c:'#88aa88'},{x:6,y:3,c:'#ff4444'},{x:7,y:3,c:'#88aa88'},{x:8,y:3,c:'#88aa88'},{x:9,y:3,c:'#ff4444'},{x:10,y:3,c:'#88aa88'},{x:11,y:3,c:'#557755'},
+      {x:3,y:5,c:'#446644'},{x:4,y:5,c:'#557755'},{x:5,y:5,c:'#667766'},{x:6,y:5,c:'#667766'},{x:7,y:5,c:'#667766'},{x:8,y:5,c:'#667766'},{x:9,y:5,c:'#557755'},{x:10,y:5,c:'#446644'},{x:11,y:5,c:'#446644'},{x:12,y:5,c:'#446644'},
+      {x:13,y:3,c:'#888888'},{x:13,y:4,c:'#888888'},{x:13,y:5,c:'#888888'},{x:13,y:6,c:'#888888'},{x:13,y:7,c:'#666666'},
+      {x:12,y:5,c:'#aaaaaa'},{x:14,y:5,c:'#aaaaaa'},
+      {x:5,y:7,c:'#446644'},{x:6,y:7,c:'#446644'},{x:9,y:7,c:'#446644'},{x:10,y:7,c:'#446644'},
+      {x:5,y:8,c:'#334433'},{x:6,y:8,c:'#334433'},{x:9,y:8,c:'#334433'},{x:10,y:8,c:'#334433'},
+    ]},
+    40: { name:'ゴーレム',    color:'#887766', exp:60,  minLv:40, weight:10, pixels:[
+      {x:3,y:1,c:'#776655'},{x:4,y:1,c:'#887766'},{x:5,y:1,c:'#887766'},{x:6,y:1,c:'#998877'},{x:7,y:1,c:'#998877'},{x:8,y:1,c:'#998877'},{x:9,y:1,c:'#887766'},{x:10,y:1,c:'#887766'},{x:11,y:1,c:'#776655'},
+      {x:2,y:2,c:'#776655'},{x:3,y:2,c:'#887766'},{x:4,y:2,c:'#998877'},{x:5,y:2,c:'#aaaaaa'},{x:6,y:2,c:'#998877'},{x:7,y:2,c:'#998877'},{x:8,y:2,c:'#aaaaaa'},{x:9,y:2,c:'#998877'},{x:10,y:2,c:'#887766'},{x:11,y:2,c:'#776655'},{x:12,y:2,c:'#776655'},
+      {x:2,y:3,c:'#776655'},{x:3,y:3,c:'#887766'},{x:4,y:3,c:'#998877'},{x:5,y:3,c:'#ff4400'},{x:6,y:3,c:'#998877'},{x:7,y:3,c:'#998877'},{x:8,y:3,c:'#ff4400'},{x:9,y:3,c:'#998877'},{x:10,y:3,c:'#887766'},{x:11,y:3,c:'#887766'},{x:12,y:3,c:'#776655'},
+      {x:2,y:4,c:'#776655'},{x:3,y:4,c:'#887766'},{x:4,y:4,c:'#887766'},{x:5,y:4,c:'#887766'},{x:6,y:4,c:'#887766'},{x:7,y:4,c:'#887766'},{x:8,y:4,c:'#887766'},{x:9,y:4,c:'#887766'},{x:10,y:4,c:'#887766'},{x:11,y:4,c:'#887766'},{x:12,y:4,c:'#776655'},
+      {x:3,y:5,c:'#776655'},{x:4,y:5,c:'#887766'},{x:5,y:5,c:'#887766'},{x:9,y:5,c:'#887766'},{x:10,y:5,c:'#887766'},{x:11,y:5,c:'#776655'},
+      {x:4,y:6,c:'#776655'},{x:5,y:6,c:'#887766'},{x:10,y:6,c:'#887766'},{x:11,y:6,c:'#776655'},
+      {x:4,y:7,c:'#665544'},{x:5,y:7,c:'#776655'},{x:10,y:7,c:'#776655'},{x:11,y:7,c:'#665544'},
+      {x:4,y:8,c:'#554433'},{x:5,y:8,c:'#665544'},{x:10,y:8,c:'#665544'},{x:11,y:8,c:'#554433'},
+    ]},
+    41: { name:'雪女',        color:'#aaddff', exp:60,  minLv:40, weight:8, pixels:[
+      {x:4,y:0,c:'#111122'},{x:5,y:0,c:'#111122'},{x:6,y:0,c:'#111122'},{x:7,y:0,c:'#111122'},{x:8,y:0,c:'#111122'},{x:9,y:0,c:'#111122'},{x:10,y:0,c:'#111122'},{x:11,y:0,c:'#111122'},
+      {x:3,y:1,c:'#111122'},{x:4,y:1,c:'#222233'},{x:5,y:1,c:'#222233'},{x:10,y:1,c:'#222233'},{x:11,y:1,c:'#222233'},{x:12,y:1,c:'#111122'},
+      {x:5,y:2,c:'#eeeeff'},{x:6,y:2,c:'#eeeeff'},{x:7,y:2,c:'#eeeeff'},{x:8,y:2,c:'#eeeeff'},{x:9,y:2,c:'#eeeeff'},{x:10,y:2,c:'#eeeeff'},
+      {x:4,y:3,c:'#111122'},{x:5,y:3,c:'#eeeeff'},{x:6,y:3,c:'#aaddff'},{x:7,y:3,c:'#eeeeff'},{x:8,y:3,c:'#eeeeff'},{x:9,y:3,c:'#aaddff'},{x:10,y:3,c:'#eeeeff'},{x:11,y:3,c:'#111122'},
+      {x:4,y:4,c:'#111122'},{x:5,y:4,c:'#eeeeff'},{x:6,y:4,c:'#eeeeff'},{x:7,y:4,c:'#eeeeff'},{x:8,y:4,c:'#eeeeff'},{x:9,y:4,c:'#eeeeff'},{x:10,y:4,c:'#eeeeff'},{x:11,y:4,c:'#111122'},
+      {x:4,y:5,c:'#cceeff'},{x:5,y:5,c:'#ddeeff'},{x:6,y:5,c:'#eeeeff'},{x:7,y:5,c:'#eeeeff'},{x:8,y:5,c:'#eeeeff'},{x:9,y:5,c:'#eeeeff'},{x:10,y:5,c:'#ddeeff'},{x:11,y:5,c:'#cceeff'},
+      {x:3,y:6,c:'#aaccee'},{x:4,y:6,c:'#bbddee'},{x:5,y:6,c:'#cceeff'},{x:6,y:6,c:'#ddeeff'},{x:9,y:6,c:'#ddeeff'},{x:10,y:6,c:'#cceeff'},{x:11,y:6,c:'#bbddee'},{x:12,y:6,c:'#aaccee'},
+      {x:1,y:4,c:'#aaddff'},{x:2,y:3,c:'#cceeff'},{x:14,y:4,c:'#aaddff'},{x:15,y:3,c:'#cceeff'},
+    ]},
+    50: { name:'ワイバーン',  color:'#4444cc', exp:78,  minLv:50, weight:10, pixels:[
+      {x:0,y:2,c:'#3333aa'},{x:1,y:1,c:'#4444bb'},{x:2,y:2,c:'#3333aa'},{x:0,y:3,c:'#3333aa'},{x:1,y:2,c:'#4444bb'},{x:2,y:3,c:'#3333aa'},
+      {x:3,y:2,c:'#4444cc'},{x:4,y:2,c:'#4444cc'},{x:5,y:2,c:'#4444cc'},{x:6,y:2,c:'#5555dd'},{x:7,y:2,c:'#5555dd'},{x:8,y:2,c:'#5555dd'},{x:9,y:2,c:'#4444cc'},{x:10,y:2,c:'#4444cc'},{x:11,y:2,c:'#4444cc'},
+      {x:3,y:3,c:'#4444cc'},{x:4,y:3,c:'#5555dd'},{x:5,y:3,c:'#ff4444'},{x:6,y:3,c:'#5555dd'},{x:7,y:3,c:'#5555dd'},{x:8,y:3,c:'#5555dd'},{x:9,y:3,c:'#ff4444'},{x:10,y:3,c:'#5555dd'},{x:11,y:3,c:'#4444cc'},
+      {x:4,y:4,c:'#4444cc'},{x:5,y:4,c:'#5555dd'},{x:6,y:4,c:'#5555dd'},{x:7,y:4,c:'#ff8800'},{x:8,y:4,c:'#5555dd'},{x:9,y:4,c:'#5555dd'},{x:10,y:4,c:'#4444cc'},
+      {x:4,y:5,c:'#3333aa'},{x:5,y:5,c:'#4444bb'},{x:6,y:5,c:'#4444bb'},{x:7,y:5,c:'#4444bb'},{x:8,y:5,c:'#4444bb'},{x:9,y:5,c:'#3333aa'},
+      {x:12,y:4,c:'#3333aa'},{x:13,y:5,c:'#2222aa'},{x:14,y:6,c:'#1111aa'},{x:15,y:7,c:'#ff4400'},
+      {x:5,y:6,c:'#3333aa'},{x:6,y:6,c:'#3333aa'},{x:8,y:6,c:'#3333aa'},{x:9,y:6,c:'#3333aa'},
+      {x:5,y:7,c:'#553311'},{x:6,y:7,c:'#553311'},{x:8,y:7,c:'#553311'},{x:9,y:7,c:'#553311'},
+    ]},
+    60: { name:'不死鳥',      color:'#ff6600', exp:100, minLv:60, weight:10, pixels:[
+      {x:0,y:3,c:'#ff2200'},{x:1,y:2,c:'#ff4400'},{x:2,y:1,c:'#ff6600'},{x:1,y:3,c:'#ff4400'},{x:2,y:2,c:'#ff6600'},{x:3,y:3,c:'#ff8800'},
+      {x:14,y:2,c:'#ff4400'},{x:13,y:1,c:'#ff6600'},{x:14,y:3,c:'#ff4400'},{x:13,y:2,c:'#ff6600'},{x:12,y:3,c:'#ff8800'},
+      {x:4,y:2,c:'#ff6600'},{x:5,y:2,c:'#ff8800'},{x:6,y:2,c:'#ffaa00'},{x:7,y:2,c:'#ffcc00'},{x:8,y:2,c:'#ffcc00'},{x:9,y:2,c:'#ffaa00'},{x:10,y:2,c:'#ff8800'},{x:11,y:2,c:'#ff6600'},
+      {x:4,y:3,c:'#ff8800'},{x:5,y:3,c:'#ffaa00'},{x:6,y:3,c:'#ffee44'},{x:7,y:3,c:'#ffffff'},{x:8,y:3,c:'#ffffff'},{x:9,y:3,c:'#ffee44'},{x:10,y:3,c:'#ffaa00'},{x:11,y:3,c:'#ff8800'},
+      {x:5,y:4,c:'#ff8800'},{x:6,y:4,c:'#ffaa00'},{x:7,y:4,c:'#ffcc00'},{x:8,y:4,c:'#ffcc00'},{x:9,y:4,c:'#ffaa00'},{x:10,y:4,c:'#ff8800'},
+      {x:6,y:5,c:'#ff6600'},{x:7,y:5,c:'#ff4400'},{x:8,y:5,c:'#ff4400'},{x:9,y:5,c:'#ff6600'},
+      {x:4,y:7,c:'#ff2200'},{x:5,y:7,c:'#ffaa00'},{x:10,y:7,c:'#ffaa00'},{x:11,y:7,c:'#ff2200'},
+    ]},
+    70: { name:'龍神',        color:'#8844ff', exp:125, minLv:70, weight:10, pixels:[
+      {x:3,y:1,c:'#6622dd'},{x:4,y:1,c:'#7733ee'},{x:5,y:1,c:'#6622dd'},
+      {x:2,y:2,c:'#5511cc'},{x:3,y:2,c:'#7733ee'},{x:4,y:2,c:'#8844ff'},{x:5,y:2,c:'#8844ff'},{x:6,y:2,c:'#7733ee'},{x:7,y:2,c:'#5511cc'},
+      {x:2,y:3,c:'#6622dd'},{x:3,y:3,c:'#8844ff'},{x:4,y:3,c:'#ffcc00'},{x:5,y:3,c:'#8844ff'},{x:6,y:3,c:'#ffcc00'},{x:7,y:3,c:'#8844ff'},{x:8,y:3,c:'#6622dd'},
+      {x:2,y:4,c:'#6622dd'},{x:3,y:4,c:'#7733ee'},{x:4,y:4,c:'#8844ff'},{x:5,y:4,c:'#8844ff'},{x:6,y:4,c:'#8844ff'},{x:7,y:4,c:'#7733ee'},{x:8,y:4,c:'#6622dd'},
+      {x:8,y:2,c:'#ffff00'},{x:9,y:1,c:'#ffcc00'},{x:10,y:2,c:'#ffff44'},{x:9,y:3,c:'#ffffff'},
+      {x:2,y:5,c:'#5511cc'},{x:3,y:5,c:'#6622dd'},{x:4,y:5,c:'#7733ee'},{x:5,y:5,c:'#8844ff'},{x:6,y:5,c:'#7733ee'},{x:7,y:5,c:'#6622dd'},{x:8,y:5,c:'#5511cc'},{x:9,y:5,c:'#4400bb'},
+      {x:3,y:6,c:'#6622dd'},{x:4,y:6,c:'#5511cc'},{x:5,y:6,c:'#7733ee'},{x:6,y:6,c:'#5511cc'},{x:7,y:6,c:'#7733ee'},{x:8,y:6,c:'#5511cc'},{x:9,y:6,c:'#6622dd'},{x:10,y:6,c:'#5511cc'},
+      {x:4,y:8,c:'#ccaaff'},{x:6,y:8,c:'#ccaaff'},{x:9,y:8,c:'#ccaaff'},{x:11,y:8,c:'#ccaaff'},
+    ]},
+    80: { name:'大魔王',      color:'#440066', exp:150, minLv:80, weight:10, pixels:[
+      {x:4,y:0,c:'#440066'},{x:6,y:0,c:'#220033'},{x:8,y:0,c:'#220033'},{x:10,y:0,c:'#440066'},
+      {x:3,y:1,c:'#330055'},{x:4,y:1,c:'#550077'},{x:5,y:1,c:'#440066'},{x:6,y:1,c:'#550077'},{x:7,y:1,c:'#550077'},{x:8,y:1,c:'#550077'},{x:9,y:1,c:'#440066'},{x:10,y:1,c:'#550077'},{x:11,y:1,c:'#330055'},
+      {x:3,y:2,c:'#220033'},{x:4,y:2,c:'#330044'},{x:5,y:2,c:'#330044'},{x:6,y:2,c:'#440055'},{x:7,y:2,c:'#440055'},{x:8,y:2,c:'#440055'},{x:9,y:2,c:'#440055'},{x:10,y:2,c:'#330044'},{x:11,y:2,c:'#220033'},
+      {x:3,y:3,c:'#220033'},{x:4,y:3,c:'#cc00ff'},{x:5,y:3,c:'#330044'},{x:6,y:3,c:'#330044'},{x:7,y:3,c:'#330044'},{x:8,y:3,c:'#330044'},{x:9,y:3,c:'#cc00ff'},{x:10,y:3,c:'#330044'},{x:11,y:3,c:'#220033'},
+      {x:2,y:5,c:'#110022'},{x:3,y:5,c:'#220033'},{x:4,y:5,c:'#330044'},{x:5,y:5,c:'#440055'},{x:6,y:5,c:'#550066'},{x:7,y:5,c:'#550066'},{x:8,y:5,c:'#440055'},{x:9,y:5,c:'#330044'},{x:10,y:5,c:'#220033'},{x:11,y:5,c:'#110022'},
+      {x:1,y:6,c:'#110022'},{x:2,y:6,c:'#220033'},{x:3,y:6,c:'#330044'},{x:5,y:6,c:'#cc00ff'},{x:8,y:6,c:'#cc00ff'},{x:9,y:6,c:'#330044'},{x:10,y:6,c:'#220033'},{x:11,y:6,c:'#110022'},
+      {x:5,y:8,c:'#330044'},{x:6,y:8,c:'#440055'},{x:7,y:8,c:'#440055'},{x:8,y:8,c:'#330044'},
+    ]},
+    90: { name:'神龍',        color:'#ffdd00', exp:180, minLv:90, weight:10, pixels:[
+      {x:4,y:1,c:'#ffcc00'},{x:5,y:1,c:'#ffdd00'},{x:6,y:1,c:'#ffee44'},{x:7,y:1,c:'#ffcc00'},
+      {x:3,y:2,c:'#ffcc00'},{x:4,y:2,c:'#ffee44'},{x:5,y:2,c:'#ffffff'},{x:6,y:2,c:'#ffee44'},{x:7,y:2,c:'#ffffff'},{x:8,y:2,c:'#ffee44'},{x:9,y:2,c:'#ffcc00'},
+      {x:3,y:3,c:'#cc9900'},{x:4,y:3,c:'#ffdd00'},{x:5,y:3,c:'#ffee44'},{x:6,y:3,c:'#ff4444'},{x:7,y:3,c:'#ffee44'},{x:8,y:3,c:'#ff4444'},{x:9,y:3,c:'#ffee44'},{x:10,y:3,c:'#cc9900'},
+      {x:1,y:3,c:'#ffcc00'},{x:2,y:2,c:'#ffdd44'},{x:11,y:3,c:'#ffcc00'},{x:12,y:2,c:'#ffdd44'},
+      {x:3,y:5,c:'#cc9900'},{x:4,y:5,c:'#ddaa00'},{x:5,y:5,c:'#ffcc00'},{x:6,y:5,c:'#ffdd00'},{x:7,y:5,c:'#ffcc00'},{x:8,y:5,c:'#ddaa00'},{x:9,y:5,c:'#cc9900'},{x:10,y:5,c:'#bb8800'},
+      {x:4,y:6,c:'#ddaa00'},{x:5,y:6,c:'#cc9900'},{x:6,y:6,c:'#ffdd00'},{x:7,y:6,c:'#cc9900'},{x:8,y:6,c:'#ffdd00'},{x:9,y:6,c:'#ddaa00'},{x:10,y:6,c:'#cc9900'},
+      {x:5,y:7,c:'#cc9900'},{x:6,y:7,c:'#ddaa00'},{x:7,y:7,c:'#cc9900'},{x:8,y:7,c:'#ddaa00'},
+      {x:5,y:8,c:'#ffffff'},{x:7,y:8,c:'#ffffff'},{x:9,y:8,c:'#ffffff'},{x:11,y:8,c:'#ffffff'},
+      {x:12,y:4,c:'#ffff88'},{x:13,y:3,c:'#ffff44'},{x:14,y:4,c:'#ffff88'},
     ]},
   };
 
   // レアモンスター
   const RARE_MONSTERS = [
-    { name:'メタルスライム', color:'#aaddff', exp:50, rarity:0.05, pixels:[
+    { name:'メタルスライム', color:'#aaddff', exp:80,  rarity:0.04, minLv:1,  pixels:[
       {x:5,y:4,c:'#aaddff'},{x:6,y:4,c:'#aaddff'},{x:7,y:4,c:'#bbeeff'},{x:8,y:4,c:'#bbeeff'},{x:9,y:4,c:'#aaddff'},
       {x:4,y:5,c:'#aaddff'},{x:5,y:5,c:'#bbeeff'},{x:6,y:5,c:'#eeffff'},{x:7,y:5,c:'#ffffff'},{x:8,y:5,c:'#ffffff'},{x:9,y:5,c:'#bbeeff'},{x:10,y:5,c:'#aaddff'},
       {x:4,y:6,c:'#aaddff'},{x:5,y:6,c:'#bbeeff'},{x:6,y:6,c:'#bbeeff'},{x:7,y:6,c:'#88bbdd'},{x:8,y:6,c:'#bbeeff'},{x:9,y:6,c:'#bbeeff'},{x:10,y:6,c:'#aaddff'},
@@ -5409,17 +5250,21 @@
       {x:5,y:8,c:'#88bbdd'},{x:6,y:8,c:'#88bbdd'},{x:7,y:8,c:'#88bbdd'},{x:8,y:8,c:'#88bbdd'},{x:9,y:8,c:'#88bbdd'},
       {x:6,y:9,c:'#77aacc'},{x:7,y:9,c:'#77aacc'},{x:8,y:9,c:'#77aacc'},
     ]},
-    { name:'メタルキング', color:'#ffd700', exp:300, rarity:0.01, pixels:[
-      // 王冠
+    { name:'はぐれメタル',   color:'#eeffff', exp:500, rarity:0.015, minLv:30, pixels:[
+      {x:6,y:3,c:'#eeffff'},{x:7,y:3,c:'#eeffff'},{x:8,y:3,c:'#eeffff'},
+      {x:5,y:4,c:'#eeffff'},{x:6,y:4,c:'#ffffff'},{x:7,y:4,c:'#cceeee'},{x:8,y:4,c:'#ffffff'},{x:9,y:4,c:'#eeffff'},
+      {x:4,y:5,c:'#cceeee'},{x:5,y:5,c:'#eeffff'},{x:6,y:5,c:'#ffffff'},{x:7,y:5,c:'#eeffff'},{x:8,y:5,c:'#ffffff'},{x:9,y:5,c:'#eeffff'},{x:10,y:5,c:'#cceeee'},
+      {x:4,y:6,c:'#eeffff'},{x:5,y:6,c:'#cceeee'},{x:6,y:6,c:'#222'},{x:7,y:6,c:'#eeffff'},{x:8,y:6,c:'#222'},{x:9,y:6,c:'#cceeee'},{x:10,y:6,c:'#eeffff'},
+      {x:5,y:7,c:'#cceeee'},{x:6,y:7,c:'#aadddd'},{x:7,y:7,c:'#cceeee'},{x:8,y:7,c:'#aadddd'},{x:9,y:7,c:'#cceeee'},
+      {x:12,y:2,c:'#ffff44'},{x:13,y:3,c:'#ffff44'},{x:12,y:4,c:'#ffff44'},{x:12,y:6,c:'#ffff44'},
+    ]},
+    { name:'メタルキング',   color:'#ffd700', exp:800, rarity:0.01, minLv:1,  pixels:[
       {x:5,y:2,c:'#ffd700'},{x:7,y:1,c:'#ff4444'},{x:9,y:2,c:'#ffd700'},
       {x:4,y:3,c:'#ffd700'},{x:5,y:3,c:'#ffee44'},{x:6,y:3,c:'#ffd700'},{x:7,y:3,c:'#ff8800'},{x:8,y:3,c:'#ffd700'},{x:9,y:3,c:'#ffee44'},{x:10,y:3,c:'#ffd700'},
-      // 頭
       {x:4,y:4,c:'#ffd700'},{x:5,y:4,c:'#ffee66'},{x:6,y:4,c:'#ffffff'},{x:7,y:4,c:'#ffee66'},{x:8,y:4,c:'#ffffff'},{x:9,y:4,c:'#ffee66'},{x:10,y:4,c:'#ffd700'},
       {x:4,y:5,c:'#ffd700'},{x:5,y:5,c:'#ffee66'},{x:6,y:5,c:'#ffee66'},{x:7,y:5,c:'#cc8800'},{x:8,y:5,c:'#ffee66'},{x:9,y:5,c:'#ffee66'},{x:10,y:5,c:'#ffd700'},
       {x:4,y:6,c:'#cc8800'},{x:5,y:6,c:'#ffffff'},{x:6,y:6,c:'#cc8800'},{x:7,y:6,c:'#cc8800'},{x:8,y:6,c:'#cc8800'},{x:9,y:6,c:'#ffffff'},{x:10,y:6,c:'#cc8800'},
-      // 体
       {x:4,y:7,c:'#cc8800'},{x:5,y:7,c:'#ddaa22'},{x:6,y:7,c:'#ddaa22'},{x:7,y:7,c:'#ddaa22'},{x:8,y:7,c:'#ddaa22'},{x:9,y:7,c:'#ddaa22'},{x:10,y:7,c:'#cc8800'},
-      // 足
       {x:5,y:8,c:'#cc8800'},{x:6,y:8,c:'#cc8800'},{x:9,y:8,c:'#cc8800'},{x:10,y:8,c:'#cc8800'},
       {x:5,y:9,c:'#aa6600'},{x:6,y:9,c:'#aa6600'},{x:9,y:9,c:'#aa6600'},{x:10,y:9,c:'#aa6600'},
     ]},
@@ -5456,9 +5301,22 @@
   }
 
   function getMonsterForLevel(level) {
-    const keys = Object.keys(MONSTERS).map(Number).sort((a,b)=>b-a);
-    for (const k of keys) { if (level >= k) return MONSTERS[k]; }
-    return MONSTERS[1];
+    // minLv以下の敵を候補にし、レベルが近いほど重みを高くする
+    const allMonsters = Object.values(MONSTERS);
+    const candidates = allMonsters.filter(m => (m.minLv || 1) <= level);
+    if (candidates.length === 0) return allMonsters[0];
+    const weighted = candidates.map(m => {
+      const diff = level - (m.minLv || 1);
+      const w = (m.weight || 10) * Math.max(0.1, 1 - diff * 0.04);
+      return { m, w };
+    });
+    const total = weighted.reduce((s, x) => s + x.w, 0);
+    let r = Math.random() * total;
+    for (const { m, w } of weighted) {
+      r -= w;
+      if (r <= 0) return m;
+    }
+    return weighted[weighted.length - 1].m;
   }
 
   let bsState = 'idle';
@@ -5502,15 +5360,16 @@
   }
 
   function startBattleEvent() {
-    // レアモンスター抽選
+    // レアモンスター抽選（minLv条件を満たすもののみ）
+    const level = userData?.level || 1;
     let monster = null;
     for (const rare of RARE_MONSTERS) {
-      if (Math.random() < rare.rarity) {
+      if ((rare.minLv || 1) <= level && Math.random() < rare.rarity) {
         monster = rare;
         break;
       }
     }
-    if (!monster) monster = getMonsterForLevel(userData?.level || 1);
+    if (!monster) monster = getMonsterForLevel(level);
 
     const enemySvg = document.getElementById('bs-enemy-svg');
     if (!enemySvg) return;
@@ -5782,25 +5641,6 @@
   let calSelectedDate = null; // 'YYYY-MM-DD'
   let calTasksCache = []; // 全タスクのキャッシュ
 
-  // 日本の祝日（2024〜2026年）
-  const JAPAN_HOLIDAYS = new Set([
-    // 2024年
-    '2024-01-01','2024-01-08','2024-02-11','2024-02-12','2024-02-23',
-    '2024-03-20','2024-04-29','2024-05-03','2024-05-04','2024-05-05','2024-05-06',
-    '2024-07-15','2024-08-11','2024-08-12','2024-09-16','2024-09-22','2024-09-23',
-    '2024-10-14','2024-11-03','2024-11-04','2024-11-23',
-    // 2025年
-    '2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24',
-    '2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06',
-    '2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13',
-    '2025-11-03','2025-11-23','2025-11-24',
-    // 2026年
-    '2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20',
-    '2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06',
-    '2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23',
-    '2026-10-12','2026-11-03','2026-11-23',
-  ]);
-
   async function initCalendar() {
     // タスクを全件取得してキャッシュ
     const snap = await getDocs(query(
@@ -5853,32 +5693,20 @@
       const isSelected = dateStr === calSelectedDate;
       const tasks = tasksByDate[dateStr] || [];
 
-      // バッジ生成（最大3件表示、超えたら +N）
-      const MAX_BADGES = 3;
-      const badgesHtml = tasks.slice(0, MAX_BADGES).map(t => {
-        const colorInfo = TASK_COLORS.find(c => c.id === t.color);
-        // 色指定なし → 期限切れなら赤、完了なら緑、通常はグレー
-        let bg;
-        if (colorInfo) {
-          bg = colorInfo.hex;
-        } else {
-          const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
-          if (t.isComplete) bg = '#43a047';
-          else if (ms < 0) bg = '#e53935';
-          else bg = '#546e7a';
-        }
-        return `<span class="cal-badge ${t.isComplete ? 'done' : ''}" style="background:${bg};">${escHtml(t.title)}</span>`;
+      // ドット生成
+      const dots = tasks.slice(0, 5).map(t => {
+        const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
+        let cls = 'pending';
+        if (t.isComplete) cls = 'done';
+        else if (ms < 0) cls = 'overdue';
+        return `<div class="cal-dot ${cls}"></div>`;
       }).join('');
-      const moreHtml = tasks.length > MAX_BADGES
-        ? `<span class="cal-badge-more">+${tasks.length - MAX_BADGES}</span>`
-        : '';
 
       const el = document.createElement('div');
-      const isHoliday = JAPAN_HOLIDAYS.has(dateStr);
-      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}${isHoliday ? ' holiday' : ''}`;
+      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}`;
       el.innerHTML = `
         <span class="cal-day-num">${d}</span>
-        ${badgesHtml}${moreHtml}
+        ${tasks.length > 0 ? `<div class="cal-dots">${dots}</div>` : ''}
       `;
       el.onclick = () => selectCalendarDay(dateStr);
       grid.appendChild(el);
