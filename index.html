@@ -803,7 +803,7 @@
       overflow: hidden;
     }
     .cal-day:hover { border-color: var(--blue); background: rgba(77,150,255,0.08); }
-    .cal-day.today { background: rgba(255,107,107,0.12); border-color: var(--primary); }
+    .cal-day.today { background: rgba(107,203,119,0.15); border-color: var(--accent); }
     .cal-day.selected { background: rgba(77,150,255,0.2); border-color: var(--blue); box-shadow: 0 0 8px rgba(77,150,255,0.3); }
     .cal-day.other-month { opacity: 0.3; }
     .cal-day-num {
@@ -814,9 +814,10 @@
       margin-bottom: 2px;
       flex-shrink: 0;
     }
-    .cal-day.today .cal-day-num { color: var(--primary); font-size: 13px; }
+    .cal-day.today .cal-day-num { color: var(--accent); font-size: 13px; font-weight: bold; }
     .cal-day.sun .cal-day-num { color: var(--primary); }
     .cal-day.sat .cal-day-num { color: var(--purple); }
+    .cal-day.holiday .cal-day-num { color: var(--primary); }
 
     /* バッジスタイル */
     .cal-badge {
@@ -5596,6 +5597,25 @@
   let calSelectedDate = null; // 'YYYY-MM-DD'
   let calTasksCache = []; // 全タスクのキャッシュ
 
+  // 日本の祝日（2024〜2026年）
+  const JAPAN_HOLIDAYS = new Set([
+    // 2024年
+    '2024-01-01','2024-01-08','2024-02-11','2024-02-12','2024-02-23',
+    '2024-03-20','2024-04-29','2024-05-03','2024-05-04','2024-05-05','2024-05-06',
+    '2024-07-15','2024-08-11','2024-08-12','2024-09-16','2024-09-22','2024-09-23',
+    '2024-10-14','2024-11-03','2024-11-04','2024-11-23',
+    // 2025年
+    '2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24',
+    '2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06',
+    '2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13',
+    '2025-11-03','2025-11-23','2025-11-24',
+    // 2026年
+    '2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20',
+    '2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06',
+    '2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23',
+    '2026-10-12','2026-11-03','2026-11-23',
+  ]);
+
   async function initCalendar() {
     // タスクを全件取得してキャッシュ
     const snap = await getDocs(query(
@@ -5669,7 +5689,8 @@
         : '';
 
       const el = document.createElement('div');
-      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}`;
+      const isHoliday = JAPAN_HOLIDAYS.has(dateStr);
+      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}${isHoliday ? ' holiday' : ''}`;
       el.innerHTML = `
         <span class="cal-day-num">${d}</span>
         ${badgesHtml}${moreHtml}
