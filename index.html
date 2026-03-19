@@ -763,47 +763,68 @@
       padding: 4px 0;
     }
     .cal-day {
-      aspect-ratio: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       justify-content: flex-start;
-      padding-top: 4px;
+      padding: 3px 2px 2px;
       border-radius: var(--radius);
       cursor: pointer;
       border: 2px solid transparent;
       transition: all 0.15s;
-      min-height: 44px;
+      min-height: 56px;
       position: relative;
+      overflow: hidden;
     }
     .cal-day:hover { border-color: var(--blue); background: rgba(77,150,255,0.08); }
-    .cal-day.today { background: rgba(255,107,107,0.12); border-color: var(--primary); }
+    .cal-day.today { background: rgba(107,203,119,0.15); border-color: var(--accent); }
     .cal-day.selected { background: rgba(77,150,255,0.2); border-color: var(--blue); box-shadow: 0 0 8px rgba(77,150,255,0.3); }
     .cal-day.other-month { opacity: 0.3; }
     .cal-day-num {
       font-family: 'DotGothic16', monospace;
       font-size: 12px;
       line-height: 1;
+      text-align: center;
+      margin-bottom: 2px;
+      flex-shrink: 0;
     }
-    .cal-day.today .cal-day-num { color: var(--primary); font-size: 13px; }
+    .cal-day.today .cal-day-num { color: var(--accent); font-size: 13px; font-weight: bold; }
     .cal-day.sun .cal-day-num { color: var(--primary); }
     .cal-day.sat .cal-day-num { color: var(--purple); }
-    .cal-dots {
-      display: flex;
-      gap: 2px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 3px;
-      max-width: 100%;
+    .cal-day.holiday .cal-day-num { color: var(--primary); }
+    /* バッジスタイル */
+    .cal-badge {
+      display: block;
+      border-radius: 3px;
+      padding: 1px 3px;
+      font-family: 'DotGothic16', monospace;
+      font-size: 9px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 1px;
+      line-height: 1.5;
+      flex-shrink: 0;
     }
-    .cal-dot {
-      width: 5px;
-      height: 5px;
+    .cal-badge.done { opacity: 0.5; text-decoration: line-through; }
+    .cal-badge-more { font-family: 'DotGothic16', monospace; font-size: 9px; color: var(--text-muted); padding-left: 2px; }
+    /* カラースウォッチ */
+    .color-swatch {
+      width: 30px; height: 30px;
       border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      flex-shrink: 0;
+      outline: none;
     }
-    .cal-dot.done { background: var(--accent); }
-    .cal-dot.pending { background: var(--secondary); }
-    .cal-dot.overdue { background: var(--primary); }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.selected { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.5); transform: scale(1.2); }
+    .color-swatch-none { background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-muted); }
+    /* 旧ドット非表示 */
+    .cal-dots { display: none; }
+    .cal-dot { display: none; }
 
     .cal-task-item {
       background: var(--surface);
@@ -1694,6 +1715,10 @@
       <label>期限（任意）</label>
       <input type="date" id="edit-quest-deadline-input" />
     </div>
+    <div class="form-group" id="edit-quest-color-group" style="display:none;">
+      <label>カラー（任意）</label>
+      <div id="edit-task-color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
+    </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeEditQuestModal()">キャンセル</button>
       <button class="btn-add" onclick="saveEditQuest()">保存する ✨</button>
@@ -1713,6 +1738,10 @@
       <label>期限日時（任意）</label>
       <input type="date" id="task-deadline-date" />
       <input type="time" id="task-deadline-time" style="margin-top:8px;width:100%;padding:14px 16px;background:var(--surface2);border:2px solid transparent;border-radius:4px;color:var(--text);font-family:'DotGothic16',monospace;font-size:15px;outline:none;" />
+    </div>
+    <div class="form-group">
+      <label>カラー（任意）</label>
+      <div id="add-task-color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
     </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeAddTask()">キャンセル</button>
@@ -1831,6 +1860,40 @@
   let currentAvatarConfig = { body: 'body_default', hat: 'hat_none', weapon: 'weapon_none', effect: 'effect_none' };
   let tempAvatarConfig = { ...currentAvatarConfig };
   let currentAvatarCat = 'body';
+
+  // ===== TASK COLORS =====
+  const TASK_COLORS = [
+    { id: 'red',    hex: '#e53935' },
+    { id: 'orange', hex: '#fb8c00' },
+    { id: 'green',  hex: '#43a047' },
+    { id: 'blue',   hex: '#1e88e5' },
+    { id: 'purple', hex: '#8e24aa' },
+    { id: 'gray',   hex: '#546e7a' },
+  ];
+  let selectedAddTaskColor = null;
+  let selectedEditTaskColor = null;
+
+  function renderColorPicker(containerId, currentColorId, onPickFnName) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = TASK_COLORS.map(c => `
+      <button class="color-swatch ${currentColorId === c.id ? 'selected' : ''}"
+        style="background:${c.hex};"
+        onclick="${onPickFnName}('${c.id}')">
+      </button>
+    `).join('') + `
+      <button class="color-swatch color-swatch-none ${!currentColorId ? 'selected' : ''}"
+        onclick="${onPickFnName}(null)">✕</button>
+    `;
+  }
+  window.pickAddTaskColor = (colorId) => {
+    selectedAddTaskColor = colorId;
+    renderColorPicker('add-task-color-picker', colorId, 'pickAddTaskColor');
+  };
+  window.pickEditTaskColor = (colorId) => {
+    selectedEditTaskColor = colorId;
+    renderColorPicker('edit-task-color-picker', colorId, 'pickEditTaskColor');
+  };
 
 
   // ===== RPG CONFIG =====
@@ -2051,8 +2114,11 @@
       list.innerHTML = `<div class="empty-state"><span>🗺️</span><p>まだクエストがありません<br>+ボタンで追加しよう！</p></div>`;
       return;
     }
-    list.innerHTML = sorted.map(t => `
-      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''}>
+    list.innerHTML = sorted.map(t => {
+      const colorInfo = TASK_COLORS.find(c => c.id === t.color);
+      const colorStyle = colorInfo ? `border-left:5px solid ${colorInfo.hex};` : '';
+      return `
+      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''} style="${colorStyle}">
         <button class="task-check ${t.isComplete ? 'checked' : ''}" onclick="toggleTask('${t.id}', ${t.isComplete})">
           ${t.isComplete ? '✓' : ''}
         </button>
@@ -2067,7 +2133,7 @@
         <button class="task-edit-btn" onclick="openEditTask('${t.id}','${escHtml(t.title)}','${t.deadline||''}')">✏️</button>
         <button class="task-delete" onclick="deleteTask('${t.id}')">🗑️</button>
       </div>
-    `).join('');
+    `}).join('');
   }
 
   window.deleteTask = async (taskId) => {
@@ -2081,9 +2147,14 @@
     _editQuestId = id;
     document.getElementById('edit-quest-modal-title').textContent = '✏️ クエスト編集';
     document.getElementById('edit-quest-title-input').value = title;
-    // deadline は "YYYY-MM-DDTHH:mm" 形式なので日付部分だけ取り出す
     document.getElementById('edit-quest-deadline-input').value = deadline ? deadline.split('T')[0] : '';
     document.getElementById('edit-quest-deadline-group').style.display = 'block';
+    // カラーピッカー表示
+    const cachedTask = cachedTasks.find(t => t.id === id);
+    selectedEditTaskColor = cachedTask?.color || null;
+    const colorGroup = document.getElementById('edit-quest-color-group');
+    if (colorGroup) colorGroup.style.display = 'block';
+    renderColorPicker('edit-task-color-picker', selectedEditTaskColor, 'pickEditTaskColor');
     document.getElementById('edit-quest-modal').classList.add('open');
     setTimeout(() => document.getElementById('edit-quest-title-input').focus(), 100);
   };
@@ -2145,6 +2216,8 @@
 
   // ===== ADD TASK MODAL =====
   window.openAddTask = () => {
+    selectedAddTaskColor = null;
+    renderColorPicker('add-task-color-picker', null, 'pickAddTaskColor');
     document.getElementById('add-task-modal').classList.add('open');
     document.getElementById('task-title-input').focus();
   };
@@ -2153,13 +2226,13 @@
     document.getElementById('task-title-input').value = '';
     document.getElementById('task-deadline-date').value = '';
     document.getElementById('task-deadline-time').value = '';
+    selectedAddTaskColor = null;
   };
   window.addTask = async () => {
     const title = document.getElementById('task-title-input').value.trim();
     const date = document.getElementById('task-deadline-date').value;
     const time = document.getElementById('task-deadline-time').value;
     if (!title) return;
-    // 日時をISO文字列で保存
     let deadline = null;
     if (date) {
       deadline = time ? `${date}T${time}` : `${date}T23:59`;
@@ -2168,6 +2241,7 @@
       userId: currentUser.uid,
       title,
       deadline: deadline || null,
+      color: selectedAddTaskColor || null,
       isComplete: false,
       createdAt: serverTimestamp()
     });
@@ -2488,6 +2562,9 @@
     document.getElementById('edit-quest-title-input').value = title;
     document.getElementById('edit-quest-deadline-input').value = deadline || '';
     document.getElementById('edit-quest-deadline-group').style.display = showDeadline ? 'block' : 'none';
+    // クエスト系はカラーピッカー非表示
+    const colorGroup = document.getElementById('edit-quest-color-group');
+    if (colorGroup) colorGroup.style.display = 'none';
     document.getElementById('edit-quest-modal').classList.add('open');
     setTimeout(() => document.getElementById('edit-quest-title-input').focus(), 100);
   }
@@ -2508,10 +2585,8 @@
     if (!title) return;
 
     if (_editQuestType === 'todayTask') {
-      // 今日のクエストはdeadlineが datetime 形式なので時刻は元のものを維持
-      const updateData = { title };
+      const updateData = { title, color: selectedEditTaskColor || null };
       if (deadlineDate) {
-        // 既存の時刻部分を保持（なければ 00:00 にする）
         const cachedTask = cachedTasks.find(t => t.id === _editQuestId);
         const existingTime = cachedTask?.deadline ? cachedTask.deadline.split('T')[1] || '00:00' : '00:00';
         updateData.deadline = `${deadlineDate}T${existingTime}`;
@@ -5526,6 +5601,22 @@
   let calSelectedDate = null; // 'YYYY-MM-DD'
   let calTasksCache = []; // 全タスクのキャッシュ
 
+  // 日本の祝日（2024〜2026年）
+  const JAPAN_HOLIDAYS = new Set([
+    '2024-01-01','2024-01-08','2024-02-11','2024-02-12','2024-02-23',
+    '2024-03-20','2024-04-29','2024-05-03','2024-05-04','2024-05-05','2024-05-06',
+    '2024-07-15','2024-08-11','2024-08-12','2024-09-16','2024-09-22','2024-09-23',
+    '2024-10-14','2024-11-03','2024-11-04','2024-11-23',
+    '2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24',
+    '2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06',
+    '2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13',
+    '2025-11-03','2025-11-23','2025-11-24',
+    '2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20',
+    '2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06',
+    '2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23',
+    '2026-10-12','2026-11-03','2026-11-23',
+  ]);
+
   async function initCalendar() {
     // タスクを全件取得してキャッシュ
     const snap = await getDocs(query(
@@ -5576,23 +5667,31 @@
       const dow = new Date(calYear, calMonth, d).getDay();
       const isToday = dateStr === todayStr;
       const isSelected = dateStr === calSelectedDate;
+      const isHoliday = JAPAN_HOLIDAYS.has(dateStr);
       const tasks = tasksByDate[dateStr] || [];
 
-      // ドット生成
-      const dots = tasks.slice(0, 5).map(t => {
-        const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
-        let cls = 'pending';
-        if (t.isComplete) cls = 'done';
-        else if (ms < 0) cls = 'overdue';
-        return `<div class="cal-dot ${cls}"></div>`;
+      // バッジ生成（最大3件、超えたら +N）
+      const MAX_BADGES = 3;
+      const badgesHtml = tasks.slice(0, MAX_BADGES).map(t => {
+        const colorInfo = TASK_COLORS.find(c => c.id === t.color);
+        let bg;
+        if (colorInfo) {
+          bg = colorInfo.hex;
+        } else {
+          const ms = t.deadline ? new Date(t.deadline).getTime() - Date.now() : 1;
+          if (t.isComplete) bg = '#43a047';
+          else if (ms < 0) bg = '#e53935';
+          else bg = '#546e7a';
+        }
+        return `<span class="cal-badge${t.isComplete ? ' done' : ''}" style="background:${bg};">${escHtml(t.title)}</span>`;
       }).join('');
+      const moreHtml = tasks.length > MAX_BADGES
+        ? `<span class="cal-badge-more">+${tasks.length - MAX_BADGES}</span>`
+        : '';
 
       const el = document.createElement('div');
-      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}`;
-      el.innerHTML = `
-        <span class="cal-day-num">${d}</span>
-        ${tasks.length > 0 ? `<div class="cal-dots">${dots}</div>` : ''}
-      `;
+      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${dow === 0 ? ' sun' : ''}${dow === 6 ? ' sat' : ''}${isHoliday ? ' holiday' : ''}`;
+      el.innerHTML = `<span class="cal-day-num">${d}</span>${badgesHtml}${moreHtml}`;
       el.onclick = () => selectCalendarDay(dateStr);
       grid.appendChild(el);
     }
