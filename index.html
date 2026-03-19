@@ -1737,6 +1737,10 @@
       <label>期限（任意）</label>
       <input type="date" id="edit-quest-deadline-input" />
     </div>
+    <div class="form-group" id="edit-quest-color-group" style="display:none;">
+      <label>カラー（任意）</label>
+      <div id="edit-task-color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
+    </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeEditQuestModal()">キャンセル</button>
       <button class="btn-add" onclick="saveEditQuest()">保存する ✨</button>
@@ -1889,6 +1893,7 @@
     { id: 'gray',   hex: '#546e7a' },
   ];
   let selectedAddTaskColor = null; // 追加モーダル用の選択中カラー
+  let selectedEditTaskColor = null; // 編集モーダル用の選択中カラー
 
   function renderColorPicker(containerId, currentColorId, onPickFnName) {
     const el = document.getElementById(containerId);
@@ -2124,8 +2129,13 @@
       list.innerHTML = `<div class="empty-state"><span>🗺️</span><p>まだクエストがありません<br>+ボタンで追加しよう！</p></div>`;
       return;
     }
-    list.innerHTML = sorted.map(t => `
-      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''}>
+    list.innerHTML = sorted.map(t => {
+      const colorInfo = TASK_COLORS.find(c => c.id === t.color);
+      const colorStyle = colorInfo
+        ? `border-left: 5px solid ${colorInfo.hex};`
+        : '';
+      return `
+      <div class="task-card ${t.isComplete ? 'done' : ''}" id="task-${t.id}" ${t.deadline ? `data-deadline="${t.deadline}"` : ''} style="${colorStyle}">
         <button class="task-check ${t.isComplete ? 'checked' : ''}" onclick="toggleTask('${t.id}', ${t.isComplete})">
           ${t.isComplete ? '✓' : ''}
         </button>
@@ -2140,7 +2150,7 @@
         <button class="task-edit-btn" onclick="openEditTask('${t.id}','${escHtml(t.title)}','${t.deadline||''}')">✏️</button>
         <button class="task-delete" onclick="deleteTask('${t.id}')">🗑️</button>
       </div>
-    `).join('');
+    `}).join('');
   }
 
   window.deleteTask = async (taskId) => {
@@ -2154,9 +2164,13 @@
     _editQuestId = id;
     document.getElementById('edit-quest-modal-title').textContent = '✏️ クエスト編集';
     document.getElementById('edit-quest-title-input').value = title;
-    // deadline は "YYYY-MM-DDTHH:mm" 形式なので日付部分だけ取り出す
     document.getElementById('edit-quest-deadline-input').value = deadline ? deadline.split('T')[0] : '';
     document.getElementById('edit-quest-deadline-group').style.display = 'block';
+    // カラーピッカーを表示・現在の色をセット
+    const cachedTask = cachedTasks.find(t => t.id === id);
+    selectedEditTaskColor = cachedTask?.color || null;
+    document.getElementById('edit-quest-color-group').style.display = 'block';
+    renderColorPicker('edit-task-color-picker', selectedEditTaskColor, 'pickEditTaskColor');
     document.getElementById('edit-quest-modal').classList.add('open');
     setTimeout(() => document.getElementById('edit-quest-title-input').focus(), 100);
   };
@@ -2233,6 +2247,10 @@
   window.pickAddTaskColor = (colorId) => {
     selectedAddTaskColor = colorId;
     renderColorPicker('add-task-color-picker', colorId, 'pickAddTaskColor');
+  };
+  window.pickEditTaskColor = (colorId) => {
+    selectedEditTaskColor = colorId;
+    renderColorPicker('edit-task-color-picker', colorId, 'pickEditTaskColor');
   };
   window.addTask = async () => {
     const title = document.getElementById('task-title-input').value.trim();
@@ -2569,6 +2587,8 @@
     document.getElementById('edit-quest-title-input').value = title;
     document.getElementById('edit-quest-deadline-input').value = deadline || '';
     document.getElementById('edit-quest-deadline-group').style.display = showDeadline ? 'block' : 'none';
+    // クエスト系はカラー非表示
+    document.getElementById('edit-quest-color-group').style.display = 'none';
     document.getElementById('edit-quest-modal').classList.add('open');
     setTimeout(() => document.getElementById('edit-quest-title-input').focus(), 100);
   }
@@ -2590,9 +2610,8 @@
 
     if (_editQuestType === 'todayTask') {
       // 今日のクエストはdeadlineが datetime 形式なので時刻は元のものを維持
-      const updateData = { title };
+      const updateData = { title, color: selectedEditTaskColor || null };
       if (deadlineDate) {
-        // 既存の時刻部分を保持（なければ 00:00 にする）
         const cachedTask = cachedTasks.find(t => t.id === _editQuestId);
         const existingTime = cachedTask?.deadline ? cachedTask.deadline.split('T')[1] || '00:00' : '00:00';
         updateData.deadline = `${deadlineDate}T${existingTime}`;
