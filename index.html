@@ -1124,11 +1124,11 @@
     <div style="background:var(--surface);border:3px solid var(--surface2);border-radius:var(--radius);padding:16px;">
       <div style="font-family:'DotGothic16',monospace;font-size:12px;color:var(--accent);margin-bottom:10px;">🎟️ チケット入手方法</div>
       <div style="display:flex;flex-direction:column;gap:6px;font-family:'DotGothic16',monospace;font-size:11px;color:var(--text-muted);">
-        <div>🔥 毎日ログイン → +1枚</div>
-        <div>🏆 7日連続ログイン → +3枚</div>
-        <div>⚔️ タスク10個完了ごと → +1枚</div>
+        <div>🔥 毎日ログイン → +3枚</div>
+        <div>🏆 7日連続ログイン → +5枚</div>
+        <div>✅ タスク1個完了ごと → +1枚</div>
         <div>👑 メタルキング討伐 → +2枚</div>
-        <div>🏰 メインクエスト完了 → +1枚</div>
+        <div>🏰 メインクエスト完了 → +10枚</div>
       </div>
     </div>
 
@@ -1861,12 +1861,12 @@
       lastLoginDate: today,
       loginStreak: streak,
       items: [...(userData.items || []), item.name],
-      gachaTickets: (userData.gachaTickets || 0) + (streak % 7 === 0 ? 3 : 1)
+      gachaTickets: (userData.gachaTickets || 0) + (streak % 7 === 0 ? 5 : 3)
     });
     userData.lastLoginDate = today;
     userData.loginStreak = streak;
     userData.items = [...(userData.items || []), item.name];
-    userData.gachaTickets = (userData.gachaTickets || 0) + (streak % 7 === 0 ? 3 : 1);
+    userData.gachaTickets = (userData.gachaTickets || 0) + (streak % 7 === 0 ? 5 : 3);
     document.getElementById('bonus-streak').textContent = `${streak}日連続ログイン中！`;
     document.getElementById('bonus-emoji').textContent = item.emoji;
     document.getElementById('bonus-name').textContent = item.name;
@@ -1972,10 +1972,8 @@
     await updateDoc(doc(db, 'users', currentUser.uid), { totalCompleted: (userData.totalCompleted || 0) + 1 });
     userData.totalCompleted = (userData.totalCompleted || 0) + 1;
     renderHero();
-    // タスク10個ごとにチケット付与
-    if (userData.totalCompleted % 10 === 0) {
-      await addGachaTickets(1, 'タスク10個完了');
-    }
+    // タスク完了ごとにチケット1枚付与
+    await addGachaTickets(1, 'タスク完了');
     const taskSnap = await getDoc(doc(db, 'tasks', taskId));
     if (taskSnap.exists()) showAchievement('task', taskSnap.data().title);
   };
@@ -2264,7 +2262,7 @@
             setTimeout(() => showAchievement('mainquest', mqDoc.data().title), 2000);
             setTimeout(() => playSoundQuestClear(true), 2000);
             // メインクエスト完了でチケット1枚
-            await addGachaTickets(1, 'メインクエスト完了');
+            await addGachaTickets(10, 'メインクエスト完了');
           }
         }
       }
