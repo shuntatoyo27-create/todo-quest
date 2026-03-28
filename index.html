@@ -4040,9 +4040,15 @@
   }
 
   async function activateSetBonus(setId) {
+    const setBonusReceived = userData.setBonusReceived || [];
+    if (setBonusReceived.includes(setId)) return;
     const setInfo = SET_MASTER[setId];
     // EXPボーナス
     await gainExp(setInfo.expBonus, document.getElementById('hero-avatar'));
+    // 受け取り済みを記録
+    const updated = [...setBonusReceived, setId];
+    userData.setBonusReceived = updated;
+    await updateDoc(doc(db, 'users', currentUser.uid), { setBonusReceived: updated });
     // 演出
     showSetBonusEffect(setId);
   }
