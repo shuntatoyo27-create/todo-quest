@@ -1916,14 +1916,15 @@
 
   // LOGIN BONUS ITEMS
   const bonusItems = [
-    { emoji:'⭐', name:'EXPブースト', desc:'1時間EXP1.5倍！' },
-    { emoji:'👏', name:'応援チケット', desc:'友達に贈れる！' },
-    { emoji:'🎀', name:'リボン（アバター）', desc:'アバターに装備できる！' },
-    { emoji:'💎', name:'レアジェム', desc:'特別なアイテムと交換できる！' },
-    { emoji:'🔥', name:'炎エフェクト', desc:'アバターに炎オーラ！' },
-    { emoji:'🌙', name:'月のアクセ', desc:'夜空の神秘を纏う！' },
-    { emoji:'🏆', name:'トロフィー', desc:'7日連続ログイン報酬！', },
+    { emoji:'⭐', name:'EXP+100', desc:'EXPを100獲得！', type:'exp', value:100 },
+    { emoji:'👏', name:'応援チケット', desc:'友達に贈れる！', type:'ticket' },
+    { emoji:'🎀', name:'リボン（アバター）', desc:'アバターに装備できる！', type:'item', itemId:'hat_ribbon' },
+    { emoji:'💎', name:'レアジェム', desc:'特別なアイテムと交換できる！', type:'gem' },
+    { emoji:'🔥', name:'炎エフェクト２', desc:'アバターに激しい炎オーラ！', type:'item', itemId:'effect_fire2' },
+    { emoji:'🌙', name:'月の帽子', desc:'夜空の神秘を纏う！', type:'item', itemId:'hat_moon' },
+    { emoji:'🏆', name:'EXP+500', desc:'7日連続ログイン報酬！', type:'exp', value:500 },
   ];
+  let pendingBonusItem = null;
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, async user => {
@@ -2048,13 +2049,12 @@
     await updateDoc(doc(db, 'users', currentUser.uid), {
       lastLoginDate: today,
       loginStreak: streak,
-      items: [...(userData.items || []), item.name],
       gachaTickets: (userData.gachaTickets || 0) + (streak % 7 === 0 ? 5 : 3)
     });
     userData.lastLoginDate = today;
     userData.loginStreak = streak;
-    userData.items = [...(userData.items || []), item.name];
     userData.gachaTickets = (userData.gachaTickets || 0) + (streak % 7 === 0 ? 5 : 3);
+    pendingBonusItem = item;
     document.getElementById('bonus-streak').textContent = `${streak}日連続ログイン中！`;
     document.getElementById('bonus-emoji').textContent = item.emoji;
     document.getElementById('bonus-name').textContent = item.name;
@@ -2063,8 +2063,25 @@
     renderHero();
   }
 
-  window.claimBonus = () => {
+  window.claimBonus = async () => {
     document.getElementById('bonus-modal').classList.remove('open');
+    if (!pendingBonusItem) return;
+    const item = pendingBonusItem;
+    pendingBonusItem = null;
+    if (item.type === 'exp') {
+      await gainExp(item.value, document.getElementById('hero-avatar'));
+    } else if (item.type === 'item') {
+      const chestItems = [...(userData.chestItems || [])];
+      if (!chestItems.includes(item.itemId)) {
+        chestItems.push(item.itemId);
+        userData.chestItems = chestItems;
+        await updateDoc(doc(db, 'users', currentUser.uid), { chestItems });
+      }
+    } else if (item.type === 'ticket' || item.type === 'gem') {
+      const items = [...(userData.items || []), item.name];
+      userData.items = items;
+      await updateDoc(doc(db, 'users', currentUser.uid), { items });
+    }
   };
 
   // ===== TASKS =====
@@ -3852,6 +3869,9 @@
     'hat_halo':       { name:'光の輪',         cat:'hat',    desc:'宝箱ドロップ。天使の輪っか。',         rarity:'rare',    icon:'😇' },
     'hat_ninja':      { name:'忍者頭巾',       cat:'hat',    desc:'宝箱ドロップ。素早さ+10（演出）。',   rarity:'uncommon',icon:'🥷' },
     'hat_pirate':     { name:'海賊帽',         cat:'hat',    desc:'宝箱ドロップ。勇敢な海賊の帽子。',    rarity:'uncommon',icon:'🏴‍☠️' },
+    'hat_ribbon':     { name:'リボン帽子',     cat:'hat',    desc:'ログインボーナス。大きなピンクのリボン。', rarity:'uncommon',icon:'🎀' },
+    'hat_moon':       { name:'月の帽子',       cat:'hat',    desc:'ログインボーナス。夜空に浮かぶ三日月。', rarity:'rare',    icon:'🌙' },
+    'effect_fire2':   { name:'激炎オーラ',     cat:'effect', desc:'ログインボーナス。激しく燃え盛る炎のオーラ。', rarity:'rare', icon:'🔥' },
     // 武器
     'weapon_sword':   { name:'剣',             cat:'weapon', desc:'基本の剣。シンプルで強い。',           rarity:'common',  icon:'⚔️' },
     'weapon_staff':   { name:'魔法の杖',       cat:'weapon', desc:'Lv5で解放。魔力を秘めた杖。',         rarity:'uncommon',icon:'🪄' },
@@ -4316,6 +4336,19 @@
         {x:4,y:2,c:'#222'},{x:5,y:2,c:'#222'},{x:6,y:2,c:'#222'},{x:7,y:2,c:'#222'},{x:8,y:2,c:'#222'},{x:9,y:2,c:'#222'},{x:10,y:2,c:'#222'},{x:11,y:2,c:'#222'},
         {x:3,y:3,c:'#333'},{x:4,y:3,c:'#333'},{x:5,y:3,c:'#333'},{x:6,y:3,c:'#333'},{x:7,y:3,c:'#333'},{x:8,y:3,c:'#333'},{x:9,y:3,c:'#333'},{x:10,y:3,c:'#333'},{x:11,y:3,c:'#333'},{x:12,y:3,c:'#333'},
       ]},
+      { id:'hat_ribbon', name:'リボン帽子', unlock:'login', desc:'ログインボーナス。大きなピンクのリボン。', pixels:[
+        {x:5,y:0,c:'#ff66aa'},{x:6,y:0,c:'#ff3388'},{x:9,y:0,c:'#ff3388'},{x:10,y:0,c:'#ff66aa'},
+        {x:4,y:1,c:'#ff66aa'},{x:5,y:1,c:'#ff3388'},{x:6,y:1,c:'#ff1166'},{x:7,y:1,c:'#ff66aa'},{x:8,y:1,c:'#ff66aa'},{x:9,y:1,c:'#ff1166'},{x:10,y:1,c:'#ff3388'},{x:11,y:1,c:'#ff66aa'},
+        {x:5,y:2,c:'#ff3388'},{x:6,y:2,c:'#ff66aa'},{x:7,y:2,c:'#ff3388'},{x:8,y:2,c:'#ff3388'},{x:9,y:2,c:'#ff66aa'},{x:10,y:2,c:'#ff3388'},
+        {x:6,y:3,c:'#ff88bb'},{x:7,y:3,c:'#ff3388'},{x:8,y:3,c:'#ff3388'},{x:9,y:3,c:'#ff88bb'},
+      ]},
+      { id:'hat_moon', name:'月の帽子', unlock:'login', desc:'ログインボーナス。夜空に浮かぶ三日月。', pixels:[
+        {x:8,y:0,c:'#ffee44'},{x:9,y:0,c:'#ffdd00'},
+        {x:7,y:1,c:'#ffee44'},{x:8,y:1,c:'#ffff88'},{x:9,y:1,c:'#ffdd00'},{x:10,y:1,c:'#ffcc00'},
+        {x:6,y:2,c:'#ffdd00'},{x:7,y:2,c:'#ffff88'},{x:8,y:2,c:'#ffee44'},{x:9,y:2,c:'#ffcc00'},
+        {x:7,y:3,c:'#ffcc00'},{x:8,y:3,c:'#ffdd00'},{x:9,y:3,c:'#ffaa00'},
+        {x:8,y:4,c:'#ffaa00'},
+      ]},
     ],
     weapon: [
       { id:'weapon_none', name:'なし', unlock:'default', pixels:[] },
@@ -4506,6 +4539,15 @@
         {x:14,y:3,c:'#ffaacc'},{x:13,y:4,c:'#ff88bb'},{x:14,y:8,c:'#ffaacc'},
         {x:5,y:13,c:'#ffaacc'},{x:7,y:14,c:'#ff88bb'},{x:9,y:13,c:'#ffaacc'},{x:11,y:14,c:'#ffaacc'},
         {x:1,y:6,c:'#ff88bb'},{x:15,y:6,c:'#ff88bb'},
+      ]},
+      { id:'effect_fire2', name:'激炎オーラ', unlock:'login', desc:'ログインボーナス。激しく燃え盛る炎のオーラ。', pixels:[
+        {x:1,y:3,c:'#ff4400'},{x:1,y:4,c:'#ff6600'},{x:2,y:5,c:'#ff4400'},{x:1,y:6,c:'#ff2200'},{x:2,y:7,c:'#ff6600'},
+        {x:15,y:3,c:'#ff4400'},{x:15,y:4,c:'#ff6600'},{x:14,y:5,c:'#ff4400'},{x:15,y:6,c:'#ff2200'},{x:14,y:7,c:'#ff6600'},
+        {x:0,y:5,c:'#ffaa00'},{x:16,y:5,c:'#ffaa00'},
+        {x:1,y:2,c:'#ffcc00'},{x:15,y:2,c:'#ffcc00'},
+        {x:5,y:13,c:'#ff4400'},{x:6,y:14,c:'#ff6600'},{x:7,y:15,c:'#ff2200'},{x:8,y:14,c:'#ffaa00'},{x:9,y:15,c:'#ff2200'},{x:10,y:14,c:'#ff6600'},{x:11,y:13,c:'#ff4400'},
+        {x:4,y:12,c:'#ff6600'},{x:12,y:12,c:'#ff6600'},
+        {x:3,y:11,c:'#ffaa00'},{x:13,y:11,c:'#ffaa00'},
       ]},
     ],
   };
